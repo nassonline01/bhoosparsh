@@ -1,0 +1,437 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load math_filters %}
+
+{% block title %}Upgrade Plan - RealEstatePro{% endblock %}
+
+{% block extra_css %}
+<style>
+    .upgrade-plan {
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+    }
+    .upgrade-plan:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+    .upgrade-plan.recommended {
+        border-color: #8b5cf6;
+        position: relative;
+    }
+    .recommended-badge {
+        position: absolute;
+        top: -12px;
+        right: 20px;
+        background: #8b5cf6;
+        color: white;
+        padding: 4px 16px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    .current-plan {
+        background: linear-gradient(135deg, #f3f4f6 0%, #ffffff 100%);
+    }
+    .price-difference {
+        font-size: 14px;
+    }
+    .price-difference.positive {
+        color: #10b981;
+    }
+    .price-difference.negative {
+        color: #ef4444;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Page Header -->
+    <div class="text-center mb-12">
+        <h1 class="text-3xl font-bold mb-4">Upgrade Your Plan</h1>
+        <p class="text-gray-600 max-w-2xl mx-auto">
+            Choose a plan that better fits your needs. Upgrade now to get access to more features and higher limits.
+        </p>
+    </div>
+
+    <div class="max-w-6xl mx-auto">
+        <!-- Current Plan -->
+        {% if current_subscription %}
+        <div class="mb-8">
+            <h2 class="text-xl font-bold mb-4">Your Current Plan</h2>
+            <div class="current-plan rounded-xl p-6 shadow border">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <div class="flex items-center mb-2">
+                            <div class="text-2xl font-bold">{{ current_subscription.plan.name }}</div>
+                            <div class="ml-4 px-3 py-1 bg-gray-200 text-gray-800 rounded-full text-sm font-semibold">
+                                {{ current_subscription.plan.tier|title }}
+                            </div>
+                        </div>
+                        <div class="text-gray-600">
+                            Renews on {{ current_subscription.end_date|date:"F d, Y" }}
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-bold">₹{{ current_subscription.plan.monthly_price|floatformat:0 }}</div>
+                        <div class="text-gray-600">per month</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Available Upgrade Plans -->
+        <div class="mb-12">
+            <h2 class="text-xl font-bold mb-6">Available Upgrade Plans</h2>
+            
+            {% if not upgrade_plans %}
+            <div class="text-center py-12 bg-white rounded-xl shadow">
+                <div class="text-5xl text-gray-300 mb-4">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">You're on the highest plan!</h3>
+                <p class="text-gray-600 mb-6">You're already on our highest tier plan.</p>
+            </div>
+            {% else %}
+            <form method="post" id="upgradeForm">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    {% for plan in upgrade_plans %}
+                    <div class="upgrade-plan bg-white rounded-xl p-6 shadow border {% if forloop.first and upgrade_plans|length > 1 %}recommended{% endif %}">
+                        {% if forloop.first and upgrade_plans|length > 1 %}
+                        <div class="recommended-badge">RECOMMENDED</div>
+                        {% endif %}
+                        
+                        <div class="mb-6">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <h3 class="text-xl font-bold">{{ plan.name }}</h3>
+                                    <div class="mt-1 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-semibold inline-block">
+                                        {{ plan.tier|title }}
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-2xl font-bold">₹{{ plan.monthly_price|floatformat:0 }}</div>
+                                    <div class="text-gray-600">per month</div>
+                                </div>
+                            </div>
+                            
+                            <p class="text-gray-600 mb-4">{{ plan.description }}</p>
+                            
+                            {% if current_subscription %}
+                            <div class="price-difference {% if plan.monthly_price > current_subscription.plan.monthly_price %}positive{% else %}negative{% endif %}">
+                                {% if plan.monthly_price > current_subscription.plan.monthly_price %}
+                                +₹{{ plan.monthly_price|subtract:current_subscription.plan.monthly_price|floatformat:0 }}/month
+                                {% else %}
+                                Save ₹{{ current_subscription.plan.monthly_price|subtract:plan.monthly_price|floatformat:0 }}/month
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Key Features -->
+                        <div class="mb-6">
+                            <h4 class="font-bold mb-3">Key Features:</h4>
+                            <ul class="space-y-2">
+                                {% for feature in plan.popular_features|slice:":4" %}
+                                <li class="flex items-center text-sm">
+                                    <i class="fas fa-check text-green-500 mr-2"></i>
+                                    {{ feature }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+
+                        <!-- Plan Limits -->
+                        <div class="mb-6">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="text-center p-3 bg-gray-50 rounded">
+                                    <div class="font-bold">
+                                        {% if plan.max_active_listings == 0 %}
+                                        Unlimited
+                                        {% else %}
+                                        {{ plan.max_active_listings }}
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-xs text-gray-600">Listings</div>
+                                </div>
+                                <div class="text-center p-3 bg-gray-50 rounded">
+                                    <div class="font-bold">{{ plan.max_featured_listings }}</div>
+                                    <div class="text-xs text-gray-600">Featured/Month</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Select Button -->
+                        <label class="block">
+                            <input type="radio" name="plan" value="{{ plan.id }}" 
+                                   class="hidden" 
+                                   {% if forloop.first %}checked{% endif %}>
+                            <div class="text-center py-2 border-2 border-purple-600 text-purple-600 rounded-lg cursor-pointer hover:bg-purple-50 transition">
+                                Select Plan
+                            </div>
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Billing Duration -->
+                <div class="bg-white rounded-xl shadow p-6 mb-8">
+                    <h3 class="text-lg font-bold mb-4">Billing Duration</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <label class="border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-purple-500 transition">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="font-semibold">Monthly</div>
+                                <div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center">
+                                    <div class="w-3 h-3 rounded-full bg-purple-600"></div>
+                                </div>
+                            </div>
+                            <div class="text-sm text-gray-600">Pay monthly, cancel anytime</div>
+                            <input type="radio" name="duration" value="monthly" class="hidden" checked>
+                        </label>
+
+                        <label class="border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-purple-500 transition">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="font-semibold">Annual</div>
+                                <div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center">
+                                    <div class="w-3 h-3 rounded-full bg-purple-600 hidden"></div>
+                                </div>
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                Save up to 20%
+                                <div class="text-green-600 font-bold">Best Value</div>
+                            </div>
+                            <input type="radio" name="duration" value="annual" class="hidden">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Proration Option -->
+                <div class="bg-white rounded-xl shadow p-6 mb-8">
+                    <div class="flex items-start">
+                        <input type="checkbox" name="prorate" id="prorate" 
+                               class="mt-1 mr-3 w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500" checked>
+                        <div>
+                            <label for="prorate" class="font-semibold mb-1 block">Apply Prorated Credit</label>
+                            <p class="text-gray-600 text-sm">
+                                Apply the unused portion of your current subscription to your new plan. 
+                                This reduces your next payment.
+                            </p>
+                            <div class="mt-2 text-sm text-gray-500" id="proratedAmount">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upgrade Summary -->
+                <div class="bg-white rounded-xl shadow p-6 mb-8">
+                    <h3 class="text-lg font-bold mb-4">Upgrade Summary</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">New Plan</span>
+                            <span class="font-semibold" id="summary-plan">{{ upgrade_plans.0.name }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Billing Cycle</span>
+                            <span class="font-semibold" id="summary-duration">Monthly</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Monthly Price</span>
+                            <span class="font-semibold" id="summary-price">₹{{ upgrade_plans.0.monthly_price|floatformat:0 }}</span>
+                        </div>
+                        <div class="flex justify-between border-t pt-3">
+                            <span class="font-semibold">Total Due Today</span>
+                            <span class="text-xl font-bold" id="summary-total">₹0.00</span>
+                        </div>
+                        <div class="text-sm text-gray-600" id="summary-note">
+                            Your new plan starts immediately
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-between items-center">
+                    <a href="{% url 'dashboard' %}" class="text-gray-600 hover:text-gray-800">
+                        <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+                    </a>
+                    <div class="space-x-4">
+                        <button type="button" onclick="calculateUpgrade()" 
+                                class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+                            Calculate
+                        </button>
+                        <button type="submit" 
+                                class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-semibold">
+                            Continue to Payment
+                        </button>
+                    </div>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="bg-white rounded-xl shadow p-6">
+            <h3 class="text-lg font-bold mb-4">Frequently Asked Questions</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <h4 class="font-semibold mb-2">When will the upgrade take effect?</h4>
+                    <p class="text-gray-600 text-sm">Your upgrade takes effect immediately after payment.</p>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-2">What happens to my current listings?</h4>
+                    <p class="text-gray-600 text-sm">All your current listings remain active. You'll get access to additional listing slots immediately.</p>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-2">Will I be charged twice?</h4>
+                    <p class="text-gray-600 text-sm">No, you'll only be charged the prorated difference for the current billing cycle.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Plan data
+    const plans = {
+        {% for plan in upgrade_plans %}
+        {{ plan.id }}: {
+            name: "{{ plan.name }}",
+            monthlyPrice: {{ plan.monthly_price }},
+            annualPrice: {{ plan.annual_price|default:plan.monthly_price|multiply:12 }},
+            yearlySavings: {{ plan.yearly_savings|default:0 }},
+        },
+        {% endfor %}
+    };
+
+    {% if current_subscription %}
+    const currentPlan = {
+        monthlyPrice: {{ current_subscription.plan.monthly_price }},
+        daysUsed: {{ current_subscription.days_used }},
+        totalDays: {{ current_subscription.total_days }}
+    };
+    {% endif %}
+
+    let selectedPlanId = {% if upgrade_plans %}{{ upgrade_plans.0.id }}{% else %}null{% endif %};
+    let selectedDuration = 'monthly';
+    let prorate = true;
+
+    // Plan selection
+    document.querySelectorAll('input[name="plan"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            selectedPlanId = parseInt(this.value);
+            updateSummary();
+        });
+    });
+
+    // Duration selection
+    document.querySelectorAll('input[name="duration"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            selectedDuration = this.value;
+            updateSummary();
+        });
+    });
+
+    // Proration toggle
+    document.getElementById('prorate').addEventListener('change', function() {
+        prorate = this.checked;
+        updateSummary();
+    });
+
+    function calculateUpgrade() {
+        if (!selectedPlanId) return;
+        
+        const plan = plans[selectedPlanId];
+        const price = selectedDuration === 'annual' ? plan.annualPrice : plan.monthlyPrice;
+        
+        let proratedCredit = 0;
+        if (prorate && currentPlan) {
+            // Calculate unused days percentage
+            const unusedRatio = (currentPlan.totalDays - currentPlan.daysUsed) / currentPlan.totalDays;
+            proratedCredit = currentPlan.monthlyPrice * unusedRatio;
+        }
+        
+        const amountDue = Math.max(0, price - proratedCredit);
+        
+        // Update prorated amount display
+        const proratedEl = document.getElementById('proratedAmount');
+        if (proratedCredit > 0) {
+            proratedEl.innerHTML = `Prorated credit: ₹${proratedCredit.toFixed(2)}`;
+            proratedEl.className = 'mt-2 text-sm text-green-600';
+        } else {
+            proratedEl.innerHTML = 'No prorated credit available';
+            proratedEl.className = 'mt-2 text-sm text-gray-500';
+        }
+        
+        // Update summary
+        document.getElementById('summary-total').textContent = `₹${amountDue.toFixed(2)}`;
+        
+        if (amountDue === 0) {
+            document.getElementById('summary-note').textContent = 
+                'Your prorated credit covers the full amount!';
+            document.getElementById('summary-note').className = 'text-sm text-green-600';
+        } else {
+            document.getElementById('summary-note').textContent = 
+                'Your new plan starts immediately';
+            document.getElementById('summary-note').className = 'text-sm text-gray-600';
+        }
+    }
+
+    function updateSummary() {
+        if (!selectedPlanId) return;
+        
+        const plan = plans[selectedPlanId];
+        
+        document.getElementById('summary-plan').textContent = plan.name;
+        document.getElementById('summary-duration').textContent = 
+            selectedDuration === 'annual' ? 'Annual' : 'Monthly';
+        
+        const price = selectedDuration === 'annual' ? plan.annualPrice : plan.monthlyPrice;
+        document.getElementById('summary-price').textContent = `₹${price.toFixed(0)}`;
+        
+        calculateUpgrade();
+    }
+
+    // Form submission
+    document.getElementById('upgradeForm').addEventListener('submit', function(e) {
+        if (!selectedPlanId) {
+            e.preventDefault();
+            alert('Please select a plan to upgrade to.');
+            return;
+        }
+    });
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add click handlers to plan cards
+        document.querySelectorAll('.upgrade-plan').forEach(card => {
+            card.addEventListener('click', function(e) {
+                if (e.target.type !== 'radio') {
+                    const radio = this.querySelector('input[type="radio"]');
+                    if (radio) {
+                        radio.checked = true;
+                        radio.dispatchEvent(new Event('change'));
+                    }
+                }
+            });
+        });
+        
+        // Add click handlers to duration options
+        document.querySelectorAll('input[name="duration"]').forEach(radio => {
+            radio.closest('label').addEventListener('click', function() {
+                this.querySelector('input[type="radio"]').checked = true;
+                this.querySelector('input[type="radio"]').dispatchEvent(new Event('change'));
+            });
+        });
+        
+        updateSummary();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,427 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Billing History - RealEstatePro{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filter-btn {
+        transition: all 0.3s ease;
+    }
+    .filter-btn.active {
+        background-color: #8b5cf6;
+        color: white;
+    }
+    .transaction-row {
+        transition: background-color 0.2s ease;
+    }
+    .transaction-row:hover {
+        background-color: #f9fafb;
+    }
+    .invoice-btn {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .transaction-row:hover .invoice-btn {
+        opacity: 1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Billing History</h1>
+                <p class="text-gray-600">View and manage your payment transactions</p>
+            </div>
+            <div class="text-right">
+                <div class="text-2xl font-bold">₹{{ net_paid|floatformat:2 }}</div>
+                <div class="text-sm text-gray-600">Total Paid</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-receipt text-green-600 text-xl"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold">{{ transactions.count }}</div>
+                    <div class="text-gray-600">Total Transactions</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-check-circle text-blue-600 text-xl"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold">₹{{ total_paid|floatformat:2 }}</div>
+                    <div class="text-gray-600">Total Paid</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-undo text-red-600 text-xl"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold">₹{{ total_refunded|floatformat:2 }}</div>
+                    <div class="text-gray-600">Total Refunded</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-wallet text-purple-600 text-xl"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold">₹{{ net_paid|floatformat:2 }}</div>
+                    <div class="text-gray-600">Net Amount</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl shadow p-6 mb-6">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+                <h3 class="font-bold text-lg mb-2">Filter Transactions</h3>
+                <div class="flex flex-wrap gap-2">
+                    <button class="filter-btn px-4 py-2 rounded-lg border border-gray-300 active" 
+                            onclick="filterTransactions('all')">
+                        All
+                    </button>
+                    <button class="filter-btn px-4 py-2 rounded-lg border border-gray-300" 
+                            onclick="filterTransactions('captured')">
+                        Successful
+                    </button>
+                    <button class="filter-btn px-4 py-2 rounded-lg border border-gray-300" 
+                            onclick="filterTransactions('failed')">
+                        Failed
+                    </button>
+                    <button class="filter-btn px-4 py-2 rounded-lg border border-gray-300" 
+                            onclick="filterTransactions('refunded')">
+                        Refunded
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <input type="text" placeholder="Search transactions..." 
+                           class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                           onkeyup="searchTransactions(this.value)">
+                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                </div>
+                
+                <div class="relative">
+                    <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none"
+                            onchange="sortTransactions(this.value)">
+                        <option value="-created_at">Newest First</option>
+                        <option value="created_at">Oldest First</option>
+                        <option value="amount">Amount: Low to High</option>
+                        <option value="-amount">Amount: High to Low</option>
+                    </select>
+                    <i class="fas fa-chevron-down absolute right-3 top-3 text-gray-400"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transactions Table -->
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="py-4 px-6 text-left font-semibold text-gray-700">Date</th>
+                        <th class="py-4 px-6 text-left font-semibold text-gray-700">Description</th>
+                        <th class="py-4 px-6 text-left font-semibold text-gray-700">Payment ID</th>
+                        <th class="py-4 px-6 text-left font-semibold text-gray-700">Amount</th>
+                        <th class="py-4 px-6 text-left font-semibold text-gray-700">Status</th>
+                        <th class="py-4 px-6 text-left font-semibold text-gray-700">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="transactions-body">
+                    {% for transaction in transactions %}
+                    <tr class="transaction-row border-t" data-status="{{ transaction.status }}">
+                        <td class="py-4 px-6">
+                            <div class="font-medium">{{ transaction.created_at|date:"M d, Y" }}</div>
+                            <div class="text-sm text-gray-500">{{ transaction.created_at|time:"g:i A" }}</div>
+                        </td>
+                        <td class="py-4 px-6">
+                            <div class="font-medium">{{ transaction.description|truncatechars:50 }}</div>
+                            {% if transaction.plan %}
+                            <div class="text-sm text-gray-500">{{ transaction.plan.name }}</div>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 px-6">
+                            <div class="font-mono text-sm">{{ transaction.razorpay_payment_id|default:"-"|truncatechars:20 }}</div>
+                        </td>
+                        <td class="py-4 px-6">
+                            <div class="font-bold">₹{{ transaction.amount|floatformat:2 }}</div>
+                            {% if transaction.amount_refunded > 0 %}
+                            <div class="text-sm text-red-600">
+                                Refunded: ₹{{ transaction.amount_refunded|floatformat:2 }}
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 px-6">
+                            <div class="inline-flex items-center">
+                                {% if transaction.status == 'captured' %}
+                                <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                                <span class="text-green-700 font-medium">Success</span>
+                                {% elif transaction.status == 'failed' %}
+                                <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                                <span class="text-red-700 font-medium">Failed</span>
+                                {% elif transaction.status == 'refunded' %}
+                                <span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+                                <span class="text-yellow-700 font-medium">Refunded</span>
+                                {% else %}
+                                <span class="w-2 h-2 bg-gray-500 rounded-full mr-2"></span>
+                                <span class="text-gray-700 font-medium">{{ transaction.get_status_display }}</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="py-4 px-6">
+                            <div class="flex space-x-2">
+                                {% if transaction.is_successful %}
+                                <button onclick="downloadInvoice('{{ transaction.razorpay_payment_id }}')" 
+                                        class="invoice-btn px-3 py-1 bg-gray-100 text-gray-700 rounded text-sm hover:bg-gray-200 transition">
+                                    <i class="fas fa-download mr-1"></i> Invoice
+                                </button>
+                                {% endif %}
+                                
+                                {% if transaction.error_message %}
+                                <button onclick="showError('{{ transaction.error_message }}')" 
+                                        class="px-3 py-1 bg-red-100 text-red-700 rounded text-sm hover:bg-red-200 transition">
+                                    <i class="fas fa-exclamation-circle mr-1"></i> Details
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="py-12 text-center text-gray-500">
+                            <div class="text-5xl mb-4">
+                                <i class="fas fa-receipt"></i>
+                            </div>
+                            <h3 class="text-xl font-bold mb-2">No Transactions Yet</h3>
+                            <p>You haven't made any payments yet.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if transactions.has_other_pages %}
+        <div class="border-t px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="text-sm text-gray-600">
+                    Showing {{ transactions.start_index }} to {{ transactions.end_index }} of {{ transactions.paginator.count }} entries
+                </div>
+                
+                <div class="flex space-x-2">
+                    {% if transactions.has_previous %}
+                    <a href="?page={{ transactions.previous_page_number }}" 
+                       class="px-3 py-2 border border-gray-300 rounded hover:bg-gray-50">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    {% endif %}
+                    
+                    {% for num in transactions.paginator.page_range %}
+                        {% if transactions.number == num %}
+                        <span class="px-3 py-2 bg-purple-600 text-white rounded">{{ num }}</span>
+                        {% elif num > transactions.number|add:'-3' and num < transactions.number|add:'3' %}
+                        <a href="?page={{ num }}" class="px-3 py-2 border border-gray-300 rounded hover:bg-gray-50">
+                            {{ num }}
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if transactions.has_next %}
+                    <a href="?page={{ transactions.next_page_number }}" 
+                       class="px-3 py-2 border border-gray-300 rounded hover:bg-gray-50">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Export Section -->
+    <div class="mt-8 bg-white rounded-xl shadow p-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h3 class="font-bold text-lg mb-2">Export Transactions</h3>
+                <p class="text-gray-600">Download your billing history in different formats</p>
+            </div>
+            <div class="flex space-x-4">
+                <button onclick="exportTransactions('csv')" 
+                        class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                    <i class="fas fa-file-csv mr-2"></i> CSV
+                </button>
+                <button onclick="exportTransactions('pdf')" 
+                        class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                    <i class="fas fa-file-pdf mr-2"></i> PDF
+                </button>
+                <button onclick="exportTransactions('excel')" 
+                        class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                    <i class="fas fa-file-excel mr-2"></i> Excel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Section -->
+    <div class="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-6">
+        <div class="flex items-start">
+            <i class="fas fa-question-circle text-blue-500 text-xl mt-1 mr-4"></i>
+            <div>
+                <h3 class="font-bold text-lg mb-2">Need Help with a Transaction?</h3>
+                <p class="text-gray-700 mb-4">
+                    If you have questions about any transaction or need to dispute a charge, 
+                    please contact our support team.
+                </p>
+                <div class="flex space-x-4">
+                    <a href="mailto:billing@realestatepro.com" 
+                       class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-envelope mr-2"></i> Email Support
+                    </a>
+                    <a href="tel:+911800123456" 
+                       class="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition">
+                        <i class="fas fa-phone mr-2"></i> Call 1800-123-456
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error Modal -->
+<div id="errorModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+        <div class="flex items-center mb-4">
+            <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                <i class="fas fa-exclamation-triangle text-red-600"></i>
+            </div>
+            <h3 class="text-xl font-bold">Transaction Error</h3>
+        </div>
+        <div class="mb-6">
+            <p id="errorMessage" class="text-gray-700"></p>
+        </div>
+        <div class="text-right">
+            <button onclick="closeErrorModal()" 
+                    class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Filter transactions
+    function filterTransactions(status) {
+        // Update filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        
+        // Show/hide transactions
+        const rows = document.querySelectorAll('.transaction-row');
+        rows.forEach(row => {
+            if (status === 'all' || row.dataset.status === status) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    // Search transactions
+    function searchTransactions(query) {
+        const rows = document.querySelectorAll('.transaction-row');
+        const searchTerm = query.toLowerCase();
+        
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    // Sort transactions
+    function sortTransactions(value) {
+        // In a real app, this would reload the page with new sorting
+        // For now, just show a message
+        alert('Sorting by: ' + document.querySelector('option[value="' + value + '"]').textContent);
+    }
+
+    // Download invoice
+    function downloadInvoice(paymentId) {
+        // In a real app, this would generate/download invoice
+        // For now, show a message
+        alert('Downloading invoice for payment: ' + paymentId);
+    }
+
+    // Show error details
+    function showError(message) {
+        document.getElementById('errorMessage').textContent = message;
+        document.getElementById('errorModal').classList.remove('hidden');
+    }
+
+    // Close error modal
+    function closeErrorModal() {
+        document.getElementById('errorModal').classList.add('hidden');
+    }
+
+    // Export transactions
+    function exportTransactions(format) {
+        // In a real app, this would generate/download file
+        // For now, show a message
+        alert('Exporting transactions as ' + format.toUpperCase());
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'f') {
+                e.preventDefault();
+                document.querySelector('input[type="text"]').focus();
+            }
+        });
+        
+        // Auto-hide empty table message when filtering
+        const emptyRow = document.querySelector('tr:has(td[colspan="6"])');
+        if (emptyRow) {
+            emptyRow.id = 'empty-row';
+        }
+    });
+</script>
+{% endblock %}

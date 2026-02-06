@@ -1,0 +1,1233 @@
+<!-- templates/dashboard/buyer/site_visits.html -->
+{% extends 'dashboard/buyer/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Site Visits - BHOOSPARSH Buyer{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Site Visits specific styles */
+    .site-visit-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .site-visit-card:hover {
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+        border-color: rgba(255, 107, 53, 0.3);
+    }
+
+    .site-visit-card.pending {
+        border-left: 4px solid #f59e0b;
+    }
+
+    .site-visit-card.confirmed {
+        border-left: 4px solid #10b981;
+    }
+
+    .site-visit-card.completed {
+        border-left: 4px solid #3b82f6;
+    }
+
+    .site-visit-card.cancelled {
+        border-left: 4px solid #ef4444;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-confirmed {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-completed {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .status-cancelled {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .status-rescheduled {
+        background: #f3e8ff;
+        color: #5b21b6;
+    }
+
+    .visit-date {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #111827;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .visit-time {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #6b7280;
+        background: #f3f4f6;
+        padding: 0.25rem 0.75rem;
+        border-radius: 6px;
+    }
+
+    .property-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .property-image {
+        width: 80px;
+        height: 80px;
+        border-radius: 12px;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    .property-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .property-details h4 {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.25rem;
+    }
+
+    .property-details p {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-bottom: 0.25rem;
+    }
+
+    .visit-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .detail-label {
+        font-size: 0.75rem;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.25rem;
+    }
+
+    .detail-value {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .btn-sm {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-confirm {
+        background: #10b981;
+        color: white;
+    }
+
+    .btn-confirm:hover {
+        background: #059669;
+        transform: translateY(-1px);
+    }
+
+    .btn-reschedule {
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #d1d5db;
+    }
+
+    .btn-reschedule:hover {
+        background: #e5e7eb;
+        transform: translateY(-1px);
+    }
+
+    .btn-cancel {
+        background: #fee2e2;
+        color: #dc2626;
+        border: 1px solid #fca5a5;
+    }
+
+    .btn-cancel:hover {
+        background: #fecaca;
+        transform: translateY(-1px);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 1rem;
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-radius: 16px;
+        border: 2px dashed #d1d5db;
+        margin-top: 2rem;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #9ca3af;
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-state h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        color: #6b7280;
+        max-width: 400px;
+        margin: 0 auto 2rem;
+    }
+
+    .filters-section {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 242, 0.95));
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 107, 53, 0.1);
+        box-shadow: 0 4px 20px rgba(255, 107, 53, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .filter-group label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        white-space: nowrap;
+    }
+
+    .filter-group select {
+        padding: 0.625rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 0.875rem;
+        background: white;
+        min-width: 150px;
+    }
+
+    .date-inputs {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .date-inputs input {
+        padding: 0.625rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 0.875rem;
+        width: 150px;
+    }
+
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        border: 1px solid #e5e7eb;
+    }
+
+    .stat-card.upcoming {
+        border-top: 4px solid #3b82f6;
+    }
+
+    .stat-card.completed {
+        border-top: 4px solid #10b981;
+    }
+
+    .stat-card.cancelled {
+        border-top: 4px solid #ef4444;
+    }
+
+    .stat-card.pending {
+        border-top: 4px solid #f59e0b;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #111827;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Calendar view */
+    .calendar-view {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 0.5rem;
+        margin-top: 2rem;
+    }
+
+    .calendar-day {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 0.75rem;
+        min-height: 100px;
+    }
+
+    .calendar-day-header {
+        text-align: center;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .calendar-day.today {
+        background: #eff6ff;
+        border-color: #3b82f6;
+    }
+
+    .calendar-event {
+        background: #dbeafe;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        margin-bottom: 0.25rem;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .calendar-event:hover {
+        background: #bfdbfe;
+    }
+
+    /* Responsive */
+    @media (max-width: 767px) {
+        .filters-section {
+            padding: 1rem;
+        }
+
+        .filter-group {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.5rem;
+        }
+
+        .filter-group select,
+        .date-inputs input {
+            width: 100%;
+        }
+
+        .date-inputs {
+            flex-direction: column;
+        }
+
+        .property-info {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .property-image {
+            width: 100%;
+            height: 150px;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .calendar-view {
+            display: none;
+        }
+
+        .mobile-calendar-toggle {
+            display: block;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .mobile-calendar-toggle {
+            display: none;
+        }
+    }
+
+    /* Loading skeletons */
+    .skeleton-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    .skeleton-line {
+        height: 1rem;
+        background: #e5e7eb;
+        border-radius: 4px;
+        margin-bottom: 0.75rem;
+    }
+
+    .skeleton-line.short {
+        width: 60%;
+    }
+
+    .skeleton-line.medium {
+        width: 80%;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block header_title %}
+<h1 class="text-2xl font-bold text-gray-900">
+    <span class="gradient-text">Site Visits</span>
+</h1>
+<p class="text-sm text-gray-600 mt-2">
+    <i class="fas fa-calendar-alt text-orange-500 mr-2"></i>
+    Manage your property tours and appointments
+</p>
+{% endblock %}
+
+{% block header_buttons %}
+<div class="flex flex-wrap gap-3">
+    <a href="{% url 'buyer_properties' %}" 
+       class="px-4 py-2 border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-all duration-300 flex items-center gap-2 font-medium">
+        <i class="fas fa-search"></i>
+        <span class="hidden sm:inline">Find Properties</span>
+    </a>
+    
+    <button onclick="window.print()" 
+            class="px-4 py-2 border-2 border-orange-300 rounded-xl text-orange-600 hover:bg-orange-50 transition-all duration-300 flex items-center gap-2 font-medium">
+        <i class="fas fa-print"></i>
+        <span class="hidden sm:inline">Print</span>
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="content-spacing">
+    <!-- Stats Overview -->
+    <div class="stats-cards">
+        <div class="stat-card upcoming">
+            <div class="stat-number">{{ stats.upcoming|default:"0" }}</div>
+            <div class="stat-label">Upcoming Visits</div>
+        </div>
+        <div class="stat-card completed">
+            <div class="stat-number">{{ stats.completed|default:"0" }}</div>
+            <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-card pending">
+            <div class="stat-number">{{ visits|length|default:"0" }}</div>
+            <div class="stat-label">Total Visits</div>
+        </div>
+        <div class="stat-card cancelled">
+            <div class="stat-number">{{ visits|length|default:"0" }}</div>
+            <div class="stat-label">All Visits</div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+        <form method="GET" action="{% url 'buyer_site_visits' %}" id="visitFilters" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="filter-group">
+                    <label for="status">Status</label>
+                    <select name="status" id="status" onchange="this.form.submit()">
+                        <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Status</option>
+                        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                        <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+                        <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="date_from">Date From</label>
+                    <div class="date-inputs">
+                        <input type="date" 
+                               name="date_from" 
+                               id="date_from"
+                               value="{{ date_from|default:'' }}"
+                               onchange="this.form.submit()">
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label for="date_to">Date To</label>
+                    <div class="date-inputs">
+                        <input type="date" 
+                               name="date_to" 
+                               id="date_to"
+                               value="{{ date_to|default:'' }}"
+                               onchange="this.form.submit()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center">
+                <button type="button" 
+                        onclick="resetFilters()"
+                        class="text-sm text-orange-600 hover:text-orange-800 font-medium">
+                    <i class="fas fa-redo mr-1"></i> Reset Filters
+                </button>
+                
+                <div class="flex items-center gap-2">
+                    <span class="text-sm text-gray-600">{{ visits|length }} visits found</span>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Mobile Calendar Toggle -->
+    <div class="mobile-calendar-toggle mb-4">
+        <button onclick="toggleCalendarView()" 
+                class="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-medium flex items-center justify-center gap-2">
+            <i class="fas fa-calendar-alt"></i>
+            <span>View Calendar</span>
+        </button>
+    </div>
+
+    <!-- Calendar View (Hidden on mobile by default) -->
+    <div id="calendarView" class="hidden md:block">
+        <div class="mb-6">
+            <h3 class="text-lg font-bold text-gray-900 mb-4">Calendar View</h3>
+            <div class="calendar-view">
+                <!-- Calendar days will be populated by JavaScript -->
+                <div class="text-center py-4 text-gray-500">
+                    Calendar loading...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Site Visits List -->
+    <div class="mb-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Your Site Visits</h3>
+        
+        {% if visits %}
+        <div id="visitsList">
+            {% for visit in visits %}
+            <div class="site-visit-card {{ visit.status }}">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                    <div class="visit-date">
+                        <i class="fas fa-calendar-alt text-blue-600"></i>
+                        {{ visit.scheduled_date|date:"F d, Y" }}
+                        <span class="visit-time">{{ visit.scheduled_time|time:"g:i A" }}</span>
+                    </div>
+                    
+                    <span class="status-badge status-{{ visit.status }}">
+                        {{ visit.get_status_display }}
+                    </span>
+                </div>
+
+                <div class="property-info">
+                    <div class="property-image">
+                        {% if visit.property.primary_image %}
+                        <img src="{{ visit.property.primary_image.url }}" alt="{{ visit.property.title }}">
+                        {% else %}
+                        <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                            <i class="fas fa-home text-gray-400 text-2xl"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="property-details flex-1">
+                        <h4>{{ visit.property.title }}</h4>
+                        <p>
+                            <i class="fas fa-map-marker-alt mr-2 text-gray-400"></i>
+                            {{ visit.property.city }}, {{ visit.property.state }}
+                        </p>
+                        <p>
+                            <i class="fas fa-tag mr-2 text-gray-400"></i>
+                            {% if visit.property.property_for == 'rent' %}
+                            For Rent - ₹{{ visit.property.price|intcomma }}/month
+                            {% else %}
+                            For Sale - ₹{{ visit.property.price|intcomma }}
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="visit-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Contact Person</span>
+                        <span class="detail-value">{{ visit.contact_person }}</span>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span class="detail-label">Contact Phone</span>
+                        <span class="detail-value">{{ visit.contact_phone }}</span>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span class="detail-label">Duration</span>
+                        <span class="detail-value">{{ visit.duration_minutes }} minutes</span>
+                    </div>
+                    
+                    {% if visit.notes %}
+                    <div class="detail-item">
+                        <span class="detail-label">Notes</span>
+                        <span class="detail-value">{{ visit.notes|truncatechars:50 }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if visit.notes %}
+                <div class="mt-3 p-3 bg-gray-50 rounded-lg">
+                    <span class="text-sm font-medium text-gray-700">Additional Notes:</span>
+                    <p class="text-sm text-gray-600 mt-1">{{ visit.notes }}</p>
+                </div>
+                {% endif %}
+
+                {% if visit.status == 'pending' or visit.status == 'confirmed' %}
+                <div class="action-buttons">
+                    {% if visit.status == 'pending' %}
+                    <button onclick="confirmVisit('{{ visit.id }}')" 
+                            class="btn-sm btn-confirm">
+                        <i class="fas fa-check mr-2"></i>Confirm Visit
+                    </button>
+                    {% endif %}
+                    
+                    <button onclick="rescheduleVisit('{{ visit.id }}')" 
+                            class="btn-sm btn-reschedule">
+                        <i class="fas fa-calendar-edit mr-2"></i>Reschedule
+                    </button>
+                    
+                    <button onclick="cancelVisit('{{ visit.id }}')" 
+                            class="btn-sm btn-cancel">
+                        <i class="fas fa-times mr-2"></i>Cancel
+                    </button>
+                </div>
+                {% endif %}
+
+                {% if visit.status == 'completed' and visit.feedback %}
+                <div class="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
+                    <span class="text-sm font-medium text-green-800">Your Feedback:</span>
+                    <p class="text-sm text-green-700 mt-1">{{ visit.feedback }}</p>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <i class="fas fa-calendar-times"></i>
+            <h3>No Site Visits Found</h3>
+            <p>You haven't scheduled any property visits yet. Start exploring properties and schedule your first visit!</p>
+            
+            <div class="flex flex-wrap gap-3 justify-center mt-6">
+                <a href="{% url 'buyer_properties' %}" 
+                   class="px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-xl hover:shadow-lg transition-all hover:scale-105 font-medium flex items-center gap-2">
+                    <i class="fas fa-search"></i>
+                    <span>Browse Properties</span>
+                </a>
+                
+                <a href="{% url 'buyer_favorites' %}" 
+                   class="px-6 py-3 border-2 border-blue-600 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all duration-300 font-medium flex items-center gap-2">
+                    <i class="fas fa-heart"></i>
+                    <span>View Favorites</span>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Upcoming Visits (Separate Section) -->
+    {% if upcoming_visits %}
+    <div class="mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-gray-900">Upcoming Visits</h3>
+            <span class="text-sm text-blue-600 font-medium">{{ upcoming_visits|length }} upcoming</span>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for visit in upcoming_visits %}
+            <div class="bg-white rounded-xl border border-blue-200 p-4 hover:border-blue-300 transition-colors">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-sm font-medium text-blue-600">
+                        <i class="fas fa-clock mr-1"></i>
+                        {{ visit.scheduled_date|date:"M d" }} at {{ visit.scheduled_time|time:"g:i A" }}
+                    </span>
+                    <span class="status-badge status-confirmed">Confirmed</span>
+                </div>
+                
+                <h4 class="font-semibold text-gray-900 mb-2 line-clamp-1">{{ visit.property.title }}</h4>
+                <p class="text-sm text-gray-600 mb-3 line-clamp-2">
+                    <i class="fas fa-map-marker-alt mr-2"></i>
+                    {{ visit.property.city }}
+                </p>
+                
+                <div class="flex justify-between items-center">
+                    <span class="text-sm font-bold text-gray-900">
+                        ₹{{ visit.property.price|intcomma }}
+                    </span>
+                    
+                    <a href="{% url 'buyer_property_detail' visit.property.slug %}" 
+                       class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                        View Details
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Reschedule Modal -->
+<div id="rescheduleModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl w-full max-w-md">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-900">Reschedule Visit</h3>
+                <button onclick="closeRescheduleModal()" 
+                        class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="rescheduleForm" class="space-y-4">
+                <div class="hidden">
+                    <input type="hidden" name="visit_id" id="rescheduleVisitId">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">New Date</label>
+                    <input type="date" 
+                           name="new_date" 
+                           id="newDate"
+                           required
+                           class="w-full p-3 border border-gray-300 rounded-lg">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">New Time</label>
+                    <input type="time" 
+                           name="new_time" 
+                           id="newTime"
+                           required
+                           class="w-full p-3 border border-gray-300 rounded-lg">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Reason for Rescheduling</label>
+                    <textarea name="reason" 
+                              id="rescheduleReason"
+                              rows="3"
+                              placeholder="Please provide a reason for rescheduling..."
+                              class="w-full p-3 border border-gray-300 rounded-lg"></textarea>
+                </div>
+                
+                <div class="pt-4 border-t border-gray-200 flex gap-3">
+                    <button type="button" 
+                            onclick="closeRescheduleModal()"
+                            class="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-medium">
+                        Cancel
+                    </button>
+                    
+                    <button type="submit" 
+                            class="flex-1 btn-gradient">
+                        <i class="fas fa-calendar-check mr-2"></i>
+                        Reschedule
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Visit Modal -->
+<div id="cancelModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl w-full max-w-md">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-900">Cancel Visit</h3>
+                <button onclick="closeCancelModal()" 
+                        class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="cancelForm" class="space-y-4">
+                <div class="hidden">
+                    <input type="hidden" name="visit_id" id="cancelVisitId">
+                </div>
+                
+                <div class="p-4 bg-red-50 rounded-lg border border-red-200">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-exclamation-triangle text-xl text-red-600"></i>
+                        <div>
+                            <p class="text-sm font-medium text-red-800">Are you sure you want to cancel this visit?</p>
+                            <p class="text-sm text-red-700 mt-1">This action cannot be undone.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Reason for Cancellation</label>
+                    <select name="reason" id="cancelReason" class="w-full p-3 border border-gray-300 rounded-lg">
+                        <option value="">Select a reason</option>
+                        <option value="schedule_conflict">Schedule Conflict</option>
+                        <option value="found_other_property">Found Another Property</option>
+                        <option value="changed_mind">Changed My Mind</option>
+                        <option value="budget_issues">Budget Issues</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div id="otherReasonContainer" class="hidden">
+                    <textarea name="other_reason" 
+                              id="otherReason"
+                              rows="2"
+                              placeholder="Please specify..."
+                              class="w-full p-3 border border-gray-300 rounded-lg"></textarea>
+                </div>
+                
+                <div class="pt-4 border-t border-gray-200 flex gap-3">
+                    <button type="button" 
+                            onclick="closeCancelModal()"
+                            class="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-medium">
+                        Keep Visit
+                    </button>
+                    
+                    <button type="submit" 
+                            class="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-medium">
+                        <i class="fas fa-times mr-2"></i>
+                        Cancel Visit
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize form handlers
+        initializeForms();
+        
+        // Load calendar if needed
+        loadCalendar();
+        
+        // Set up event listeners
+        setupEventListeners();
+    });
+
+    function initializeForms() {
+        // Reschedule form
+        const rescheduleForm = document.getElementById('rescheduleForm');
+        if (rescheduleForm) {
+            rescheduleForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitReschedule();
+            });
+        }
+        
+        // Cancel form
+        const cancelForm = document.getElementById('cancelForm');
+        if (cancelForm) {
+            cancelForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitCancellation();
+            });
+            
+            // Show/hide other reason field
+            const cancelReason = document.getElementById('cancelReason');
+            if (cancelReason) {
+                cancelReason.addEventListener('change', function() {
+                    const otherContainer = document.getElementById('otherReasonContainer');
+                    if (this.value === 'other') {
+                        otherContainer.classList.remove('hidden');
+                    } else {
+                        otherContainer.classList.add('hidden');
+                    }
+                });
+            }
+        }
+    }
+
+    function setupEventListeners() {
+        // Prevent past dates in date inputs
+        const today = new Date().toISOString().split('T')[0];
+        document.querySelectorAll('input[type="date"]').forEach(input => {
+            input.min = today;
+        });
+    }
+
+    function loadCalendar() {
+        // Simple calendar implementation
+        const calendarView = document.getElementById('calendarView');
+        if (calendarView) {
+            const calendarContainer = calendarView.querySelector('.calendar-view');
+            
+            // Clear existing content
+            calendarContainer.innerHTML = '';
+            
+            // Add day headers
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            days.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'calendar-day-header';
+                dayHeader.textContent = day;
+                calendarContainer.appendChild(dayHeader);
+            });
+            
+            // Add days (simplified - just showing placeholders)
+            for (let i = 1; i <= 31; i++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                
+                // Mark today
+                const currentDate = new Date();
+                if (i === currentDate.getDate()) {
+                    dayElement.classList.add('today');
+                }
+                
+                dayElement.innerHTML = `
+                    <div class="text-sm font-medium text-gray-900 mb-2">${i}</div>
+                `;
+                
+                calendarContainer.appendChild(dayElement);
+            }
+        }
+    }
+
+    function toggleCalendarView() {
+        const calendarView = document.getElementById('calendarView');
+        if (calendarView) {
+            calendarView.classList.toggle('hidden');
+        }
+    }
+
+    function resetFilters() {
+        window.location.href = "{% url 'buyer_site_visits' %}";
+    }
+
+    function confirmVisit(visitId) {
+        if (confirm('Are you sure you want to confirm this visit?')) {
+            showLoading();
+            
+            fetch(`/buyer/visits/${visitId}/confirm/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                
+                if (data.success) {
+                    showToast('Visit confirmed successfully!', 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showToast(data.error || 'Failed to confirm visit', 'error');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                console.error('Error:', error);
+                showToast('Network error. Please try again.', 'error');
+            });
+        }
+    }
+
+    function rescheduleVisit(visitId) {
+        const modal = document.getElementById('rescheduleModal');
+        const visitIdInput = document.getElementById('rescheduleVisitId');
+        
+        visitIdInput.value = visitId;
+        
+        // Set minimum date to tomorrow
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = tomorrow.toISOString().split('T')[0];
+        
+        const dateInput = document.getElementById('newDate');
+        dateInput.min = tomorrowStr;
+        dateInput.value = tomorrowStr;
+        
+        // Set default time to 10:00 AM
+        document.getElementById('newTime').value = '10:00';
+        
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeRescheduleModal() {
+        const modal = document.getElementById('rescheduleModal');
+        modal.classList.remove('flex');
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+        
+        // Reset form
+        document.getElementById('rescheduleForm').reset();
+    }
+
+    function submitReschedule() {
+        const formData = new FormData(document.getElementById('rescheduleForm'));
+        const data = Object.fromEntries(formData.entries());
+        
+        showLoading();
+        
+        fetch(`/buyer/visits/${data.visit_id}/reschedule/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            
+            if (data.success) {
+                showToast('Visit rescheduled successfully!', 'success');
+                closeRescheduleModal();
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast(data.error || 'Failed to reschedule visit', 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            showToast('Network error. Please try again.', 'error');
+        });
+    }
+
+    function cancelVisit(visitId) {
+        const modal = document.getElementById('cancelModal');
+        const visitIdInput = document.getElementById('cancelVisitId');
+        
+        visitIdInput.value = visitId;
+        
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeCancelModal() {
+        const modal = document.getElementById('cancelModal');
+        modal.classList.remove('flex');
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+        
+        // Reset form
+        document.getElementById('cancelForm').reset();
+        document.getElementById('otherReasonContainer').classList.add('hidden');
+    }
+
+    function submitCancellation() {
+        const form = document.getElementById('cancelForm');
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        
+        // Validate reason
+        if (!data.reason) {
+            showToast('Please select a reason for cancellation', 'error');
+            return;
+        }
+        
+        if (data.reason === 'other' && !data.other_reason) {
+            showToast('Please specify the reason for cancellation', 'error');
+            return;
+        }
+        
+        if (!confirm('Are you sure you want to cancel this visit? This action cannot be undone.')) {
+            return;
+        }
+        
+        showLoading();
+        
+        fetch(`/buyer/visits/${data.visit_id}/cancel/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            
+            if (data.success) {
+                showToast('Visit cancelled successfully', 'info');
+                closeCancelModal();
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast(data.error || 'Failed to cancel visit', 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            showToast('Network error. Please try again.', 'error');
+        });
+    }
+
+    function showLoading() {
+        const loadingOverlay = document.createElement('div');
+        loadingOverlay.id = 'siteVisitLoading';
+        loadingOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        loadingOverlay.innerHTML = `
+            <div class="bg-white rounded-2xl p-8 shadow-2xl">
+                <div class="flex flex-col items-center gap-4">
+                    <div class="loading-spinner">
+                        <div class="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                    <p class="text-gray-700 font-medium">Processing...</p>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(loadingOverlay);
+    }
+
+    function hideLoading() {
+        const loadingOverlay = document.getElementById('siteVisitLoading');
+        if (loadingOverlay) {
+            loadingOverlay.remove();
+        }
+    }
+
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        if (!container) {
+            const toastContainer = document.createElement('div');
+            toastContainer.id = 'toastContainer';
+            toastContainer.className = 'toast-container';
+            document.body.appendChild(toastContainer);
+            container = toastContainer;
+        }
+        
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        
+        const icons = {
+            info: 'fa-info-circle',
+            success: 'fa-check-circle',
+            error: 'fa-exclamation-circle',
+            warning: 'fa-exclamation-triangle'
+        };
+        
+        toast.innerHTML = `
+            <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                <i class="fas ${icons[type]}"></i>
+            </div>
+            <div class="flex-1">
+                <span class="font-medium">${message}</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-white/80 hover:text-white transition-colors flex-shrink-0">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        container.appendChild(toast);
+        
+        // Auto remove after 4 seconds
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 4000);
+    }
+
+    // Utility function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}

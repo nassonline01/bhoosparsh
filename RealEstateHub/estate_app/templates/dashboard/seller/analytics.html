@@ -1,0 +1,1008 @@
+<!-- templates/dashboard/seller/analytics.html -->
+{% extends 'dashboard/seller/base.html' %}
+{% load static %}
+{% load humanize %}
+{% load math_filters %}
+
+{% block title %}Performance Analytics - BHOOSPARSH Seller{% endblock %}
+
+{% block extra_css %}
+<style>
+    .analytics-card {
+        transition: all 0.3s ease;
+        border: 1px solid rgba(229, 231, 235, 0.5);
+    }
+
+    .analytics-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .metric-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .dark .metric-card {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.7));
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+
+    .progress-ring {
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
+    }
+
+    .progress-ring-circle {
+        transition: stroke-dashoffset 1s ease;
+    }
+
+    .trend-up {
+        color: #10B981;
+    }
+
+    .trend-down {
+        color: #EF4444;
+    }
+
+    .trend-neutral {
+        color: #6B7280;
+    }
+
+    .filter-chip {
+        background: #EFF6FF;
+        color: #1E40AF;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .filter-chip:hover {
+        background: #DBEAFE;
+        transform: translateY(-1px);
+    }
+
+    .filter-chip.active {
+        background: linear-gradient(135deg, #0E68B9, #1E90FF);
+        color: white;
+        box-shadow: 0 4px 12px rgba(14, 104, 185, 0.3);
+    }
+
+    .dark .filter-chip {
+        background: #1E293B;
+        color: #93C5FD;
+    }
+
+    .dark .filter-chip:hover {
+        background: #334155;
+    }
+
+    .dark .filter-chip.active {
+        background: linear-gradient(135deg, #0E68B9, #1E90FF);
+        color: white;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fadeInUp {
+        animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    .stagger-1 { animation-delay: 0.1s; }
+    .stagger-2 { animation-delay: 0.2s; }
+    .stagger-3 { animation-delay: 0.3s; }
+    .stagger-4 { animation-delay: 0.4s; }
+    .stagger-5 { animation-delay: 0.5s; }
+</style>
+{% endblock %}
+
+{% block header_title %}
+<h1 class="text-xl font-bold text-gray-900 dark:text-white">Performance Analytics</h1>
+<p class="text-sm text-gray-600 dark:text-gray-400">
+    Track your property performance and optimize your listings
+</p>
+{% endblock %}
+
+{% block header_buttons %}
+<div class="flex items-center gap-3">
+    <!-- Date Range Selector -->
+    <div class="relative">
+        <select id="dateRange" 
+                class="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 pr-8 text-sm text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
+            <option value="7">Last 7 days</option>
+            <option value="30" selected>Last 30 days</option>
+            <option value="90">Last 90 days</option>
+            <option value="365">Last year</option>
+        </select>
+        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
+            <i class="fas fa-chevron-down text-sm"></i>
+        </div>
+    </div>
+    
+    <!-- Export Button -->
+    <button onclick="exportAnalytics()" 
+            class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-2">
+        <i class="fas fa-download"></i>
+        <span>Export</span>
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Summary Metrics -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <!-- Total Views -->
+    <div class="analytics-card metric-card rounded-2xl p-5 animate-fadeInUp stagger-1">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Total Views</p>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ total_views|default:"0"|intcomma }}</h3>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                <i class="fas fa-eye text-blue-600 dark:text-blue-400 text-xl"></i>
+            </div>
+        </div>
+        <div class="flex items-center text-sm">
+            <span class="trend-up flex items-center">
+                <i class="fas fa-arrow-up mr-1"></i>
+                12.5%
+            </span>
+            <span class="text-gray-500 ml-2">from last period</span>
+        </div>
+    </div>
+
+    <!-- Total Leads -->
+    <div class="analytics-card metric-card rounded-2xl p-5 animate-fadeInUp stagger-2">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Total Leads</p>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ total_leads|default:"0"|intcomma }}</h3>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                <i class="fas fa-inbox text-green-600 dark:text-green-400 text-xl"></i>
+            </div>
+        </div>
+        <div class="flex items-center text-sm">
+            <span class="trend-up flex items-center">
+                <i class="fas fa-arrow-up mr-1"></i>
+                8.3%
+            </span>
+            <span class="text-gray-500 ml-2">from last period</span>
+        </div>
+    </div>
+
+    <!-- Conversion Rate -->
+    <div class="analytics-card metric-card rounded-2xl p-5 animate-fadeInUp stagger-3">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Conversion Rate</p>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                    {% with rate=view_to_lead_rate|default:"2.5" %}{{ rate }}%{% endwith %}
+                </h3>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
+                <i class="fas fa-chart-line text-purple-600 dark:text-purple-400 text-xl"></i>
+            </div>
+        </div>
+        <div class="flex items-center text-sm">
+            <span class="trend-up flex items-center">
+                <i class="fas fa-arrow-up mr-1"></i>
+                1.2%
+            </span>
+            <span class="text-gray-500 ml-2">from last period</span>
+        </div>
+    </div>
+
+    <!-- Response Rate -->
+    <div class="analytics-card metric-card rounded-2xl p-5 animate-fadeInUp stagger-4">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Response Rate</p>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ response_rate|default:"92" }}%</h3>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-yellow-100 dark:bg-yellow-900 flex items-center justify-center">
+                <i class="fas fa-reply text-yellow-600 dark:text-yellow-400 text-xl"></i>
+            </div>
+        </div>
+        <div class="flex items-center text-sm">
+            <span class="trend-up flex items-center">
+                <i class="fas fa-arrow-up mr-1"></i>
+                3.7%
+            </span>
+            <span class="text-gray-500 ml-2">from last period</span>
+        </div>
+    </div>
+</div>
+
+<!-- Performance Charts -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <!-- Performance Trends Chart -->
+    <div class="analytics-card bg-white dark:bg-gray-800 rounded-2xl p-6 animate-fadeInUp stagger-1">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Performance Trends</h3>
+            <div class="flex space-x-2 mt-2 sm:mt-0">
+                <button onclick="toggleMetric('views')" 
+                        class="filter-chip active" id="viewsBtn">
+                    Views
+                </button>
+                <button onclick="toggleMetric('leads')" 
+                        class="filter-chip" id="leadsBtn">
+                    Leads
+                </button>
+                <button onclick="toggleMetric('conversions')" 
+                        class="filter-chip" id="conversionsBtn">
+                    Conversions
+                </button>
+            </div>
+        </div>
+        <div class="chart-container">
+            <canvas id="performanceChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Lead Sources Chart -->
+    <div class="analytics-card bg-white dark:bg-gray-800 rounded-2xl p-6 animate-fadeInUp stagger-2">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Lead Sources</h3>
+            <span class="text-sm text-gray-600 dark:text-gray-400">Last 30 days</span>
+        </div>
+        <div class="chart-container mb-4">
+            <canvas id="leadSourcesChart"></canvas>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            {% for source in lead_sources %}
+            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div class="flex items-center">
+                    <div class="w-3 h-3 rounded-full mr-3" style="background-color: {{ source.color|default:'#3B82F6' }}"></div>
+                    <span class="text-sm text-gray-700 dark:text-gray-300">{{ source.name }}</span>
+                </div>
+                <div class="text-right">
+                    <span class="font-medium text-gray-900 dark:text-white">{{ source.value|default:"0" }}%</span>
+                    <p class="text-xs text-gray-500">{{ source.count|default:"0" }} leads</p>
+                </div>
+            </div>
+            {% empty %}
+            <!-- Demo data if no lead sources -->
+            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div class="flex items-center">
+                    <div class="w-3 h-3 rounded-full mr-3 bg-green-500"></div>
+                    <span class="text-sm text-gray-700 dark:text-gray-300">Website Form</span>
+                </div>
+                <div class="text-right">
+                    <span class="font-medium text-gray-900 dark:text-white">45%</span>
+                    <p class="text-xs text-gray-500">36 leads</p>
+                </div>
+            </div>
+            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div class="flex items-center">
+                    <div class="w-3 h-3 rounded-full mr-3 bg-blue-500"></div>
+                    <span class="text-sm text-gray-700 dark:text-gray-300">Phone Calls</span>
+                </div>
+                <div class="text-right">
+                    <span class="font-medium text-gray-900 dark:text-white">30%</span>
+                    <p class="text-xs text-gray-500">24 leads</p>
+                </div>
+            </div>
+            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div class="flex items-center">
+                    <div class="w-3 h-3 rounded-full mr-3 bg-purple-500"></div>
+                    <span class="text-sm text-gray-700 dark:text-gray-300">WhatsApp</span>
+                </div>
+                <div class="text-right">
+                    <span class="font-medium text-gray-900 dark:text-white">15%</span>
+                    <p class="text-xs text-gray-500">12 leads</p>
+                </div>
+            </div>
+            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div class="flex items-center">
+                    <div class="w-3 h-3 rounded-full mr-3 bg-yellow-500"></div>
+                    <span class="text-sm text-gray-700 dark:text-gray-300">Email</span>
+                </div>
+                <div class="text-right">
+                    <span class="font-medium text-gray-900 dark:text-white">10%</span>
+                    <p class="text-xs text-gray-500">8 leads</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Property Performance & Device Analytics -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <!-- Top Performing Properties -->
+    <div class="analytics-card bg-white dark:bg-gray-800 rounded-2xl p-6 animate-fadeInUp stagger-1">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Top Performing Properties</h3>
+            <a href="{% url 'seller_properties' %}" class="text-sm text-bhoosparsh-blue hover:text-blue-700 flex items-center gap-1">
+                View All
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+        
+        <div class="space-y-4">
+            {% for property in top_properties %}
+            <div class="flex items-center justify-between p-4 border border-gray-100 dark:border-gray-700 rounded-xl hover:border-bhoosparsh-blue transition">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-lg overflow-hidden mr-4">
+                        {% if property.primary_image %}
+                        <img src="{{ property.primary_image.url }}" alt="{{ property.title }}" 
+                             class="w-full h-full object-cover">
+                        {% else %}
+                        <div class="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
+                            <i class="fas fa-home text-gray-400 text-lg"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-900 dark:text-white">{{ property.title|truncatechars:25 }}</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">{{ property.city|default:"N/A" }}</p>
+                    </div>
+                </div>
+                
+                <div class="text-right">
+                    <div class="flex items-center justify-end mb-1">
+                        <div class="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mr-3">
+                            <div class="bg-gradient-to-r from-green-400 to-green-500 h-2 rounded-full" 
+                                 style="width: {{ property.performance_score|default:85 }}%"></div>
+                        </div>
+                        <span class="text-sm font-medium {% if property.performance_score >= 80 %}text-green-600{% elif property.performance_score >= 60 %}text-yellow-600{% else %}text-red-600{% endif %}">
+                            {{ property.performance_score|default:85 }}%
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-end space-x-4 text-xs text-gray-500">
+                        <span>{{ property.view_count|default:"0" }} views</span>
+                        <span>{{ property.inquiry_count|default:"0" }} leads</span>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <!-- Demo data if no properties -->
+            <div class="flex items-center justify-between p-4 border border-gray-100 dark:border-gray-700 rounded-xl">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 flex items-center justify-center mr-4">
+                        <i class="fas fa-home text-blue-600 dark:text-blue-400"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-900 dark:text-white">3BHK Luxury Apartment</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Mumbai</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="flex items-center justify-end mb-1">
+                        <div class="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mr-3">
+                            <div class="bg-gradient-to-r from-green-400 to-green-500 h-2 rounded-full" style="width: 92%"></div>
+                        </div>
+                        <span class="text-sm font-medium text-green-600">92%</span>
+                    </div>
+                    <div class="flex items-center justify-end space-x-4 text-xs text-gray-500">
+                        <span>342 views</span>
+                        <span>8 leads</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center justify-between p-4 border border-gray-100 dark:border-gray-700 rounded-xl">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900 dark:to-green-800 flex items-center justify-center mr-4">
+                        <i class="fas fa-building text-green-600 dark:text-green-400"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-900 dark:text-white">Office Space in Andheri</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Mumbai</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="flex items-center justify-end mb-1">
+                        <div class="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mr-3">
+                            <div class="bg-gradient-to-r from-green-400 to-green-500 h-2 rounded-full" style="width: 85%"></div>
+                        </div>
+                        <span class="text-sm font-medium text-green-600">85%</span>
+                    </div>
+                    <div class="flex items-center justify-end space-x-4 text-xs text-gray-500">
+                        <span>287 views</span>
+                        <span>6 leads</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center justify-between p-4 border border-gray-100 dark:border-gray-700 rounded-xl">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900 dark:to-purple-800 flex items-center justify-center mr-4">
+                        <i class="fas fa-warehouse text-purple-600 dark:text-purple-400"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-900 dark:text-white">Industrial Plot in Pune</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Pune</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="flex items-center justify-end mb-1">
+                        <div class="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mr-3">
+                            <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 h-2 rounded-full" style="width: 78%"></div>
+                        </div>
+                        <span class="text-sm font-medium text-yellow-600">78%</span>
+                    </div>
+                    <div class="flex items-center justify-end space-x-4 text-xs text-gray-500">
+                        <span>198 views</span>
+                        <span>4 leads</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Device & Time Analytics -->
+    <div class="space-y-6">
+        <!-- Device Breakdown -->
+        <div class="analytics-card bg-white dark:bg-gray-800 rounded-2xl p-6 animate-fadeInUp stagger-2">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Device Breakdown</h3>
+            <div class="grid grid-cols-3 gap-4">
+                {% for device in device_breakdown %}
+                <div class="text-center">
+                    <div class="relative w-20 h-20 mx-auto mb-3">
+                        <svg class="progress-ring" width="80" height="80">
+                            <circle class="text-gray-200 dark:text-gray-700" stroke-width="8" fill="transparent" r="32" cx="40" cy="40"/>
+                            <circle class="progress-ring-circle" 
+                                    stroke-width="8" 
+                                    fill="transparent" 
+                                    r="32" 
+                                    cx="40" 
+                                    cy="40"
+                                    stroke="url(#gradient{{ forloop.counter }})"
+                                    stroke-linecap="round"
+                                    stroke-dasharray="{{ device.percentage|add:'0' }} 100"/>
+                            <defs>
+                                <linearGradient id="gradient{{ forloop.counter }}" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    {% if forloop.counter == 1 %}
+                                    <stop offset="0%" stop-color="#3B82F6" />
+                                    <stop offset="100%" stop-color="#60A5FA" />
+                                    {% elif forloop.counter == 2 %}
+                                    <stop offset="0%" stop-color="#8B5CF6" />
+                                    <stop offset="100%" stop-color="#A78BFA" />
+                                    {% else %}
+                                    <stop offset="0%" stop-color="#10B981" />
+                                    <stop offset="100%" stop-color="#34D399" />
+                                    {% endif %}
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <i class="fas 
+                                {% if device.device == 'Mobile' %}fa-mobile-alt
+                                {% elif device.device == 'Desktop' %}fa-desktop
+                                {% else %}fa-tablet-alt{% endif %}
+                                text-2xl 
+                                {% if forloop.counter == 1 %}text-blue-500
+                                {% elif forloop.counter == 2 %}text-purple-500
+                                {% else %}text-green-500{% endif %}">
+                            </i>
+                        </div>
+                    </div>
+                    <h4 class="text-lg font-bold text-gray-900 dark:text-white">{{ device.count|default:"0"|intcomma }}</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ device.device }}</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ device.percentage|default:"0" }}% of views</p>
+                </div>
+                {% empty %}
+                <!-- Demo data -->
+                <div class="text-center">
+                    <div class="relative w-20 h-20 mx-auto mb-3">
+                        <svg class="progress-ring" width="80" height="80">
+                            <circle class="text-gray-200 dark:text-gray-700" stroke-width="8" fill="transparent" r="32" cx="40" cy="40"/>
+                            <circle class="progress-ring-circle" 
+                                    stroke-width="8" 
+                                    fill="transparent" 
+                                    r="32" 
+                                    cx="40" 
+                                    cy="40"
+                                    stroke="url(#gradient1)"
+                                    stroke-linecap="round"
+                                    stroke-dasharray="69 100"/>
+                            <defs>
+                                <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#3B82F6" />
+                                    <stop offset="100%" stop-color="#60A5FA" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <i class="fas fa-mobile-alt text-blue-500 text-2xl"></i>
+                        </div>
+                    </div>
+                    <h4 class="text-lg font-bold text-gray-900 dark:text-white">856</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Mobile</p>
+                    <p class="text-xs text-gray-500 mt-1">69% of views</p>
+                </div>
+                <div class="text-center">
+                    <div class="relative w-20 h-20 mx-auto mb-3">
+                        <svg class="progress-ring" width="80" height="80">
+                            <circle class="text-gray-200 dark:text-gray-700" stroke-width="8" fill="transparent" r="32" cx="40" cy="40"/>
+                            <circle class="progress-ring-circle" 
+                                    stroke-width="8" 
+                                    fill="transparent" 
+                                    r="32" 
+                                    cx="40" 
+                                    cy="40"
+                                    stroke="url(#gradient2)"
+                                    stroke-linecap="round"
+                                    stroke-dasharray="25 100"/>
+                            <defs>
+                                <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#8B5CF6" />
+                                    <stop offset="100%" stop-color="#A78BFA" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <i class="fas fa-desktop text-purple-500 text-2xl"></i>
+                        </div>
+                    </div>
+                    <h4 class="text-lg font-bold text-gray-900 dark:text-white">312</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Desktop</p>
+                    <p class="text-xs text-gray-500 mt-1">25% of views</p>
+                </div>
+                <div class="text-center">
+                    <div class="relative w-20 h-20 mx-auto mb-3">
+                        <svg class="progress-ring" width="80" height="80">
+                            <circle class="text-gray-200 dark:text-gray-700" stroke-width="8" fill="transparent" r="32" cx="40" cy="40"/>
+                            <circle class="progress-ring-circle" 
+                                    stroke-width="8" 
+                                    fill="transparent" 
+                                    r="32" 
+                                    cx="40" 
+                                    cy="40"
+                                    stroke="url(#gradient3)"
+                                    stroke-linecap="round"
+                                    stroke-dasharray="6 100"/>
+                            <defs>
+                                <linearGradient id="gradient3" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#10B981" />
+                                    <stop offset="100%" stop-color="#34D399" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <i class="fas fa-tablet-alt text-green-500 text-2xl"></i>
+                        </div>
+                    </div>
+                    <h4 class="text-lg font-bold text-gray-900 dark:text-white">72</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Tablet</p>
+                    <p class="text-xs text-gray-500 mt-1">6% of views</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Best Time for Leads -->
+        <div class="analytics-card bg-white dark:bg-gray-800 rounded-2xl p-6 animate-fadeInUp stagger-3">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Best Time for Leads</h3>
+            <div class="space-y-4">
+                {% for time in best_times %}
+                <div>
+                    <div class="flex justify-between text-sm mb-2">
+                        <span class="text-gray-700 dark:text-gray-300">{{ time.time }}</span>
+                        <span class="font-medium text-gray-900 dark:text-white">{{ time.leads }} leads</span>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                        <div class="bg-gradient-to-r from-bhoosparsh-blue to-blue-500 h-3 rounded-full" 
+                             style="width: {{ time.percentage }}%"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">{{ time.percentage }}% of daily leads</p>
+                </div>
+                {% empty %}
+                <!-- Demo data -->
+                <div>
+                    <div class="flex justify-between text-sm mb-2">
+                        <span class="text-gray-700 dark:text-gray-300">Morning (9AM - 12PM)</span>
+                        <span class="font-medium text-gray-900 dark:text-white">28 leads</span>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                        <div class="bg-gradient-to-r from-bhoosparsh-blue to-blue-500 h-3 rounded-full" style="width: 35%"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">35% of daily leads</p>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-2">
+                        <span class="text-gray-700 dark:text-gray-300">Afternoon (1PM - 5PM)</span>
+                        <span class="font-medium text-gray-900 dark:text-white">32 leads</span>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                        <div class="bg-gradient-to-r from-bhoosparsh-blue to-blue-500 h-3 rounded-full" style="width: 40%"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">40% of daily leads</p>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-2">
+                        <span class="text-gray-700 dark:text-gray-300">Evening (6PM - 9PM)</span>
+                        <span class="font-medium text-gray-900 dark:text-white">20 leads</span>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                        <div class="bg-gradient-to-r from-bhoosparsh-blue to-blue-500 h-3 rounded-full" style="width: 25%"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">25% of daily leads</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Monthly Performance & Insights -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Monthly Performance -->
+    <div class="analytics-card bg-white dark:bg-gray-800 rounded-2xl p-6 animate-fadeInUp stagger-1">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Monthly Performance</h3>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-gray-200 dark:border-gray-700">
+                        <th class="text-left py-3 px-4 text-gray-600 dark:text-gray-400 font-medium text-sm">Month</th>
+                        <th class="text-left py-3 px-4 text-gray-600 dark:text-gray-400 font-medium text-sm">Views</th>
+                        <th class="text-left py-3 px-4 text-gray-600 dark:text-gray-400 font-medium text-sm">Leads</th>
+                        <th class="text-left py-3 px-4 text-gray-600 dark:text-gray-400 font-medium text-sm">Growth</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for month in monthly_data %}
+                    <tr class="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                        <td class="py-3 px-4 text-gray-900 dark:text-gray-300 text-sm">{{ month.month }}</td>
+                        <td class="py-3 px-4 text-gray-900 dark:text-gray-300 text-sm">{{ month.views|intcomma }}</td>
+                        <td class="py-3 px-4 text-gray-900 dark:text-gray-300 text-sm">{{ month.leads|intcomma }}</td>
+                        <td class="py-3 px-4">
+                            {% if forloop.first %}
+                            <span class="text-sm text-gray-500">-</span>
+                            {% else %}
+                            {% with prev_month=monthly_data|slice:forloop.counter0|first %}
+                            {% with view_growth=month.views|subtract:prev_month.views|divide:prev_month.views|multiply:100|floatformat:1 %}
+                            <span class="text-sm {% if view_growth >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                {% if view_growth >= 0 %}+{% endif %}{{ view_growth }}%
+                            </span>
+                            {% endwith %}
+                            {% endwith %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <!-- Demo data -->
+                    <tr class="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                        <td class="py-3 px-4 text-gray-900 dark:text-gray-300 text-sm">Jan 2026</td>
+                        <td class="py-3 px-4 text-gray-900 dark:text-gray-300 text-sm">1,240</td>
+                        <td class="py-3 px-4 text-gray-900 dark:text-gray-300 text-sm">48</td>
+                        <td class="py-3 px-4">
+                            <span class="text-sm text-green-600">+12.5%</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                        <td class="py-3 px-4 text-gray-900 dark:text-gray-300 text-sm">Dec 2025</td>
+                        <td class="py-3 px-4 text-gray-900 dark:text-gray-300 text-sm">1,102</td>
+                        <td class="py-3 px-4 text-gray-900 dark:text-gray-300 text-sm">42</td>
+                        <td class="py-3 px-4">
+                            <span class="text-sm text-green-600">+8.3%</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                        <td class="py-3 px-4 text-gray-900 dark:text-gray-300 text-sm">Nov 2025</td>
+                        <td class="py-3 px-4 text-gray-900 dark:text-gray-300 text-sm">1,018</td>
+                        <td class="py-3 px-4 text-gray-900 dark:text-gray-300 text-sm">39</td>
+                        <td class="py-3 px-4">
+                            <span class="text-sm text-green-600">+5.2%</span>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                        <td class="py-3 px-4 text-gray-900 dark:text-gray-300 text-sm">Oct 2025</td>
+                        <td class="py-3 px-4 text-gray-900 dark:text-gray-300 text-sm">968</td>
+                        <td class="py-3 px-4 text-gray-900 dark:text-gray-300 text-sm">36</td>
+                        <td class="py-3 px-4">
+                            <span class="text-sm text-green-600">+3.7%</span>
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                        <td class="py-3 px-4 text-gray-900 dark:text-gray-300 text-sm">Sep 2025</td>
+                        <td class="py-3 px-4 text-gray-900 dark:text-gray-300 text-sm">934</td>
+                        <td class="py-3 px-4 text-gray-900 dark:text-gray-300 text-sm">34</td>
+                        <td class="py-3 px-4">
+                            <span class="text-sm text-green-600">+2.1%</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Performance Insights -->
+    
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let performanceChart = null;
+    let leadSourcesChart = null;
+    let activeMetric = 'views';
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize animations
+        const cards = document.querySelectorAll('.animate-fadeInUp');
+        cards.forEach((card, index) => {
+            setTimeout(() => {
+                card.style.opacity = '1';
+            }, index * 100);
+        });
+
+        // Initialize charts
+        initCharts();
+        
+        // Setup event listeners
+        setupEventListeners();
+    });
+
+    function setupEventListeners() {
+        // Date range selector
+        document.getElementById('dateRange').addEventListener('change', function() {
+            updateAnalyticsData(this.value);
+        });
+    }
+
+    function initCharts() {
+        // Performance Chart
+        const perfCtx = document.getElementById('performanceChart').getContext('2d');
+        performanceChart = new Chart(perfCtx, {
+            type: 'line',
+            data: {
+                labels: ['1 Jan', '5 Jan', '10 Jan', '15 Jan', '20 Jan', '25 Jan', '30 Jan'],
+                datasets: [{
+                    label: 'Views',
+                    data: [120, 190, 300, 250, 420, 350, 280],
+                    borderColor: '#0E68B9',
+                    backgroundColor: 'rgba(14, 104, 185, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    borderWidth: 2,
+                    pointBackgroundColor: '#0E68B9',
+                    pointBorderColor: '#FFFFFF',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#FFFFFF',
+                        bodyColor: '#FFFFFF',
+                        borderColor: '#0E68B9',
+                        borderWidth: 1,
+                        cornerRadius: 8,
+                        padding: 12
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#6B7280',
+                            font: {
+                                size: 11
+                            }
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#6B7280',
+                            font: {
+                                size: 11
+                            },
+                            callback: function(value) {
+                                if (value >= 1000) {
+                                    return (value / 1000) + 'k';
+                                }
+                                return value;
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                elements: {
+                    line: {
+                        tension: 0.4
+                    }
+                }
+            }
+        });
+
+        // Lead Sources Chart
+        const sourcesCtx = document.getElementById('leadSourcesChart').getContext('2d');
+        leadSourcesChart = new Chart(sourcesCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Website Form', 'Phone Calls', 'WhatsApp', 'Email'],
+                datasets: [{
+                    data: [45, 30, 15, 10],
+                    backgroundColor: [
+                        '#10B981',
+                        '#0E68B9',
+                        '#8B5CF6',
+                        '#F59E0B'
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 20,
+                    borderRadius: 8,
+                    spacing: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: ${context.parsed}%`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Animate progress rings
+        animateProgressRings();
+    }
+
+    function animateProgressRings() {
+        const circles = document.querySelectorAll('.progress-ring-circle');
+        circles.forEach(circle => {
+            const radius = circle.r.baseVal.value;
+            const circumference = radius * 2 * Math.PI;
+            const offset = circumference - (circle.style.strokeDasharray.split(' ')[0] / 100) * circumference;
+            
+            circle.style.strokeDasharray = `${circumference} ${circumference}`;
+            circle.style.strokeDashoffset = circumference;
+            
+            setTimeout(() => {
+                circle.style.transition = 'stroke-dashoffset 1.5s ease-in-out';
+                circle.style.strokeDashoffset = offset;
+            }, 300);
+        });
+    }
+
+    function toggleMetric(metric) {
+        activeMetric = metric;
+        
+        // Update button states
+        document.getElementById('viewsBtn').classList.toggle('active', metric === 'views');
+        document.getElementById('leadsBtn').classList.toggle('active', metric === 'leads');
+        document.getElementById('conversionsBtn').classList.toggle('active', metric === 'conversions');
+        
+        // Update chart data
+        updatePerformanceChart(metric);
+    }
+
+    function updatePerformanceChart(metric) {
+        let data = [];
+        let label = '';
+        let color = '';
+        
+        switch(metric) {
+            case 'views':
+                data = [120, 190, 300, 250, 420, 350, 280];
+                label = 'Views';
+                color = '#0E68B9';
+                break;
+            case 'leads':
+                data = [8, 12, 15, 10, 18, 14, 11];
+                label = 'Leads';
+                color = '#10B981';
+                break;
+            case 'conversions':
+                data = [2, 3, 4, 3, 5, 4, 3];
+                label = 'Conversions';
+                color = '#8B5CF6';
+                break;
+        }
+        
+        performanceChart.data.datasets[0].data = data;
+        performanceChart.data.datasets[0].borderColor = color;
+        performanceChart.data.datasets[0].backgroundColor = color + '20';
+        performanceChart.data.datasets[0].pointBackgroundColor = color;
+        performanceChart.update();
+        
+        showToast(`Showing ${label.toLowerCase()} data`, 'info');
+    }
+
+    function updateAnalyticsData(days) {
+        showToast(`Loading data for last ${days} days...`, 'info');
+        
+        // In real app, make AJAX call to fetch new data
+        // For demo, simulate loading
+        setTimeout(() => {
+            showToast('Analytics data updated!', 'success');
+            
+            // Update metrics with demo data
+            const metrics = document.querySelectorAll('.text-2xl');
+            if (metrics.length >= 4) {
+                const multiplier = days === '7' ? 0.25 : days === '30' ? 1 : days === '90' ? 3 : 12;
+                metrics[0].textContent = (1240 * multiplier).toLocaleString();
+                metrics[1].textContent = (48 * multiplier).toLocaleString();
+                // Other metrics would be updated similarly
+            }
+        }, 1000);
+    }
+
+    function exportAnalytics() {
+        showToast('Exporting analytics data...', 'info');
+        
+        // In real app, generate and download CSV/PDF
+        setTimeout(() => {
+            showToast('Analytics exported successfully!', 'success');
+            
+            // Create and trigger download
+            const data = 'Month,Views,Leads,Conversion Rate\n' +
+                        'Jan 2026,1240,48,3.9%\n' +
+                        'Dec 2025,1102,42,3.8%\n' +
+                        'Nov 2025,1018,39,3.8%\n' +
+                        'Oct 2025,968,36,3.7%';
+            
+            const blob = new Blob([data], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `analytics_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }, 1500);
+    }
+
+    function refreshInsights() {
+        showToast('Refreshing insights...', 'info');
+        
+        // In real app, fetch fresh insights from server
+        setTimeout(() => {
+            showToast('Insights refreshed!', 'success');
+        }, 1000);
+    }
+</script>
+{% endblock %}

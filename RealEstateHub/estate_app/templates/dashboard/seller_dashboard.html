@@ -1,0 +1,2346 @@
+{% extends 'dashboard/base_seller.html' %}
+{% load static %}
+
+{% block title %}Post New Property - Seller Dashboard{% endblock %}
+
+{% block page_title %}Post New Property{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    /* ===== Base Styles ===== */
+    .image-preview-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .image-preview {
+        position: relative;
+        width: 150px;
+        height: 150px;
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .image-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .image-preview .remove-btn {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: rgba(0,0,0,0.7);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 25px;
+        height: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 10;
+        transition: all 0.2s ease;
+    }
+    
+    .image-preview .remove-btn:hover {
+        background: rgba(220, 53, 69, 0.9);
+        transform: scale(1.1);
+    }
+    
+    .image-upload-area {
+        border: 2px dashed #007bff;
+        border-radius: 12px;
+        padding: 40px 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .image-upload-area:hover {
+        background-color: #e7f1ff;
+        border-color: #0056b3;
+        transform: translateY(-2px);
+    }
+    
+    .image-upload-area i {
+        font-size: 48px;
+        color: #007bff;
+        margin-bottom: 15px;
+    }
+    
+    /* ===== Step Progress ===== */
+    .step-progress {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 30px;
+        position: relative;
+    }
+    
+    .step-progress:before {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 5%;
+        right: 5%;
+        height: 3px;
+        background: #dee2e6;
+        z-index: 1;
+    }
+    
+    .step {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        flex: 1;
+    }
+    
+    .step-number {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #dee2e6;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 10px;
+        font-weight: bold;
+        border: 4px solid white;
+        font-size: 16px;
+        transition: all 0.3s ease;
+    }
+    
+    .step.active .step-number {
+        background: #007bff;
+        color: white;
+        box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.2);
+    }
+    
+    .step.completed .step-number {
+        background: #28a745;
+        color: white;
+    }
+    
+    .step.has-errors .step-number {
+        background: #dc3545 !important;
+        color: white !important;
+        border-color: #dc3545 !important;
+        animation: pulseError 2s infinite;
+    }
+    
+    @keyframes pulseError {
+        0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+    }
+    
+    .step-label {
+        font-size: 14px;
+        color: #6c757d;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .step.active .step-label {
+        color: #007bff;
+        font-weight: 600;
+    }
+    
+    .step.completed .step-label {
+        color: #28a745;
+    }
+    
+    .step.has-errors .step-label {
+        color: #dc3545;
+        font-weight: 600;
+    }
+    
+    /* ===== Form Steps ===== */
+    .form-step {
+        display: none;
+        animation: fadeIn 0.5s ease-in;
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    
+    .form-step.active {
+        display: block;
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    @keyframes fadeIn {
+        from { 
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to { 
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* ===== Form Elements ===== */
+    .select2-container {
+        width: 100% !important;
+    }
+    
+    .select2-container--bootstrap-5 .select2-selection {
+        min-height: 38px;
+        border: 1px solid #ced4da;
+    }
+    
+    .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+        line-height: 36px;
+    }
+    
+    .field-help {
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 4px;
+        line-height: 1.4;
+    }
+    
+    .price-suggestion {
+        font-size: 12px;
+        margin-top: 5px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .price-suggestion.text-success {
+        background: rgba(40, 167, 69, 0.1);
+        color: #155724;
+    }
+    
+    .price-suggestion.text-warning {
+        background: rgba(255, 193, 7, 0.1);
+        color: #856404;
+    }
+    
+    /* ===== Cards & Widgets ===== */
+    .dashboard-widget {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        border: 1px solid #e9ecef;
+    }
+    
+    .dashboard-widget .card {
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .dashboard-widget .card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    
+    .dashboard-widget .card-header {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-bottom: 1px solid #dee2e6;
+        padding: 12px 20px;
+    }
+    
+    .dashboard-widget .card-header h6 {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .dashboard-widget .card-body {
+        padding: 20px;
+    }
+    
+    /* ===== Validation Styles ===== */
+    .form-control.is-invalid,
+    .form-select.is-invalid,
+    .select2-container--bootstrap-5 .select2-selection.is-invalid {
+        border-color: #dc3545 !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(.375em + .1875rem) center;
+        background-size: calc(.75em + .375rem) calc(.75em + .375rem);
+        padding-right: calc(1.5em + .75rem);
+    }
+    
+    .form-control.is-invalid:focus,
+    .form-select.is-invalid:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+    }
+    
+    .field-error {
+        display: block;
+        width: 100%;
+        margin-top: .25rem;
+        font-size: .875em;
+        color: #dc3545;
+        font-weight: 500;
+        animation: slideDown 0.3s ease;
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* ===== Required Field Styles ===== */
+    .required {
+        color: #dc3545;
+        font-weight: bold;
+        margin-left: 2px;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+    }
+    
+    /* ===== Responsive Design ===== */
+    @media (max-width: 768px) {
+        .step-progress:before {
+            left: 12%;
+            right: 12%;
+        }
+        
+        .step-label {
+            font-size: 12px;
+        }
+        
+        .step-number {
+            width: 36px;
+            height: 36px;
+            font-size: 14px;
+        }
+        
+        .image-preview {
+            width: 120px;
+            height: 120px;
+        }
+        
+        .dashboard-widget {
+            padding: 16px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Step Progress -->
+        <div class="step-progress">
+            <div class="step active" data-step="1">
+                <div class="step-number">1</div>
+                <div class="step-label">Basic Info</div>
+            </div>
+            <div class="step" data-step="2">
+                <div class="step-number">2</div>
+                <div class="step-label">Property Details</div>
+            </div>
+            <div class="step" data-step="3">
+                <div class="step-number">3</div>
+                <div class="step-label">Location</div>
+            </div>
+            <div class="step" data-step="4">
+                <div class="step-number">4</div>
+                <div class="step-label">Photos & Media</div>
+            </div>
+            <div class="step" data-step="5">
+                <div class="step-number">5</div>
+                <div class="step-label">Review & Submit</div>
+            </div>
+        </div>
+        
+        <!-- Property Creation Form -->
+        <form method="post" enctype="multipart/form-data" id="propertyForm" action="{% url 'seller_property_create' %}" novalidate>
+            {% csrf_token %}
+            
+            <!-- Step 1: Basic Information -->
+            <div class="form-step active" id="step1">
+                <div class="dashboard-widget">
+                    <h4 class="mb-4">
+                        <i class="fas fa-info-circle text-primary me-2"></i>
+                        Basic Information
+                        <span class="badge bg-primary ms-2">Step 1 of 5</span>
+                    </h4>
+                    
+                    <!-- Form Errors Display -->
+                    {% if form.errors %}
+                    <div class="alert alert-danger mb-4">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Please correct the errors below:
+                        <ul class="mb-0 mt-2">
+                            {% for field, errors in form.errors.items %}
+                                {% for error in errors %}
+                                    <li><strong>{{ field|title }}:</strong> {{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="row">
+                        <!-- Title -->
+                        <div class="col-md-8 mb-3">
+                            <label for="id_title" class="form-label">
+                                Property Title <span class="required">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control {% if form.title.errors %}is-invalid{% endif %}" 
+                                   id="id_title" 
+                                   name="title" 
+                                   placeholder="e.g., 3BHK Luxury Apartment in Bandra West with Sea View" 
+                                   value="{{ form.title.value|default:'' }}" 
+                                   required
+                                   maxlength="255">
+                            {% if form.title.errors %}
+                            <div class="field-error">{{ form.title.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Category -->
+                        <div class="col-md-4 mb-3">
+                            <label for="id_category" class="form-label">
+                                Property Category <span class="required">*</span>
+                            </label>
+                            <select class="form-select select2-category {% if form.category.errors %}is-invalid{% endif %}" 
+                                    id="id_category" 
+                                    name="category" required>
+                                <option value="">Select Category</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}" 
+                                        {% if form.category.value|stringformat:"s" == category.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ category.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            {% if form.category.errors %}
+                            <div class="field-error">{{ form.category.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Subcategory -->
+                        <div class="col-md-6 mb-3">
+                            <label for="id_subcategory" class="form-label">
+                                Subcategory
+                            </label>
+                            <select class="form-select select2-subcategory" id="id_subcategory" name="subcategory">
+                                <option value="">Select Subcategory</option>
+                                {% if form.subcategory.value %}
+                                    <option value="{{ form.subcategory.value }}" selected>{{ form.subcategory.value }}</option>
+                                {% endif %}
+                            </select>
+                        </div>
+                        
+                        <!-- Listing Type -->
+                        <div class="col-md-6 mb-3">
+                            <label for="id_status" class="form-label">
+                                Listing Type <span class="required">*</span>
+                            </label>
+                            <select class="form-select {% if form.status.errors %}is-invalid{% endif %}" 
+                                    id="id_status" 
+                                    name="status" required>
+                                <option value="">Select Type</option>
+                                <option value="for_sale" {% if form.status.value == 'for_sale' %}selected{% endif %}>For Sale</option>
+                                <option value="for_rent" {% if form.status.value == 'for_rent' %}selected{% endif %}>For Rent</option>
+                                <option value="for_lease" {% if form.status.value == 'for_lease' %}selected{% endif %}>For Lease</option>
+                            </select>
+                            {% if form.status.errors %}
+                            <div class="field-error">{{ form.status.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Country -->
+                        <div class="col-md-6 mb-3">
+                            <label for="id_country" class="form-label">
+                                Country <span class="required">*</span>
+                            </label>
+                            <select class="form-select {% if form.country.errors %}is-invalid{% endif %}" 
+                                    id="id_country" 
+                                    name="country" required>
+                                <option value="">Select Country</option>
+                                <option value="India" {% if form.country.value == 'India' %}selected{% endif %}>India</option>
+                                <option value="United States" {% if form.country.value == 'United States' %}selected{% endif %}>United States</option>
+                                <option value="United Kingdom" {% if form.country.value == 'United Kingdom' %}selected{% endif %}>United Kingdom</option>
+                                <option value="Canada" {% if form.country.value == 'Canada' %}selected{% endif %}>Canada</option>
+                                <option value="Australia" {% if form.country.value == 'Australia' %}selected{% endif %}>Australia</option>
+                                <option value="UAE" {% if form.country.value == 'UAE' %}selected{% endif %}>UAE</option>
+                                <option value="Singapore" {% if form.country.value == 'Singapore' %}selected{% endif %}>Singapore</option>
+                            </select>
+                            {% if form.country.errors %}
+                            <div class="field-error">{{ form.country.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Listed By -->
+                        <div class="col-md-6 mb-3">
+                            <label for="id_listing_type" class="form-label">
+                                Listed By <span class="required">*</span>
+                            </label>
+                            <select class="form-select {% if form.listing_type.errors %}is-invalid{% endif %}" 
+                                    id="id_listing_type" 
+                                    name="listing_type" required>
+                                <option value="">Select</option>
+                                <option value="owner" {% if form.listing_type.value == 'owner' %}selected{% endif %}>Owner</option>
+                                <option value="agent" {% if form.listing_type.value == 'agent' %}selected{% endif %}>Agent/Broker</option>
+                                <option value="builder" {% if form.listing_type.value == 'builder' %}selected{% endif %}>Builder/Developer</option>
+                            </select>
+                            {% if form.listing_type.errors %}
+                            <div class="field-error">{{ form.listing_type.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Description -->
+                        <div class="col-12 mb-3">
+                            <label for="id_description" class="form-label">
+                                Property Description <span class="required">*</span>
+                            </label>
+                            <textarea class="form-control {% if form.description.errors %}is-invalid{% endif %}" 
+                                      id="id_description" 
+                                      name="description" 
+                                      rows="6" 
+                                      placeholder="Describe your property in detail..." 
+                                      required>{{ form.description.value|default:'' }}</textarea>
+                            <div class="d-flex justify-content-between mt-2">
+                                <div class="field-help">Minimum 100 characters</div>
+                                <div class="char-counter">
+                                    <span id="charCount">0</span>/5000 characters
+                                </div>
+                            </div>
+                            {% if form.description.errors %}
+                            <div class="field-error">{{ form.description.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                        <button type="button" class="btn btn-outline-secondary" disabled>
+                            <i class="fas fa-arrow-left me-1"></i> Previous
+                        </button>
+                        <button type="button" class="btn btn-primary next-step" data-next="2">
+                            Next: Property Details <i class="fas fa-arrow-right ms-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 2: Property Details -->
+            <div class="form-step" id="step2">
+                <div class="dashboard-widget">
+                    <h4 class="mb-4">
+                        <i class="fas fa-home text-primary me-2"></i>
+                        Property Details
+                        <span class="badge bg-primary ms-2">Step 2 of 5</span>
+                    </h4>
+                    
+                    <div class="row">
+                        <!-- Price Section -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="fas fa-rupee-sign me-2"></i>Price Details</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="id_price" class="form-label">
+                                            Price (₹) <span class="required">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">₹</span>
+                                            <input type="number" 
+                                                   class="form-control {% if form.price.errors %}is-invalid{% endif %}" 
+                                                   id="id_price" 
+                                                   name="price" 
+                                                   step="0.01" 
+                                                   min="0" 
+                                                   value="{{ form.price.value|default:'' }}" 
+                                                   required>
+                                        </div>
+                                        {% if form.price.errors %}
+                                        <div class="field-error">{{ form.price.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="id_price_negotiable" class="form-label">
+                                            Price Negotiable
+                                        </label>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" 
+                                                   type="checkbox" 
+                                                   id="id_price_negotiable" 
+                                                   name="price_negotiable" 
+                                                   {% if form.price_negotiable.value %}checked{% endif %}>
+                                            <label class="form-check-label" for="id_price_negotiable">
+                                                Price is negotiable
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Conditional Fields for Rent -->
+                                    <div id="rentFields" style="display: none;">
+                                        <div class="mb-3">
+                                            <label for="id_security_deposit" class="form-label">
+                                                Security Deposit (₹) <span class="required">*</span>
+                                            </label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">₹</span>
+                                                <input type="number" 
+                                                       class="form-control" 
+                                                       id="id_security_deposit" 
+                                                       name="security_deposit" 
+                                                       step="0.01" 
+                                                       min="0" 
+                                                       value="{{ form.security_deposit.value|default:'' }}">
+                                            </div>
+                                            {% if form.security_deposit.errors %}
+                                            <div class="field-error">{{ form.security_deposit.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="id_maintenance_charges" class="form-label">
+                                                Monthly Maintenance (₹)
+                                            </label>
+                                            <input type="number" 
+                                                   class="form-control" 
+                                                   id="id_maintenance_charges" 
+                                                   name="maintenance_charges" 
+                                                   step="0.01" 
+                                                   min="0" 
+                                                   value="{{ form.maintenance_charges.value|default:'' }}">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="id_available_from" class="form-label">
+                                                Available From
+                                            </label>
+                                            <input type="date" 
+                                                   class="form-control" 
+                                                   id="id_available_from" 
+                                                   name="available_from"
+                                                   value="{{ form.available_from.value|default:'' }}">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="id_preferred_tenants" class="form-label">
+                                                Preferred Tenants
+                                            </label>
+                                            <select class="form-select" 
+                                                    id="id_preferred_tenants" 
+                                                    name="preferred_tenants">
+                                                <option value="">Select</option>
+                                                <option value="family" {% if form.preferred_tenants.value == 'family' %}selected{% endif %}>Family Only</option>
+                                                <option value="bachelors" {% if form.preferred_tenants.value == 'bachelors' %}selected{% endif %}>Bachelors Allowed</option>
+                                                <option value="company" {% if form.preferred_tenants.value == 'company' %}selected{% endif %}>Company Lease</option>
+                                                <option value="anyone" {% if form.preferred_tenants.value == 'anyone' %}selected{% endif %}>Anyone</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Conditional Fields for Sale -->
+                                    <div id="saleFields" style="display: none;">
+                                        <div class="mb-3">
+                                            <label for="id_booking_amount" class="form-label">
+                                                Booking Amount (₹)
+                                            </label>
+                                            <input type="number" 
+                                                   class="form-control" 
+                                                   id="id_booking_amount" 
+                                                   name="booking_amount" 
+                                                   step="0.01" 
+                                                   min="0" 
+                                                   value="{{ form.booking_amount.value|default:'' }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Area & Specifications -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="fas fa-ruler-combined me-2"></i>Area & Specifications</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="id_area" class="form-label">
+                                                Area <span class="required">*</span>
+                                            </label>
+                                            <div class="input-group">
+                                                <input type="number" 
+                                                       class="form-control {% if form.area.errors %}is-invalid{% endif %}" 
+                                                       id="id_area" 
+                                                       name="area" 
+                                                       step="0.01" 
+                                                       min="0" 
+                                                       value="{{ form.area.value|default:'' }}" 
+                                                       required>
+                                                <select class="form-select {% if form.area_unit.errors %}is-invalid{% endif %}" 
+                                                        style="max-width: 120px;" 
+                                                        name="area_unit" 
+                                                        id="id_area_unit">
+                                                    <option value="sqft" {% if form.area_unit.value == 'sqft' %}selected{% endif %}>Sq Ft</option>
+                                                    <option value="sqm" {% if form.area_unit.value == 'sqm' %}selected{% endif %}>Sq M</option>
+                                                    <option value="acre" {% if form.area_unit.value == 'acre' %}selected{% endif %}>Acres</option>
+                                                </select>
+                                            </div>
+                                            {% if form.area.errors %}
+                                            <div class="field-error">{{ form.area.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="col-md-6 mb-3">
+                                            <label for="id_carpet_area" class="form-label">
+                                                Carpet Area
+                                            </label>
+                                            <input type="number" 
+                                                   class="form-control" 
+                                                   id="id_carpet_area" 
+                                                   name="carpet_area" 
+                                                   step="0.01" 
+                                                   min="0" 
+                                                   value="{{ form.carpet_area.value|default:'' }}">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="id_super_builtup_area" class="form-label">
+                                                Super Built-up Area
+                                            </label>
+                                            <input type="number" 
+                                                   class="form-control" 
+                                                   id="id_super_builtup_area" 
+                                                   name="super_builtup_area" 
+                                                   step="0.01" 
+                                                   min="0" 
+                                                   value="{{ form.super_builtup_area.value|default:'' }}">
+                                        </div>
+                                        
+                                        <div class="col-md-6 mb-3">
+                                            <label for="id_year_built" class="form-label">
+                                                Year Built
+                                            </label>
+                                            <input type="number" 
+                                                   class="form-control" 
+                                                   id="id_year_built" 
+                                                   name="year_built" 
+                                                   min="1800" 
+                                                   max="{{ current_year|add:'5' }}"
+                                                   value="{{ form.year_built.value|default:'' }}">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="id_age_of_property" class="form-label">
+                                                Age of Property (Years)
+                                            </label>
+                                            <input type="number" 
+                                                   class="form-control" 
+                                                   id="id_age_of_property" 
+                                                   name="age_of_property" 
+                                                   min="0" 
+                                                   max="100" 
+                                                   value="{{ form.age_of_property.value|default:'' }}">
+                                        </div>
+                                        
+                                        <div class="col-md-6 mb-3">
+                                            <label for="id_possession_status" class="form-label">
+                                                Possession Status
+                                            </label>
+                                            <select class="form-select" 
+                                                    id="id_possession_status" 
+                                                    name="possession_status">
+                                                <option value="">Select</option>
+                                                <option value="ready_to_move" {% if form.possession_status.value == 'ready_to_move' %}selected{% endif %}>Ready to Move</option>
+                                                <option value="under_construction" {% if form.possession_status.value == 'under_construction' %}selected{% endif %}>Under Construction</option>
+                                                <option value="resale" {% if form.possession_status.value == 'resale' %}selected{% endif %}>Resale</option>
+                                                <option value="new_booking" {% if form.possession_status.value == 'new_booking' %}selected{% endif %}>New Booking Available</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Room Specifications -->
+                    <div class="row">
+                        <div class="col-12 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="fas fa-bed me-2"></i>Room Specifications</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <!-- Bedrooms (REQUIRED) -->
+                                        <div class="col-md-3 mb-3">
+                                            <label for="id_bedrooms" class="form-label">
+                                                Bedrooms <span class="required">*</span>
+                                            </label>
+                                            <select class="form-select {% if form.bedrooms.errors %}is-invalid{% endif %}" 
+                                                    id="id_bedrooms" 
+                                                    name="bedrooms" required>
+                                                <option value="">Select</option>
+                                                {% for i in "123456789"|make_list %}
+                                                <option value="{{ i }}" {% if form.bedrooms.value|stringformat:"s" == i %}selected{% endif %}>{{ i }} BHK</option>
+                                                {% endfor %}
+                                                <option value="10" {% if form.bedrooms.value|stringformat:"s" == '10' %}selected{% endif %}>10+ BHK</option>
+                                            </select>
+                                            {% if form.bedrooms.errors %}
+                                            <div class="field-error">{{ form.bedrooms.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <!-- Bathrooms (REQUIRED) -->
+                                        <div class="col-md-3 mb-3">
+                                            <label for="id_bathrooms" class="form-label">
+                                                Bathrooms <span class="required">*</span>
+                                            </label>
+                                            <select class="form-select {% if form.bathrooms.errors %}is-invalid{% endif %}" 
+                                                    id="id_bathrooms" 
+                                                    name="bathrooms" required>
+                                                <option value="">Select</option>
+                                                {% for i in "123456789"|make_list %}
+                                                <option value="{{ i }}" {% if form.bathrooms.value|stringformat:"s" == i %}selected{% endif %}>{{ i }}</option>
+                                                {% endfor %}
+                                                <option value="10" {% if form.bathrooms.value|stringformat:"s" == '10' %}selected{% endif %}>10+</option>
+                                            </select>
+                                            {% if form.bathrooms.errors %}
+                                            <div class="field-error">{{ form.bathrooms.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <!-- Furnishing (REQUIRED) -->
+                                        <div class="col-md-3 mb-3">
+                                            <label for="id_furnishing" class="form-label">
+                                                Furnishing <span class="required">*</span>
+                                            </label>
+                                            <select class="form-select {% if form.furnishing.errors %}is-invalid{% endif %}" 
+                                                    id="id_furnishing" 
+                                                    name="furnishing" required>
+                                                <option value="">Select</option>
+                                                <option value="furnished" {% if form.furnishing.value == 'furnished' %}selected{% endif %}>Fully Furnished</option>
+                                                <option value="semi_furnished" {% if form.furnishing.value == 'semi_furnished' %}selected{% endif %}>Semi Furnished</option>
+                                                <option value="unfurnished" {% if form.furnishing.value == 'unfurnished' %}selected{% endif %}>Unfurnished</option>
+                                            </select>
+                                            {% if form.furnishing.errors %}
+                                            <div class="field-error">{{ form.furnishing.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <!-- Property Condition (REQUIRED) -->
+                                        <div class="col-md-3 mb-3">
+                                            <label for="id_condition" class="form-label">
+                                                Property Condition <span class="required">*</span>
+                                            </label>
+                                            <select class="form-select {% if form.condition.errors %}is-invalid{% endif %}" 
+                                                    id="id_condition" 
+                                                    name="condition" required>
+                                                <option value="">Select</option>
+                                                <option value="new" {% if form.condition.value == 'new' %}selected{% endif %}>New Construction</option>
+                                                <option value="excellent" {% if form.condition.value == 'excellent' %}selected{% endif %}>Excellent</option>
+                                                <option value="good" {% if form.condition.value == 'good' %}selected{% endif %}>Good</option>
+                                                <option value="needs_repair" {% if form.condition.value == 'needs_repair' %}selected{% endif %}>Needs Repair</option>
+                                                <option value="renovated" {% if form.condition.value == 'renovated' %}selected{% endif %}>Recently Renovated</option>
+                                            </select>
+                                            {% if form.condition.errors %}
+                                            <div class="field-error">{{ form.condition.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <!-- Balconies -->
+                                        <div class="col-md-3 mb-3">
+                                            <label for="id_balconies" class="form-label">
+                                                Balconies
+                                            </label>
+                                            <select class="form-select" 
+                                                    id="id_balconies" 
+                                                    name="balconies">
+                                                <option value="0" {% if form.balconies.value == '0' %}selected{% endif %}>0</option>
+                                                {% for i in "123456789"|make_list %}
+                                                <option value="{{ i }}" {% if form.balconies.value|stringformat:"s" == i %}selected{% endif %}>{{ i }}</option>
+                                                {% endfor %}
+                                                <option value="10" {% if form.balconies.value|stringformat:"s" == '10' %}selected{% endif %}>10+</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- Parking -->
+                                        <div class="col-md-3 mb-3">
+                                            <label for="id_parking" class="form-label">
+                                                Parking
+                                            </label>
+                                            <select class="form-select" 
+                                                    id="id_parking" 
+                                                    name="parking">
+                                                <option value="0" {% if form.parking.value == '0' %}selected{% endif %}>0</option>
+                                                {% for i in "123456789"|make_list %}
+                                                <option value="{{ i }}" {% if form.parking.value|stringformat:"s" == i %}selected{% endif %}>{{ i }}</option>
+                                                {% endfor %}
+                                                <option value="10" {% if form.parking.value|stringformat:"s" == '10' %}selected{% endif %}>10+</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- Facing -->
+                                        <div class="col-md-3 mb-3">
+                                            <label for="id_facing" class="form-label">
+                                                Facing Direction
+                                            </label>
+                                            <select class="form-select" 
+                                                    id="id_facing" 
+                                                    name="facing">
+                                                <option value="">Select</option>
+                                                <option value="north" {% if form.facing.value == 'north' %}selected{% endif %}>North</option>
+                                                <option value="south" {% if form.facing.value == 'south' %}selected{% endif %}>South</option>
+                                                <option value="east" {% if form.facing.value == 'east' %}selected{% endif %}>East</option>
+                                                <option value="west" {% if form.facing.value == 'west' %}selected{% endif %}>West</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- Total Floors -->
+                                        <div class="col-md-3 mb-3">
+                                            <label for="id_total_floors" class="form-label">
+                                                Total Floors in Building
+                                            </label>
+                                            <input type="number" 
+                                                   class="form-control" 
+                                                   id="id_total_floors" 
+                                                   name="total_floors" 
+                                                   min="0" 
+                                                   max="200" 
+                                                   value="{{ form.total_floors.value|default:'' }}">
+                                        </div>
+                                        
+                                        <!-- Floor Number -->
+                                        <div class="col-md-3 mb-3">
+                                            <label for="id_floor_number" class="form-label">
+                                                Floor Number
+                                            </label>
+                                            <input type="number" 
+                                                   class="form-control" 
+                                                   id="id_floor_number" 
+                                                   name="floor_number" 
+                                                   min="0" 
+                                                   max="200" 
+                                                   value="{{ form.floor_number.value|default:'' }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Amenities -->
+                    <div class="row">
+                        <div class="col-12 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="fas fa-swimming-pool me-2"></i>Amenities</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row" id="amenitiesContainer">
+                                        {% for amenity in amenities %}
+                                        <div class="col-md-3 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" 
+                                                       type="checkbox" 
+                                                       name="amenities" 
+                                                       value="{{ amenity.id }}" 
+                                                       id="amenity_{{ amenity.id }}"
+                                                       {% if amenity.id in form.amenities.value %}checked{% endif %}>
+                                                <label class="form-check-label" for="amenity_{{ amenity.id }}">
+                                                    {{ amenity.name }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                        {% empty %}
+                                        <div class="col-12 text-center">
+                                            <p class="text-muted">No amenities available</p>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                        <button type="button" class="btn btn-outline-secondary prev-step" data-prev="1">
+                            <i class="fas fa-arrow-left me-1"></i> Previous
+                        </button>
+                        <button type="button" class="btn btn-primary next-step" data-next="3">
+                            Next: Location <i class="fas fa-arrow-right ms-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 3: Location -->
+            <div class="form-step" id="step3">
+                <div class="dashboard-widget">
+                    <h4 class="mb-4">
+                        <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                        Location Details
+                        <span class="badge bg-primary ms-2">Step 3 of 5</span>
+                    </h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="fas fa-map-pin me-2"></i>Address Details</h6>
+                                </div>
+                                <div class="card-body">
+                                    <!-- State -->
+                                    <div class="mb-3">
+                                        <label for="id_state" class="form-label">
+                                            State
+                                        </label>
+                                        <select class="form-select select2-state" 
+                                                id="id_state" 
+                                                name="state">
+                                            <option value="">Select State</option>
+                                            {% for state in states %}
+                                            <option value="{{ state }}" {% if form.state.value == state %}selected{% endif %}>{{ state }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- City (REQUIRED) -->
+                                    <div class="mb-3">
+                                        <label for="id_city" class="form-label">
+                                            City <span class="required">*</span>
+                                        </label>
+                                        <select class="form-select select2-city {% if form.city.errors %}is-invalid{% endif %}" 
+                                                id="id_city" 
+                                                name="city" required>
+                                            <option value="">Select City</option>
+                                            {% for city in cities %}
+                                            <option value="{{ city }}" {% if form.city.value == city %}selected{% endif %}>{{ city }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        {% if form.city.errors %}
+                                        <div class="field-error">{{ form.city.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Locality (REQUIRED) -->
+                                    <div class="mb-3">
+                                        <label for="id_locality" class="form-label">
+                                            Locality/Area <span class="required">*</span>
+                                        </label>
+                                        <input type="text" 
+                                               class="form-control {% if form.locality.errors %}is-invalid{% endif %}" 
+                                               id="id_locality" 
+                                               name="locality" 
+                                               value="{{ form.locality.value|default:'' }}" 
+                                               required>
+                                        {% if form.locality.errors %}
+                                        <div class="field-error">{{ form.locality.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Landmark -->
+                                    <div class="mb-3">
+                                        <label for="id_landmark" class="form-label">
+                                            Landmark
+                                        </label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="id_landmark" 
+                                               name="landmark" 
+                                               value="{{ form.landmark.value|default:'' }}">
+                                    </div>
+                                    
+                                    <!-- Pincode (REQUIRED) -->
+                                    <div class="mb-3">
+                                        <label for="id_pincode" class="form-label">
+                                            Pincode <span class="required">*</span>
+                                        </label>
+                                        <input type="text" 
+                                               class="form-control {% if form.pincode.errors %}is-invalid{% endif %}" 
+                                               id="id_pincode" 
+                                               name="pincode" 
+                                               value="{{ form.pincode.value|default:'' }}" 
+                                               required
+                                               pattern="[0-9]{6}" 
+                                               maxlength="6">
+                                        {% if form.pincode.errors %}
+                                        <div class="field-error">{{ form.pincode.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="fas fa-map me-2"></i>Complete Address</h6>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Address (REQUIRED) -->
+                                    <div class="mb-3">
+                                        <label for="id_address" class="form-label">
+                                            Complete Address <span class="required">*</span>
+                                        </label>
+                                        <textarea class="form-control {% if form.address.errors %}is-invalid{% endif %}" 
+                                                  id="id_address" 
+                                                  name="address" 
+                                                  rows="4" 
+                                                  required>{{ form.address.value|default:'' }}</textarea>
+                                        {% if form.address.errors %}
+                                        <div class="field-error">{{ form.address.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Coordinates -->
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            Coordinates
+                                        </label>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <input type="number" 
+                                                       class="form-control" 
+                                                       id="id_latitude" 
+                                                       name="latitude" 
+                                                       step="0.000001" 
+                                                       value="{{ form.latitude.value|default:'' }}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <input type="number" 
+                                                       class="form-control" 
+                                                       id="id_longitude" 
+                                                       name="longitude" 
+                                                       step="0.000001" 
+                                                       value="{{ form.longitude.value|default:'' }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Contact Information -->
+                    <div class="row">
+                        <div class="col-12 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="fas fa-address-card me-2"></i>Contact Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <!-- Contact Person (REQUIRED) -->
+                                        <div class="col-md-4 mb-3">
+                                            <label for="id_contact_person" class="form-label">
+                                                Contact Person <span class="required">*</span>
+                                            </label>
+                                            <input type="text" 
+                                                   class="form-control {% if form.contact_person.errors %}is-invalid{% endif %}" 
+                                                   id="id_contact_person" 
+                                                   name="contact_person" 
+                                                   value="{{ form.contact_person.value|default:user.get_full_name|default:'' }}" 
+                                                   required>
+                                            {% if form.contact_person.errors %}
+                                            <div class="field-error">{{ form.contact_person.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <!-- Contact Email (REQUIRED) -->
+                                        <div class="col-md-4 mb-3">
+                                            <label for="id_contact_email" class="form-label">
+                                                Contact Email <span class="required">*</span>
+                                            </label>
+                                            <input type="email" 
+                                                   class="form-control {% if form.contact_email.errors %}is-invalid{% endif %}" 
+                                                   id="id_contact_email" 
+                                                   name="contact_email" 
+                                                   value="{{ form.contact_email.value|default:user.email|default:'' }}" 
+                                                   required>
+                                            {% if form.contact_email.errors %}
+                                            <div class="field-error">{{ form.contact_email.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <!-- Contact Phone (REQUIRED) -->
+                                        <div class="col-md-4 mb-3">
+                                            <label for="id_contact_phone" class="form-label">
+                                                Contact Phone <span class="required">*</span>
+                                            </label>
+                                            <input type="tel" 
+                                                   class="form-control {% if form.contact_phone.errors %}is-invalid{% endif %}" 
+                                                   id="id_contact_phone" 
+                                                   name="contact_phone" 
+                                                   value="{{ form.contact_phone.value|default:user.phone|default:'' }}" 
+                                                   required>
+                                            {% if form.contact_phone.errors %}
+                                            <div class="field-error">{{ form.contact_phone.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                        <button type="button" class="btn btn-outline-secondary prev-step" data-prev="2">
+                            <i class="fas fa-arrow-left me-1"></i> Previous
+                        </button>
+                        <button type="button" class="btn btn-primary next-step" data-next="4">
+                            Next: Photos <i class="fas fa-arrow-right ms-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 4: Photos -->
+            <div class="form-step" id="step4">
+                <div class="dashboard-widget">
+                    <h4 class="mb-4">
+                        <i class="fas fa-images text-primary me-2"></i>
+                        Property Photos
+                        <span class="badge bg-primary ms-2">Step 4 of 5</span>
+                    </h4>
+                    
+                    <!-- Image Upload Area -->
+                    <div class="image-upload-area mb-4" id="imageUploadArea">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h5>Drag & Drop Photos Here</h5>
+                        <p class="text-muted">or click to browse</p>
+                        <button type="button" class="btn btn-outline-primary mt-3" id="uploadBtn">
+                            <i class="fas fa-folder-open me-2"></i>Choose Files
+                        </button>
+                        <div class="counter-badge" id="imageCounter" style="display: none;">0</div>
+                    </div>
+                    
+                    <!-- File input hidden -->
+                    <input type="file" id="imageInput" multiple accept="image/*" style="display: none;">
+                    
+                    <!-- Image Previews Container -->
+                    <div class="image-preview-container mb-4" id="imagePreviewContainer">
+                        <div class="text-center w-100 py-5 text-muted" id="noImagesMessage">
+                            <i class="fas fa-images fa-3x mb-3"></i>
+                            <p>No photos uploaded yet</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Media Links -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_virtual_tour" class="form-label">
+                                Virtual Tour URL
+                            </label>
+                            <input type="url" 
+                                   class="form-control" 
+                                   id="id_virtual_tour" 
+                                   name="virtual_tour" 
+                                   value="{{ form.virtual_tour.value|default:'' }}">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="id_video_url" class="form-label">
+                                Video URL
+                            </label>
+                            <input type="url" 
+                                   class="form-control" 
+                                   id="id_video_url" 
+                                   name="video_url" 
+                                   value="{{ form.video_url.value|default:'' }}">
+                        </div>
+                    </div>
+                    
+                    <!-- Floor Plan -->
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="id_floor_plan" class="form-label">
+                                Floor Plan
+                            </label>
+                            <input type="file" 
+                                   class="form-control" 
+                                   id="id_floor_plan" 
+                                   name="floor_plan" 
+                                   accept="image/*,.pdf">
+                        </div>
+                    </div>
+                    
+                    <!-- RERA Information -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" 
+                                       type="checkbox" 
+                                       id="id_rera_registered" 
+                                       name="rera_registered" 
+                                       {% if form.rera_registered.value %}checked{% endif %}>
+                                <label class="form-check-label" for="id_rera_registered">
+                                    RERA Registered Property
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3" id="reraNumberField" style="display: {% if form.rera_registered.value %}block{% else %}none{% endif %};">
+                            <label for="id_rera_number" class="form-label">
+                                RERA Number
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="id_rera_number" 
+                                   name="rera_number" 
+                                   value="{{ form.rera_number.value|default:'' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                        <button type="button" class="btn btn-outline-secondary prev-step" data-prev="3">
+                            <i class="fas fa-arrow-left me-1"></i> Previous
+                        </button>
+                        <button type="button" class="btn btn-primary next-step" data-next="5">
+                            Next: Review <i class="fas fa-arrow-right ms-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 5: Review & Submit -->
+            <div class="form-step" id="step5">
+                <div class="dashboard-widget">
+                    <h4 class="mb-4">
+                        <i class="fas fa-check-circle text-primary me-2"></i>
+                        Review & Submit
+                        <span class="badge bg-primary ms-2">Step 5 of 5</span>
+                    </h4>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <!-- Property Summary Card -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Property Summary</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row" id="reviewSummary">
+                                        <div class="col-12 text-center py-5">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <p class="mt-3 text-muted">Loading summary...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Additional Options Card -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Additional Options</h5>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Publishing Options -->
+                                    <div class="mb-4">
+                                        <h6 class="mb-3">Publishing Options</h6>
+                                        <div class="mb-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" 
+                                                       type="radio" 
+                                                       name="publish_option" 
+                                                       id="publish_now" 
+                                                       value="publish" 
+                                                       checked>
+                                                <label class="form-check-label" for="publish_now">
+                                                    Publish immediately
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" 
+                                                       type="radio" 
+                                                       name="publish_option" 
+                                                       id="save_draft" 
+                                                       value="draft">
+                                                <label class="form-check-label" for="save_draft">
+                                                    Save as draft
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" 
+                                                       type="radio" 
+                                                       name="publish_option" 
+                                                       id="schedule_publish" 
+                                                       value="schedule">
+                                                <label class="form-check-label" for="schedule_publish">
+                                                    Schedule publishing
+                                                </label>
+                                            </div>
+                                            <div class="mt-2" id="scheduleDateField" style="display: none;">
+                                                <input type="datetime-local" 
+                                                       class="form-control" 
+                                                       name="publish_schedule" 
+                                                       id="publish_schedule"
+                                                       min="{{ current_date|date:'Y-m-d\TH:i' }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Premium Options -->
+                                    <div class="mb-4">
+                                        <h6 class="mb-3">Premium Options</h6>
+                                        <div class="mb-3">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" 
+                                                       type="checkbox" 
+                                                       id="is_featured" 
+                                                       name="is_featured" 
+                                                       value="true">
+                                                <label class="form-check-label" for="is_featured">
+                                                    Make this a Featured Listing
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" 
+                                                       type="checkbox" 
+                                                       id="is_highlighted" 
+                                                       name="is_highlighted" 
+                                                       value="true">
+                                                <label class="form-check-label" for="is_highlighted">
+                                                    Highlight this listing
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" 
+                                                       type="checkbox" 
+                                                       id="is_urgent" 
+                                                       name="is_urgent" 
+                                                       value="true">
+                                                <label class="form-check-label" for="is_urgent">
+                                                    Mark as Urgent Sale/Rent
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Terms & Conditions (REQUIRED) -->
+                                    <div class="mb-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" 
+                                                   type="checkbox" 
+                                                   id="agree_terms" 
+                                                   name="agree_terms" 
+                                                   required>
+                                            <label class="form-check-label" for="agree_terms">
+                                                I agree to the Terms of Service
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                        <button type="button" class="btn btn-outline-secondary prev-step" data-prev="4">
+                            <i class="fas fa-arrow-left me-1"></i> Previous
+                        </button>
+                        <div>
+                            <button type="button" class="btn btn-outline-primary me-2" id="saveAsDraftBtn">
+                                <i class="fas fa-save me-1"></i> Save as Draft
+                            </button>
+                            <button type="submit" class="btn btn-success" id="submitPropertyBtn">
+                                <i class="fas fa-check me-1"></i> Submit Property
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center py-5">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <h5>Creating Property...</h5>
+                <p class="text-muted" id="loadingMessage">Please wait while we save your property.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                </div>
+                <h4 class="mb-3">Property Created Successfully!</h4>
+                <p class="text-muted mb-4" id="successModalMessage">Your property has been created.</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Close
+                    </button>
+                    <a href="#" class="btn btn-primary" id="viewPropertyBtn">
+                        <i class="fas fa-eye me-1"></i> View Property
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error Modal -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Error</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="errorMessage">An error occurred while creating the property. Please try again.</p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Try Again</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Initialize variables
+    let imageFiles = [];
+    let currentStep = 1;
+    
+    // Initialize Select2
+    $('.select2-category').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Select Category',
+        allowClear: true
+    });
+    
+    $('.select2-subcategory').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Select Subcategory',
+        allowClear: true
+    });
+    
+    $('.select2-state').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Select State',
+        allowClear: true
+    });
+    
+    $('.select2-city').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Select City',
+        allowClear: true
+    });
+    
+    // Initialize date picker
+    flatpickr("#id_available_from", {
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        defaultDate: "today"
+    });
+    
+    // Set default values
+    function setDefaultValues() {
+        // Set default country to India if not already set
+        if (!$('#id_country').val()) {
+            $('#id_country').val('India');
+        }
+        
+        // Set default listing type to owner if not already set
+        if (!$('#id_listing_type').val()) {
+            $('#id_listing_type').val('owner');
+        }
+        
+        // Set default status to for_sale if not already set
+        if (!$('#id_status').val()) {
+            $('#id_status').val('for_sale');
+        }
+        
+        // Set default furnishing if not set
+        if (!$('#id_furnishing').val()) {
+            $('#id_furnishing').val('unfurnished');
+        }
+        
+        // Set default condition if not set
+        if (!$('#id_condition').val()) {
+            $('#id_condition').val('good');
+        }
+        
+        // Trigger status change to update dependent fields
+        $('#id_status').trigger('change');
+        
+        {% if user.is_authenticated %}
+            // Set default contact info
+            if (!$('#id_contact_person').val() && '{{ user.get_full_name|default:"" }}') {
+                $('#id_contact_person').val('{{ user.get_full_name|default:"" }}');
+            }
+            
+            if (!$('#id_contact_email').val() && '{{ user.email|default:"" }}') {
+                $('#id_contact_email').val('{{ user.email|default:"" }}');
+            }
+            
+            if (!$('#id_contact_phone').val() && '{{ user.phone|default:"" }}') {
+                $('#id_contact_phone').val('{{ user.phone|default:"" }}');
+            }
+        {% endif %}
+    }
+    
+    // Call setDefaultValues on page load
+    setDefaultValues();
+    
+    // Character counter for description
+    $('#id_description').on('input', function() {
+        const length = $(this).val().length;
+        $('#charCount').text(length);
+    }).trigger('input');
+    
+    // Load subcategories when category changes
+    $('#id_category').change(function() {
+        const categoryId = $(this).val();
+        const subcategorySelect = $('#id_subcategory');
+        
+        if (categoryId) {
+            $.ajax({
+                url: '{% url "ajax_get_subcategories" %}',
+                method: 'GET',
+                data: { category: categoryId },
+                success: function(response) {
+                    if (response.success) {
+                        subcategorySelect.empty();
+                        subcategorySelect.append('<option value=""></option>');
+                        
+                        $.each(response.subcategories, function(index, subcat) {
+                            subcategorySelect.append(
+                                $('<option></option>').val(subcat.id).text(subcat.name)
+                            );
+                        });
+                        
+                        subcategorySelect.trigger('change.select2');
+                    }
+                }
+            });
+        } else {
+            subcategorySelect.empty();
+            subcategorySelect.append('<option value=""></option>');
+            subcategorySelect.trigger('change.select2');
+        }
+    });
+    
+    // Show/hide fields based on listing type
+    $('#id_status').change(function() {
+        const type = $(this).val();
+        
+        if (type === 'for_rent') {
+            $('#rentFields').show();
+            $('#saleFields').hide();
+            // Make security deposit required for rent
+            $('#id_security_deposit').prop('required', true);
+        } else {
+            $('#rentFields').hide();
+            $('#saleFields').show();
+            // Remove required from security deposit
+            $('#id_security_deposit').removeAttr('required');
+        }
+    }).trigger('change');
+    
+    // RERA number field toggle
+    $('#id_rera_registered').change(function() {
+        if ($(this).is(':checked')) {
+            $('#reraNumberField').show();
+        } else {
+            $('#reraNumberField').hide();
+        }
+    }).trigger('change');
+    
+    // Publishing schedule toggle
+    $('input[name="publish_option"]').change(function() {
+        const value = $(this).val();
+        if (value === 'schedule') {
+            $('#scheduleDateField').show();
+        } else {
+            $('#scheduleDateField').hide();
+        }
+    });
+    
+    // Step navigation with validation
+    $('.next-step').click(function(e) {
+        e.preventDefault();
+        const nextStep = parseInt($(this).data('next'));
+        
+        if (validateCurrentStep(currentStep)) {
+            navigateToStep(nextStep);
+        } else {
+            // Show error message
+            showToast('Please fill in all required fields marked with *', 'warning');
+        }
+    });
+    
+    $('.prev-step').click(function(e) {
+        e.preventDefault();
+        const prevStep = parseInt($(this).data('prev'));
+        navigateToStep(prevStep);
+    });
+    
+    function navigateToStep(step) {
+        // Update current step
+        currentStep = parseInt(step);
+        
+        // Hide all steps
+        $('.form-step').removeClass('active');
+        
+        // Show current step
+        $('#step' + step).addClass('active');
+        
+        // Update progress indicators
+        $('.step').removeClass('active completed');
+        
+        for (let i = 1; i <= 5; i++) {
+            const stepEl = $('.step[data-step="' + i + '"]');
+            if (i < step) {
+                stepEl.addClass('completed');
+            } else if (i === step) {
+                stepEl.addClass('active');
+            }
+        }
+        
+        // Update review summary if on step 5
+        if (step === 5) {
+            updateReviewSummary();
+        }
+        
+        // Scroll to top of step
+        $('html, body').animate({
+            scrollTop: $('#step' + step).offset().top - 100
+        }, 300);
+    }
+    
+    // Comprehensive step validation
+    function validateCurrentStep(step) {
+        let isValid = true;
+        const stepEl = $('#step' + step);
+        
+        // Clear previous error states
+        stepEl.find('.is-invalid').removeClass('is-invalid');
+        stepEl.find('.field-error').remove();
+        
+        // Validate required fields
+        stepEl.find('[required]').each(function() {
+            const field = $(this);
+            const fieldValue = field.val();
+            
+            if (!fieldValue || fieldValue === '') {
+                isValid = false;
+                field.addClass('is-invalid');
+                
+                // Add error message
+                const fieldLabel = field.closest('.mb-3').find('label').text().replace('*', '').trim();
+                const errorEl = $('<div class="field-error"></div>').text(fieldLabel + ' is required');
+                field.after(errorEl);
+            }
+        });
+        
+        // Step-specific validations
+        switch(step) {
+            case 1:
+                // Validate description length
+                const description = $('#id_description').val();
+                if (description.length < 100) {
+                    isValid = false;
+                    $('#id_description').addClass('is-invalid');
+                    const errorEl = $('<div class="field-error"></div>').text('Description must be at least 100 characters');
+                    $('#id_description').after(errorEl);
+                }
+                break;
+                
+            case 2:
+                // Validate price
+                const price = parseFloat($('#id_price').val());
+                if (price <= 0) {
+                    isValid = false;
+                    $('#id_price').addClass('is-invalid');
+                    const errorEl = $('<div class="field-error"></div>').text('Please enter a valid price');
+                    $('#id_price').after(errorEl);
+                }
+                
+                // Validate area
+                const area = parseFloat($('#id_area').val());
+                if (area <= 0) {
+                    isValid = false;
+                    $('#id_area').addClass('is-invalid');
+                    const errorEl = $('<div class="field-error"></div>').text('Please enter a valid area');
+                    $('#id_area').after(errorEl);
+                }
+                
+                // Validate security deposit for rent
+                if ($('#id_status').val() === 'for_rent') {
+                    const deposit = parseFloat($('#id_security_deposit').val());
+                    if (deposit <= 0) {
+                        isValid = false;
+                        $('#id_security_deposit').addClass('is-invalid');
+                        const errorEl = $('<div class="field-error"></div>').text('Please enter security deposit');
+                        $('#id_security_deposit').after(errorEl);
+                    }
+                }
+                break;
+                
+            case 3:
+                // Validate pincode format
+                const pincode = $('#id_pincode').val();
+                if (pincode && !/^\d{6}$/.test(pincode)) {
+                    isValid = false;
+                    $('#id_pincode').addClass('is-invalid');
+                    const errorEl = $('<div class="field-error"></div>').text('Pincode must be 6 digits');
+                    $('#id_pincode').after(errorEl);
+                }
+                
+                // Validate email format
+                const email = $('#id_contact_email').val();
+                if (email && !isValidEmail(email)) {
+                    isValid = false;
+                    $('#id_contact_email').addClass('is-invalid');
+                    const errorEl = $('<div class="field-error"></div>').text('Please enter a valid email address');
+                    $('#id_contact_email').after(errorEl);
+                }
+                
+                // Validate phone format
+                const phone = $('#id_contact_phone').val();
+                if (phone && !isValidPhone(phone)) {
+                    isValid = false;
+                    $('#id_contact_phone').addClass('is-invalid');
+                    const errorEl = $('<div class="field-error"></div>').text('Please enter a valid phone number');
+                    $('#id_contact_phone').after(errorEl);
+                }
+                break;
+                
+            case 4:
+                // Validate image count
+                if (imageFiles.length < 3) {
+                    isValid = false;
+                    showToast('Please upload at least 3 photos', 'warning');
+                }
+                break;
+        }
+        
+        return isValid;
+    }
+    
+    // Helper functions
+    function isValidEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    }
+    
+    function isValidPhone(phone) {
+        const re = /^[\d\s\+\-\(\)]{10,}$/;
+        return re.test(phone);
+    }
+    
+    // Image upload handling
+    $('#uploadBtn, #imageUploadArea').click(function(e) {
+        e.preventDefault();
+        $('#imageInput').click();
+    });
+    
+    $('#imageInput').change(function(e) {
+        if (e.target.files.length > 0) {
+            handleImageFiles(e.target.files);
+            $(this).val('');
+        }
+    });
+    
+    // Drag and drop for images
+    $('#imageUploadArea').on('dragover', function(e) {
+        e.preventDefault();
+        $(this).addClass('border-primary bg-light');
+    }).on('dragleave', function(e) {
+        e.preventDefault();
+        $(this).removeClass('border-primary bg-light');
+    }).on('drop', function(e) {
+        e.preventDefault();
+        $(this).removeClass('border-primary bg-light');
+        
+        if (e.originalEvent.dataTransfer.files.length > 0) {
+            handleImageFiles(e.originalEvent.dataTransfer.files);
+        }
+    });
+    
+    function handleImageFiles(files) {
+        const maxSize = 10 * 1024 * 1024;
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+        const maxImages = 20;
+        
+        if (imageFiles.length + files.length > maxImages) {
+            showToast(`Maximum ${maxImages} images allowed`, 'warning');
+            return;
+        }
+        
+        Array.from(files).forEach(file => {
+            const fileType = file.type.toLowerCase();
+            const extension = file.name.split('.').pop().toLowerCase();
+            const isValidType = allowedTypes.includes(fileType) || 
+                              ['jpeg', 'jpg', 'png', 'webp', 'gif'].includes(extension);
+            
+            if (!isValidType) {
+                showToast(`"${file.name}" has invalid file type`, 'warning');
+                return;
+            }
+            
+            if (file.size > maxSize) {
+                showToast(`"${file.name}" is too large (max 10MB)`, 'warning');
+                return;
+            }
+            
+            imageFiles.push(file);
+            createImagePreview(file);
+        });
+        
+        updateImageCounter();
+    }
+    
+    function createImagePreview(file) {
+        const reader = new FileReader();
+        const previewId = 'preview_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        
+        reader.onloadstart = function() {
+            const placeholder = `
+                <div class="image-preview" id="${previewId}">
+                    <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            $('#noImagesMessage').hide();
+            $('#imagePreviewContainer').append(placeholder);
+        };
+        
+        reader.onload = function(e) {
+            const previewHtml = `
+                <div class="image-preview" id="${previewId}">
+                    <img src="${e.target.result}" alt="${file.name}" class="preview-img">
+                    <button type="button" class="remove-btn" onclick="removeImagePreview('${previewId}', '${file.name}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            $(`#${previewId}`).replaceWith(previewHtml);
+            
+            $(`#${previewId} img`).click(function() {
+                setPrimaryImage(previewId);
+            });
+        };
+        
+        reader.readAsDataURL(file);
+    }
+    
+    window.removeImagePreview = function(previewId, fileName) {
+        $(`#${previewId}`).remove();
+        imageFiles = imageFiles.filter(file => file.name !== fileName);
+        updateImageCounter();
+        
+        if (imageFiles.length === 0) {
+            $('#noImagesMessage').show();
+        }
+    };
+    
+    function setPrimaryImage(previewId) {
+        $('.image-preview').removeClass('border-primary');
+        $(`#${previewId}`).addClass('border-primary');
+        
+        const imageIndex = imageFiles.findIndex(file => 
+            previewId.includes(file.name.replace(/[^a-zA-Z0-9]/g, '_'))
+        );
+        
+        if (imageIndex > -1) {
+            const [selectedImage] = imageFiles.splice(imageIndex, 1);
+            imageFiles.unshift(selectedImage);
+            
+            const previewContainer = $('#imagePreviewContainer');
+            previewContainer.prepend($(`#${previewId}`));
+        }
+    }
+    
+    function updateImageCounter() {
+        const counter = $('#imageCounter');
+        if (imageFiles.length > 0) {
+            counter.text(imageFiles.length).show();
+        } else {
+            counter.hide();
+        }
+    }
+    
+    // Update review summary
+    function updateReviewSummary() {
+        const formData = {
+            title: $('#id_title').val(),
+            category: $('#id_category option:selected').text(),
+            status: $('#id_status option:selected').text(),
+            price: $('#id_price').val(),
+            area: $('#id_area').val() + ' ' + $('#id_area_unit option:selected').text(),
+            bedrooms: $('#id_bedrooms option:selected').text(),
+            bathrooms: $('#id_bathrooms option:selected').text(),
+            furnishing: $('#id_furnishing option:selected').text(),
+            condition: $('#id_condition option:selected').text(),
+            city: $('#id_city option:selected').text(),
+            locality: $('#id_locality').val(),
+            address: $('#id_address').val(),
+            contactPerson: $('#id_contact_person').val(),
+            contactEmail: $('#id_contact_email').val(),
+            contactPhone: $('#id_contact_phone').val(),
+            imageCount: imageFiles.length
+        };
+        
+        const summaryHtml = `
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Basic Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Title:</strong> ${formData.title}</p>
+                        <p><strong>Category:</strong> ${formData.category}</p>
+                        <p><strong>Type:</strong> ${formData.status}</p>
+                        <p><strong>Bed/Bath:</strong> ${formData.bedrooms}/${formData.bathrooms}</p>
+                        <p><strong>Furnishing:</strong> ${formData.furnishing}</p>
+                        <p><strong>Condition:</strong> ${formData.condition}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0"><i class="fas fa-rupee-sign me-2"></i>Price & Area</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Price:</strong> ₹${formData.price ? parseFloat(formData.price).toLocaleString('en-IN') : '0'}</p>
+                        <p><strong>Area:</strong> ${formData.area}</p>
+                        <p><strong>City:</strong> ${formData.city}</p>
+                        <p><strong>Locality:</strong> ${formData.locality}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>Location</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Address:</strong> ${formData.address.substring(0, 100)}...</p>
+                        <p><strong>City:</strong> ${formData.city}</p>
+                        <p><strong>Locality:</strong> ${formData.locality}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0"><i class="fas fa-images me-2"></i>Media & Contact</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Photos:</strong> ${formData.imageCount} uploaded</p>
+                        <p><strong>Contact Person:</strong> ${formData.contactPerson}</p>
+                        <p><strong>Contact Email:</strong> ${formData.contactEmail}</p>
+                        <p><strong>Contact Phone:</strong> ${formData.contactPhone}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        $('#reviewSummary').html(summaryHtml);
+    }
+    
+    // Save as draft button
+    $('#saveAsDraftBtn').click(function() {
+        $('#save_draft').prop('checked', true);
+        $('#propertyForm').submit();
+    });
+    
+    // Form submission
+    $('#propertyForm').submit(function(e) {
+        e.preventDefault();
+        
+        // Validate all steps
+        let allValid = true;
+        for (let i = 1; i <= 5; i++) {
+            if (!validateCurrentStep(i)) {
+                allValid = false;
+                navigateToStep(i);
+                break;
+            }
+        }
+        
+        if (!allValid) {
+            showToast('Please correct all errors before submitting', 'warning');
+            return;
+        }
+        
+        // Validate terms
+        if (!$('#agree_terms').is(':checked')) {
+            navigateToStep(5);
+            $('#agree_terms').focus();
+            showToast('Please agree to the terms and conditions', 'warning');
+            return;
+        }
+        
+        // Validate images
+        if (imageFiles.length < 3) {
+            navigateToStep(4);
+            showToast('Please upload at least 3 photos', 'warning');
+            return;
+        }
+        
+        // Show loading modal
+        const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+        loadingModal.show();
+        
+        // Create FormData
+        const formData = new FormData(this);
+        
+        // Add image files
+        imageFiles.forEach((file) => {
+            formData.append('images', file);
+        });
+        
+        // Add additional options
+        const publishOption = $('input[name="publish_option"]:checked').val();
+        formData.append('publish_option', publishOption);
+        
+        if (publishOption === 'schedule') {
+            formData.append('publish_schedule', $('#publish_schedule').val());
+        }
+        
+        // Add premium options
+        if ($('#is_featured').is(':checked')) formData.append('is_featured', 'true');
+        if ($('#is_highlighted').is(':checked')) formData.append('is_highlighted', 'true');
+        if ($('#is_urgent').is(':checked')) formData.append('is_urgent', 'true');
+        
+        // Submit via AJAX
+        $.ajax({
+            url: $(this).attr('action'),
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function(response) {
+                loadingModal.hide();
+                
+                if (response.success) {
+                    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                    
+                    let message = 'Your property has been created successfully.';
+                    if (publishOption === 'publish') {
+                        message += ' It is now live on the website.';
+                    } else if (publishOption === 'draft') {
+                        message += ' It has been saved as a draft.';
+                    }
+                    
+                    $('#successModalMessage').text(message);
+                    
+                    if (response.redirect_url) {
+                        $('#viewPropertyBtn').attr('href', response.redirect_url);
+                    }
+                    
+                    successModal.show();
+                    
+                    setTimeout(() => {
+                        if (response.redirect_url) {
+                            window.location.href = response.redirect_url;
+                        }
+                    }, 3000);
+                } else {
+                    // Handle server-side errors
+                    if (response.errors) {
+                        handleServerErrors(response.errors);
+                    } else {
+                        showToast('Error creating property', 'error');
+                    }
+                }
+            },
+            error: function(xhr) {
+                loadingModal.hide();
+                
+                if (xhr.status === 400 && xhr.responseJSON && xhr.responseJSON.errors) {
+                    handleServerErrors(xhr.responseJSON.errors);
+                } else {
+                    showToast('An error occurred. Please try again.', 'error');
+                }
+            }
+        });
+    });
+    
+    function handleServerErrors(errors) {
+        // Clear all errors
+        $('.is-invalid').removeClass('is-invalid');
+        $('.field-error').remove();
+        
+        let firstErrorStep = 1;
+        let firstErrorField = null;
+        
+        // Process each error
+        Object.keys(errors).forEach(fieldName => {
+            const errorMessages = errors[fieldName];
+            const field = $(`[name="${fieldName}"]`);
+            
+            if (field.length > 0) {
+                field.addClass('is-invalid');
+                
+                const errorEl = $('<div class="field-error"></div>').text(errorMessages.join(', '));
+                field.after(errorEl);
+                
+                // Determine which step this field belongs to
+                const step = getStepForField(field);
+                if (step < firstErrorStep || firstErrorField === null) {
+                    firstErrorStep = step;
+                    firstErrorField = field;
+                }
+            }
+        });
+        
+        // Navigate to first step with errors
+        navigateToStep(firstErrorStep);
+        
+        // Scroll to first error
+        if (firstErrorField) {
+            $('html, body').animate({
+                scrollTop: firstErrorField.offset().top - 150
+            }, 500);
+        }
+        
+        showToast('Please correct the errors highlighted in red', 'warning');
+    }
+    
+    function getStepForField(field) {
+        const stepEl = field.closest('.form-step');
+        if (stepEl.length) {
+            const stepId = stepEl.attr('id');
+            return parseInt(stepId.replace('step', ''));
+        }
+        return 1;
+    }
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    function showToast(message, type = 'info') {
+        const toastId = 'toast-' + Date.now();
+        const icons = {
+            'success': 'fas fa-check-circle',
+            'error': 'fas fa-exclamation-circle',
+            'warning': 'fas fa-exclamation-triangle',
+            'info': 'fas fa-info-circle'
+        };
+        
+        const toastHtml = `
+            <div id="${toastId}" class="toast align-items-center text-white bg-${type}" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="${icons[type]} me-2"></i>
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        `;
+        
+        if ($('#toast-container').length === 0) {
+            $('body').append('<div id="toast-container" class="position-fixed top-0 end-0 p-3"></div>');
+        }
+        
+        $('#toast-container').append(toastHtml);
+        const toast = new bootstrap.Toast(document.getElementById(toastId), {
+            delay: 3000
+        });
+        toast.show();
+    }
+    
+    // Initialize
+    updateReviewSummary();
+});
+</script>
+{% endblock %}

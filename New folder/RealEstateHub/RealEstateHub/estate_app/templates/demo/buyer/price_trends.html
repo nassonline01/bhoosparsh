@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Price Trends - Bhoosparsh</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-up {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+        }
+
+        .hover-lift {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(255, 107, 53, 0.2);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+            border-radius: 10px;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border-color: #FF6B35;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #FF6B35 0%, #FF8B5A 100%);
+            color: white;
+            padding: 12px 28px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(255, 107, 53, 0.4);
+        }
+
+        .filter-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .filter-chip:hover {
+            border-color: #FF6B35;
+            color: #FF6B35;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
+        }
+
+        .filter-chip.active {
+            background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+            color: white;
+            border-color: #FF6B35;
+            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+        }
+
+        .main-container {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+            position: relative;
+        }
+
+        .main-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .sidebar-container {
+            position: fixed;
+            top: 64px;
+            left: 0;
+            width: 256px;
+            height: calc(100vh - 64px);
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 90;
+        }
+
+        .content-wrapper {
+            margin-top: 64px;
+            margin-left: 256px;
+            flex: 1;
+            min-height: calc(100vh - 64px);
+            width: calc(100% - 256px);
+        }
+
+        .main-content {
+            padding: 24px;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-container {
+                width: 280px;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar-container.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .content-wrapper {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+            
+            .main-content {
+                padding: 16px;
+            }
+            
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 64px;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 89;
+                backdrop-filter: blur(3px);
+            }
+            
+            .sidebar-overlay.active {
+                display: block;
+            }
+        }
+
+        /* Chart Styles */
+        .chart-container {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            padding: 24px;
+            margin-bottom: 24px;
+            height: 400px;
+            position: relative;
+        }
+
+        .chart-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #cbd5e1;
+        }
+
+        .chart-placeholder i {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .trend-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .trend-up {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .trend-down {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .trend-stable {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .price-change {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .price-change.positive {
+            color: #10b981;
+        }
+
+        .price-change.negative {
+            color: #ef4444;
+        }
+
+        .price-change.neutral {
+            color: #6b7280;
+        }
+
+        .market-health {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .health-excellent {
+            background: linear-gradient(135deg, #10b981, #34d399);
+            color: white;
+        }
+
+        .health-good {
+            background: linear-gradient(135deg, #3b82f6, #60a5fa);
+            color: white;
+        }
+
+        .health-moderate {
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            color: white;
+        }
+
+        .health-poor {
+            background: linear-gradient(135deg, #ef4444, #f87171);
+            color: white;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .comparison-table th {
+            background: #f8fafc;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #475569;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .comparison-table td {
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .comparison-table tr:hover {
+            background: #f8fafc;
+        }
+
+        .forecast-card {
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            color: white;
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .forecast-card h3 {
+            color: white;
+        }
+
+        .time-period-selector {
+            display: flex;
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 4px;
+        }
+
+        .time-period {
+            flex: 1;
+            padding: 10px 16px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .time-period:hover {
+            background: #e2e8f0;
+        }
+
+        .time-period.active {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .data-point {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .data-point i {
+            width: 24px;
+            text-align: center;
+        }
+
+        .market-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .indicator-hot {
+            background: #ef4444;
+        }
+
+        .indicator-warm {
+            background: #f59e0b;
+        }
+
+        .indicator-cool {
+            background: #3b82f6;
+        }
+
+        .indicator-cold {
+            background: #10b981;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Navigation -->
+        <nav class="main-nav">
+            <div class="h-full px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <!-- Logo and Mobile Menu -->
+                    <div class="flex items-center space-x-3">
+                        <!-- Mobile Menu Button -->
+                        <button id="mobileMenuButton" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-100 transition" onclick="toggleMobileSidebar()">
+                            <i class="fas fa-bars text-lg"></i>
+                        </button>
+                        <!-- Logo -->
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-lg hover-lift hover-rotate">
+                                <i class="fas fa-home text-lg"></i>
+                            </div>
+                            <div>
+                                <h1 class="text-xl font-bold text-gray-900">RealBuy <span class="text-orange-500">Pro</span></h1>
+                                <p class="text-xs text-gray-500 hidden sm:block">Advanced Property Dashboard</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Menu -->
+                    <div class="flex items-center space-x-3">
+                        <!-- Notifications -->
+                        <div class="relative">
+                            <button class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 transition flex items-center justify-center relative hover-lift">
+                                <i class="fas fa-bell text-gray-600"></i>
+                                <span class="notification-dot animate-pulse-glow">3</span>
+                            </button>
+                        </div>
+
+                        <!-- Messages -->
+                        <div class="relative">
+                            <button class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 transition flex items-center justify-center relative hover-lift">
+                                <i class="fas fa-envelope text-gray-600"></i>
+                                <span class="notification-dot animate-pulse-glow" style="background: #3B82F6;">5</span>
+                            </button>
+                        </div>
+
+                        <!-- User Profile -->
+                        <div class="flex items-center space-x-3 p-2 rounded-full bg-white border border-gray-200 hover:shadow-md transition cursor-pointer hover-lift">
+                            <img src="https://i.pravatar.cc/40?img=1" alt="User" class="w-8 h-8 rounded-full ring-2 ring-orange-200" />
+                            <div class="hidden md:block">
+                                <p class="text-sm font-semibold text-gray-900">Alex Johnson</p>
+                                <p class="text-xs text-gray-500">Premium Buyer</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Sidebar -->
+<aside id="sidebarContainer" class="sidebar-container">
+  <div class="h-full py-6 px-3 flex flex-col">
+
+    <!-- Navigation Menu -->
+    <nav class="flex-1 space-y-2 animate-fade-up stagger-2">
+
+      <a href="{% url 'buyer_dashboard' %}"
+         class="flex items-center space-x-4 p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition hover-lift">
+        <i class="fas fa-tachometer-alt w-5 text-center"></i>
+        <span class="font-medium truncate">Dashboard</span>
+      </a>
+
+      <a href="{% url 'buyer_search' %}"
+         class="flex items-center space-x-4 p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition hover-lift">
+        <i class="fas fa-search w-5 text-center"></i>
+        <span class="font-medium truncate">Search Properties</span>
+      </a>
+
+      <a href="{% url 'saved_properties' %}"
+         class="flex items-center space-x-4 p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition hover-lift">
+        <i class="fas fa-heart w-5 text-center"></i>
+        <span class="font-medium truncate">Saved Properties</span>
+        <span class="ml-auto bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded-full min-w-[24px] text-center">
+          12
+        </span>
+      </a>
+
+      <a href="{% url 'recent_views' %}"
+         class="flex items-center space-x-4 p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition hover-lift">
+        <i class="fas fa-eye w-5 text-center"></i>
+        <span class="font-medium truncate">Recently Viewed</span>
+      </a>
+
+      <a href="{% url 'price_trends' %}"
+         class="flex items-center space-x-4 p-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white hover-lift hover-glow">
+        <i class="fas fa-chart-line w-5 text-center"></i>
+        <span class="font-medium truncate">Market Trends</span>
+      </a>
+
+      <a href="{% url 'compare_properties' %}"
+         class="flex items-center space-x-4 p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition hover-lift">
+        <i class="fas fa-exchange-alt w-5 text-center"></i>
+        <span class="font-medium truncate">Compare Properties</span>
+      </a>
+
+      <a href="{% url 'buyer_settings' %}"
+         class="flex items-center space-x-4 p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition hover-lift">
+        <i class="fas fa-cog w-5 text-center"></i>
+        <span class="font-medium truncate">Settings</span>
+      </a>
+
+    </nav>
+
+    <!-- Market Alerts -->
+    <div class="mt-6 p-3 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200 animate-fade-up">
+      <p class="text-sm font-medium text-green-800">Market Alerts</p>
+      <p class="text-xs text-green-600 mt-1">
+        Get notified about price changes
+      </p>
+      <button id="setAlert"
+              class="w-full mt-3 px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition">
+        <i class="fas fa-bell mr-2"></i>Set Price Alert
+      </button>
+    </div>
+
+  </div>
+</aside>
+
+
+        <!-- Main Content -->
+        <div id="contentWrapper" class="content-wrapper">
+            <main class="main-content pb-8">
+                <div class="mb-8 animate-fade-up">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-4">
+                        <div>
+                            <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Property Price Trends</h2>
+                            <p class="text-gray-600 mt-2">Real-time market analysis and price insights</p>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <span class="text-sm text-gray-500 hidden lg:block">Updated: Today, 10:30 AM</span>
+                            <button class="btn-primary">
+                                <i class="fas fa-download mr-2"></i>Download Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Market Overview -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-fade-up">
+                    <div class="dashboard-card p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-gray-900">National Average</h3>
+                            <span class="market-health health-excellent">Excellent</span>
+                        </div>
+                        <div class="price-change positive">+8.5%</div>
+                        <p class="text-sm text-gray-500 mt-2">Year-over-year growth</p>
+                        <div class="flex items-center mt-4">
+                            <div class="data-point">
+                                <i class="fas fa-arrow-up text-green-500"></i>
+                                <span class="text-sm text-gray-600">12 months trending up</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-gray-900">Mumbai Market</h3>
+                            <span class="market-health health-good">Hot</span>
+                        </div>
+                        <div class="price-change positive">+12.3%</div>
+                        <p class="text-sm text-gray-500 mt-2">Highest growth among metros</p>
+                        <div class="flex items-center mt-4">
+                            <div class="data-point">
+                                <i class="fas fa-fire text-red-500"></i>
+                                <span class="text-sm text-gray-600">High demand areas</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-gray-900">Bangalore Market</h3>
+                            <span class="market-health health-moderate">Stable</span>
+                        </div>
+                        <div class="price-change positive">+6.8%</div>
+                        <p class="text-sm text-gray-500 mt-2">Steady growth pattern</p>
+                        <div class="flex items-center mt-4">
+                            <div class="data-point">
+                                <i class="fas fa-chart-line text-blue-500"></i>
+                                <span class="text-sm text-gray-600">Predictable trends</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time Period Selector -->
+                <div class="mb-6 animate-fade-up">
+                    <div class="time-period-selector max-w-md">
+                        <div class="time-period active" data-period="1y">1 Year</div>
+                        <div class="time-period" data-period="6m">6 Months</div>
+                        <div class="time-period" data-period="3m">3 Months</div>
+                        <div class="time-period" data-period="1m">1 Month</div>
+                    </div>
+                </div>
+
+                <!-- Price Trend Chart -->
+                <div class="chart-container mb-8 animate-fade-up">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-bold text-gray-900">Price Trend Analysis</h3>
+                        <div class="flex items-center space-x-4">
+                            <select class="px-4 py-2 border border-gray-300 rounded-lg bg-white">
+                                <option>All Cities</option>
+                                <option selected>Mumbai</option>
+                                <option>Bangalore</option>
+                                <option>Delhi</option>
+                                <option>Hyderabad</option>
+                            </select>
+                            <select class="px-4 py-2 border border-gray-300 rounded-lg bg-white">
+                                <option>All Property Types</option>
+                                <option selected>Apartments</option>
+                                <option>Villas</option>
+                                <option>Commercial</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-placeholder">
+                        <i class="fas fa-chart-line"></i>
+                        <p class="text-lg font-medium text-gray-400">Interactive Price Chart</p>
+                        <p class="text-sm text-gray-400 mt-2">Visual representation of price trends over selected period</p>
+                    </div>
+                </div>
+
+                <!-- Market Comparison -->
+                <div class="dashboard-card p-6 mb-8 animate-fade-up">
+                    <h3 class="text-lg font-bold text-gray-900 mb-6">City-wise Market Comparison</h3>
+                    <div class="overflow-x-auto">
+                        <table class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>City</th>
+                                    <th>Avg Price (₹/sq.ft)</th>
+                                    <th>1Y Growth</th>
+                                    <th>6M Growth</th>
+                                    <th>Demand Level</th>
+                                    <th>Market Health</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="flex items-center">
+                                            <span class="market-indicator indicator-hot"></span>
+                                            <span class="font-medium">Mumbai</span>
+                                        </div>
+                                    </td>
+                                    <td>₹25,400</td>
+                                    <td><span class="trend-badge trend-up">+12.3%</span></td>
+                                    <td><span class="trend-badge trend-up">+6.2%</span></td>
+                                    <td>Very High</td>
+                                    <td><span class="market-health health-good">Hot</span></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="flex items-center">
+                                            <span class="market-indicator indicator-warm"></span>
+                                            <span class="font-medium">Bangalore</span>
+                                        </div>
+                                    </td>
+                                    <td>₹12,800</td>
+                                    <td><span class="trend-badge trend-up">+8.5%</span></td>
+                                    <td><span class="trend-badge trend-up">+4.1%</span></td>
+                                    <td>High</td>
+                                    <td><span class="market-health health-excellent">Excellent</span></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="flex items-center">
+                                            <span class="market-indicator indicator-cool"></span>
+                                            <span class="font-medium">Delhi NCR</span>
+                                        </div>
+                                    </td>
+                                    <td>₹11,200</td>
+                                    <td><span class="trend-badge trend-up">+6.8%</span></td>
+                                    <td><span class="trend-badge trend-up">+3.4%</span></td>
+                                    <td>Moderate</td>
+                                    <td><span class="market-health health-moderate">Stable</span></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="flex items-center">
+                                            <span class="market-indicator indicator-cold"></span>
+                                            <span class="font-medium">Hyderabad</span>
+                                        </div>
+                                    </td>
+                                    <td>₹9,500</td>
+                                    <td><span class="trend-badge trend-up">+9.2%</span></td>
+                                    <td><span class="trend-badge trend-up">+5.6%</span></td>
+                                    <td>High</td>
+                                    <td><span class="market-health health-good">Growing</span></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="flex items-center">
+                                            <span class="market-indicator indicator-warm"></span>
+                                            <span class="font-medium">Chennai</span>
+                                        </div>
+                                    </td>
+                                    <td>₹8,900</td>
+                                    <td><span class="trend-badge trend-up">+5.4%</span></td>
+                                    <td><span class="trend-badge trend-up">+2.8%</span></td>
+                                    <td>Moderate</td>
+                                    <td><span class="market-health health-moderate">Steady</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Area-wise Analysis -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 animate-fade-up">
+                    <!-- Top Performing Areas -->
+                    <div class="dashboard-card p-6">
+                        <h3 class="text-lg font-bold text-gray-900 mb-6">Top Performing Areas</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-transparent rounded-lg">
+                                <div>
+                                    <p class="font-semibold text-gray-900">Whitefield, Bangalore</p>
+                                    <p class="text-sm text-gray-500">+15.2% growth | ₹14,200/sq.ft</p>
+                                </div>
+                                <span class="trend-badge trend-up">#1</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div>
+                                    <p class="font-semibold text-gray-900">Andheri East, Mumbai</p>
+                                    <p class="text-sm text-gray-500">+13.8% growth | ₹28,500/sq.ft</p>
+                                </div>
+                                <span class="trend-badge trend-up">#2</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div>
+                                    <p class="font-semibold text-gray-900">Gurgaon, Delhi NCR</p>
+                                    <p class="text-sm text-gray-500">+12.5% growth | ₹12,800/sq.ft</p>
+                                </div>
+                                <span class="trend-badge trend-up">#3</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div>
+                                    <p class="font-semibold text-gray-900">Hitech City, Hyderabad</p>
+                                    <p class="text-sm text-gray-500">+11.9% growth | ₹10,500/sq.ft</p>
+                                </div>
+                                <span class="trend-badge trend-up">#4</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Market Forecast -->
+                    <div class="forecast-card">
+                        <h3 class="text-lg font-bold text-white mb-6">6-Month Market Forecast</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span class="text-white/90">Mumbai</span>
+                                <div class="flex items-center">
+                                    <span class="text-white font-semibold mr-2">+8-10%</span>
+                                    <i class="fas fa-arrow-up text-green-300"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-white/90">Bangalore</span>
+                                <div class="flex items-center">
+                                    <span class="text-white font-semibold mr-2">+6-8%</span>
+                                    <i class="fas fa-arrow-up text-green-300"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-white/90">Delhi NCR</span>
+                                <div class="flex items-center">
+                                    <span class="text-white font-semibold mr-2">+5-7%</span>
+                                    <i class="fas fa-arrow-up text-green-300"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-white/90">Hyderabad</span>
+                                <div class="flex items-center">
+                                    <span class="text-white font-semibold mr-2">+7-9%</span>
+                                    <i class="fas fa-arrow-up text-green-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-6 pt-6 border-t border-white/20">
+                            <p class="text-sm text-white/80">Forecast based on historical trends, economic indicators, and market demand patterns.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Investment Insights -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 animate-fade-up">
+                    <div class="dashboard-card p-6">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-lightbulb text-blue-600"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900">Best Time to Buy</p>
+                                <p class="text-sm text-gray-500">Current market conditions</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 mb-4">Based on current trends and historical data, now is a favorable time for property investment in:</p>
+                        <ul class="space-y-2">
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                <span>Bangalore - Steady growth pattern</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                <span>Hyderabad - Emerging market</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                <span>Pune - Affordable entry point</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="dashboard-card p-6">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-exclamation-triangle text-purple-600"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900">Areas to Watch</p>
+                                <p class="text-sm text-gray-500">Potential market corrections</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 mb-4">Monitor these areas for potential price adjustments:</p>
+                        <ul class="space-y-2">
+                            <li class="flex items-center">
+                                <i class="fas fa-info-circle text-yellow-500 mr-2"></i>
+                                <span>South Mumbai - High volatility expected</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-info-circle text-yellow-500 mr-2"></i>
+                                <span>Noida Extension - Supply increase</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-info-circle text-yellow-500 mr-2"></i>
+                                <span>Chennai OMR - Infrastructure delays</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Price Alert Setup -->
+                <div class="dashboard-card p-6 mb-8 animate-fade-up">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Set Price Alerts</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Select City</label>
+                            <select class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white">
+                                <option>Select City</option>
+                                <option>Mumbai</option>
+                                <option>Bangalore</option>
+                                <option>Delhi</option>
+                                <option>Hyderabad</option>
+                                <option>Chennai</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Property Type</label>
+                            <select class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white">
+                                <option>All Types</option>
+                                <option>Apartment</option>
+                                <option>Villa</option>
+                                <option>Plot</option>
+                                <option>Commercial</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Price Drop (%)</label>
+                            <select class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white">
+                                <option>Any drop</option>
+                                <option>5% or more</option>
+                                <option>10% or more</option>
+                                <option>15% or more</option>
+                                <option>20% or more</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="w-full mt-6 px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-semibold hover:shadow-lg transition">
+                        <i class="fas fa-bell mr-2"></i>Create Price Alert
+                    </button>
+                </div>
+            </main>
+
+            <!-- Footer -->
+            <footer class="bg-gray-900 text-gray-300 py-8 border-t border-gray-800">
+                <div class="max-w-full px-4 sm:px-6 lg:px-8">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                        <div>
+                            <div class="flex items-center space-x-3 mb-4">
+                                <div class="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center text-white font-bold">BS</div>
+                                <span class="text-white font-bold text-lg">Bhoosparsh</span>
+                            </div>
+                            <p class="text-sm leading-relaxed">Comprehensive property market analysis and price trend insights for informed decisions.</p>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold mb-4">Market Reports</h4>
+                            <ul class="space-y-2 text-sm">
+                                <li><a href="#" class="hover:text-white transition">Monthly Analysis</a></li>
+                                <li><a href="#" class="hover:text-white transition">Quarterly Reports</a></li>
+                                <li><a href="#" class="hover:text-white transition">City-wise Trends</a></li>
+                                <li><a href="#" class="hover:text-white transition">Forecast Reports</a></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold mb-4">Resources</h4>
+                            <ul class="space-y-2 text-sm">
+                                <li><a href="#" class="hover:text-white transition">Market Research</a></li>
+                                <li><a href="#" class="hover:text-white transition">Investment Guides</a></li>
+                                <li><a href="#" class="hover:text-white transition">Price Calculators</a></li>
+                                <li><a href="#" class="hover:text-white transition">FAQ</a></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold mb-4">Data Sources</h4>
+                            <p class="text-xs text-gray-400 mb-3">Data updated daily from:</p>
+                            <ul class="text-xs text-gray-400 space-y-1">
+                                <li>• Government Registrations</li>
+                                <li>• Real Estate Portals</li>
+                                <li>• Market Surveys</li>
+                                <li>• Historical Databases</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="border-t border-gray-800 pt-6 text-center text-sm">
+                        <p>© 2024 Bhoosparsh. All rights reserved. | <a href="#" class="text-orange-400 hover:text-orange-300 transition">Privacy Policy</a> | <a href="#" class="text-orange-400 hover:text-orange-300 transition">Terms of Service</a></p>
+                        <p class="text-xs text-gray-400 mt-2">Market data is for informational purposes only. Past performance does not guarantee future results.</p>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile sidebar toggle
+            function toggleMobileSidebar() {
+                const sidebarContainer = document.getElementById('sidebarContainer');
+                const overlay = document.getElementById('sidebarOverlay');
+                
+                sidebarContainer.classList.toggle('mobile-open');
+                overlay.classList.toggle('active');
+                
+                if (window.innerWidth < 768) {
+                    document.body.style.overflow = sidebarContainer.classList.contains('mobile-open') ? 'hidden' : '';
+                }
+            }
+
+            document.getElementById('mobileMenuButton').addEventListener('click', toggleMobileSidebar);
+            document.getElementById('sidebarOverlay').addEventListener('click', toggleMobileSidebar);
+
+            // Time period selector
+            const timePeriods = document.querySelectorAll('.time-period');
+            timePeriods.forEach(period => {
+                period.addEventListener('click', function() {
+                    timePeriods.forEach(p => p.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const selectedPeriod = this.getAttribute('data-period');
+                    updateChartData(selectedPeriod);
+                });
+            });
+
+            // Set price alert
+            document.getElementById('setAlert').addEventListener('click', function() {
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Setting up...';
+                
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-bell mr-2"></i>Set Price Alert';
+                    alert('Price alert set successfully! You will be notified of significant price changes.');
+                }, 1000);
+            });
+
+            // Create price alert
+            const createAlertBtn = document.querySelector('.bg-gradient-to-r');
+            if (createAlertBtn && createAlertBtn.textContent.includes('Create Price Alert')) {
+                createAlertBtn.addEventListener('click', function() {
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+                    
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="fas fa-bell mr-2"></i>Create Price Alert';
+                        alert('Price alert created successfully! You will receive notifications when prices drop in your selected criteria.');
+                    }, 1500);
+                });
+            }
+
+            // Download report
+            const downloadBtn = document.querySelector('.btn-primary:last-child');
+            if (downloadBtn && downloadBtn.textContent.includes('Download')) {
+                downloadBtn.addEventListener('click', function() {
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+                    
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="fas fa-download mr-2"></i>Download Report';
+                        alert('Report downloaded successfully! Check your downloads folder for the PDF file.');
+                    }, 2000);
+                });
+            }
+
+            // Chart data update simulation
+            function updateChartData(period) {
+                const chartPlaceholder = document.querySelector('.chart-placeholder p:first-child');
+                if (chartPlaceholder) {
+                    let periodText = '';
+                    switch(period) {
+                        case '1y': periodText = '1 Year'; break;
+                        case '6m': periodText = '6 Months'; break;
+                        case '3m': periodText = '3 Months'; break;
+                        case '1m': periodText = '1 Month'; break;
+                    }
+                    chartPlaceholder.textContent = `${periodText} Price Trend Chart`;
+                }
+            }
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                const sidebarContainer = document.getElementById('sidebarContainer');
+                const overlay = document.getElementById('sidebarOverlay');
+                
+                if (window.innerWidth >= 768) {
+                    sidebarContainer.classList.remove('mobile-open');
+                    overlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+
+            // Market health indicators click
+            const marketHealthIndicators = document.querySelectorAll('.market-health');
+            marketHealthIndicators.forEach(indicator => {
+                indicator.addEventListener('click', function() {
+                    const health = this.textContent.toLowerCase();
+                    let message = '';
+                    
+                    switch(health) {
+                        case 'excellent':
+                            message = 'Market showing strong growth with high demand and stable prices.';
+                            break;
+                        case 'hot':
+                        case 'good':
+                            message = 'Market is active with good appreciation potential and healthy demand.';
+                            break;
+                        case 'stable':
+                        case 'moderate':
+                            message = 'Market showing steady growth with moderate demand.';
+                            break;
+                        case 'poor':
+                            message = 'Market experiencing slowdown or price corrections.';
+                            break;
+                    }
+                    
+                    alert(`Market Status: ${this.textContent}\n\n${message}`);
+                });
+            });
+
+            // Trend badges click
+            const trendBadges = document.querySelectorAll('.trend-badge');
+            trendBadges.forEach(badge => {
+                badge.addEventListener('click', function() {
+                    const trend = this.classList.contains('trend-up') ? 'upward' : 
+                                 this.classList.contains('trend-down') ? 'downward' : 'stable';
+                    const percentage = this.textContent;
+                    
+                    alert(`Trend: ${trend}\nChange: ${percentage}\n\nThis indicates ${trege === 'upward' ? 'price appreciation' : 
+                          trend === 'downward' ? 'price correction' : 'market stability'}.`);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

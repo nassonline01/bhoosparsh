@@ -1,0 +1,954 @@
+{% extends 'dashboard/base_seller.html' %}
+{% load static %}
+
+{% block title %}{{ property.title }} - Seller Dashboard{% endblock %}
+
+{% block page_title %}{{ property.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .property-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+    
+    .property-stats {
+        display: flex;
+        justify-content: space-around;
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #667eea;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        color: #666;
+        text-transform: uppercase;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .tab-content {
+        padding: 20px;
+        background: white;
+        border-radius: 0 0 10px 10px;
+        border: 1px solid #dee2e6;
+        border-top: none;
+    }
+    
+    .image-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .gallery-image {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: transform 0.3s;
+    }
+    
+    .gallery-image:hover {
+        transform: scale(1.05);
+    }
+    
+    .performance-chart {
+        height: 300px;
+        width: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Property Header -->
+<div class="property-header">
+    <div class="d-flex justify-content-between align-items-start">
+        <div>
+            <h1 class="h3 mb-2">{{ property.title }}</h1>
+            <p class="mb-0">
+                <i class="fas fa-map-marker-alt"></i> {{ property.address|truncatechars:60 }}
+            </p>
+        </div>
+        <div class="action-buttons">
+            {% if property.status == 'draft' %}
+            <a href="{% url 'seller_property_publish' property.slug %}" class="btn btn-success">
+                <i class="fas fa-upload"></i> Publish Now
+            </a>
+            {% elif not property.is_active %}
+            <a href="{% url 'seller_property_activate' property.slug %}" class="btn btn-success">
+                <i class="fas fa-play"></i> Activate
+            </a>
+            {% else %}
+            <a href="{% url 'seller_property_pause' property.slug %}" class="btn btn-warning">
+                <i class="fas fa-pause"></i> Pause
+            </a>
+            {% endif %}
+            
+            <a href="{% url 'seller_property_edit' property.slug %}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            
+            {% if not property.is_featured %}
+            <a href="{% url 'seller_property_feature' property.slug %}" class="btn btn-warning">
+                <i class="fas fa-rocket"></i> Boost
+            </a>
+            {% endif %}
+            
+            <a href="{% url 'seller_property_delete' property.slug %}" class="btn btn-danger" 
+               onclick="return confirm('Are you sure you want to archive this property?')">
+                <i class="fas fa-trash"></i> Archive
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Property Stats -->
+<div class="property-stats">
+    <div class="stat-item">
+        <div class="stat-value">{{ property.view_count }}</div>
+        <div class="stat-label">Total Views</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-value">{{ property.inquiry_count }}</div>
+        <div class="stat-label">Total Leads</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-value">{{ property.get_lead_conversion_rate|floatformat:1 }}%</div>
+        <div class="stat-label">Conversion Rate</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-value">{{ property.days_remaining }}</div>
+        <div class="stat-label">Days Remaining</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-value">{{ property.performance_score|default:"0" }}%</div>
+        <div class="stat-label">Performance Score</div>
+    </div>
+</div>
+
+<!-- Property Tabs -->
+<ul class="nav nav-tabs" id="propertyTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button">
+            <i class="fas fa-info-circle"></i> Overview
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="photos-tab" data-bs-toggle="tab" data-bs-target="#photos" type="button">
+            <i class="fas fa-images"></i> Photos ({{ property.image_count }})
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="analytics-tab" data-bs-toggle="tab" data-bs-target="#analytics" type="button">
+            <i class="fas fa-chart-line"></i> Analytics
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="leads-tab" data-bs-toggle="tab" data-bs-target="#leads" type="button">
+            <i class="fas fa-inbox"></i> Leads ({{ property.inquiry_count }})
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button">
+            <i class="fas fa-cog"></i> Settings
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="propertyTabContent">
+    <!-- Overview Tab -->
+    <div class="tab-pane fade show active" id="overview" role="tabpanel">
+        <div class="row">
+            <div class="col-md-8">
+                <h4 class="mb-3">Property Details</h4>
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <table class="table table-sm">
+                            <tr>
+                                <th>Property ID:</th>
+                                <td>{{ property.ref_id }}</td>
+                            </tr>
+                            <tr>
+                                <th>Price:</th>
+                                <td>₹{{ property.price|floatformat:0 }}</td>
+                            </tr>
+                            <tr>
+                                <th>Price per Sq Ft:</th>
+                                <td>₹{{ property.price_per_sqft|floatformat:0 }}</td>
+                            </tr>
+                            <tr>
+                                <th>Area:</th>
+                                <td>{{ property.area }} {{ property.get_area_unit_display }}</td>
+                            </tr>
+                            <tr>
+                                <th>Bedrooms:</th>
+                                <td>{{ property.bedrooms }}</td>
+                            </tr>
+                            <tr>
+                                <th>Bathrooms:</th>
+                                <td>{{ property.bathrooms }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-sm">
+                            <tr>
+                                <th>Status:</th>
+                                <td>
+                                    <span class="badge bg-{% if property.status == 'for_sale' %}primary{% elif property.status == 'for_rent' %}info{% elif property.status == 'sold' %}success{% else %}secondary{% endif %}">
+                                        {{ property.get_status_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Furnishing:</th>
+                                <td>{{ property.get_furnishing_display }}</td>
+                            </tr>
+                            <tr>
+                                <th>Condition:</th>
+                                <td>{{ property.get_condition_display }}</td>
+                            </tr>
+                            <tr>
+                                <th>Year Built:</th>
+                                <td>{{ property.year_built|default:"N/A" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Parking:</th>
+                                <td>{{ property.parking }} spaces</td>
+                            </tr>
+                            <tr>
+                                <th>Listed On:</th>
+                                <td>{{ property.created_at|date:"M d, Y" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <h5 class="mb-3">Description</h5>
+                <p>{{ property.description|linebreaks }}</p>
+                
+                {% if property.amenities.exists %}
+                <h5 class="mb-3">Amenities</h5>
+                <div class="row">
+                    {% for amenity in property.amenities.all %}
+                    <div class="col-md-3 mb-2">
+                        <i class="fas fa-{{ amenity.icon|default:'check' }} text-primary me-2"></i>
+                        {{ amenity.name }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            {% if property.is_active %}
+                            <a href="#" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#boostModal">
+                                <i class="fas fa-rocket"></i> Boost Listing
+                            </a>
+                            <a href="{% url 'seller_property_pause' property.slug %}" class="btn btn-secondary">
+                                <i class="fas fa-pause"></i> Pause Listing
+                            </a>
+                            {% else %}
+                            <a href="{% url 'seller_property_activate' property.slug %}" class="btn btn-success">
+                                <i class="fas fa-play"></i> Activate Listing
+                            </a>
+                            {% endif %}
+                            
+                            {% if property.days_remaining < 30 %}
+                            <a href="{% url 'seller_property_action' property.slug 'renew' %}" class="btn btn-info">
+                                <i class="fas fa-sync"></i> Renew Listing
+                            </a>
+                            {% endif %}
+                            
+                            <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#shareModal">
+                                <i class="fas fa-share-alt"></i> Share Property
+                            </a>
+                            
+                            <a href="{% url 'seller_property_edit' property.slug %}" class="btn btn-outline-primary">
+                                <i class="fas fa-edit"></i> Edit Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Contact Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-1">
+                            <strong>Contact Person:</strong><br>
+                            {{ property.contact_person|default:user.full_name }}
+                        </p>
+                        <p class="mb-1">
+                            <strong>Phone:</strong><br>
+                            {{ property.contact_phone|default:user.phone }}
+                        </p>
+                        <p class="mb-0">
+                            <strong>Email:</strong><br>
+                            {{ property.contact_email|default:user.email }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Photos Tab -->
+    <div class="tab-pane fade" id="photos" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0">Property Photos</h4>
+            <a href="{% url 'seller_property_edit' property.slug %}#photos" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add More Photos
+            </a>
+        </div>
+        
+        {% if property.images.exists %}
+        <div class="image-gallery">
+            {% for image in property.images.all %}
+            <div class="position-relative">
+                <img src="{{ image.image.url }}" class="gallery-image" alt="Property Image {{ forloop.counter }}"
+                     data-bs-toggle="modal" data-bs-target="#imageModal{{ image.id }}">
+                
+                {% if image.is_primary %}
+                <span class="position-absolute top-0 start-0 badge bg-primary m-2">Primary</span>
+                {% endif %}
+                
+                <div class="position-absolute bottom-0 start-0 end-0 p-2 bg-dark bg-opacity-50">
+                    <div class="d-flex justify-content-between">
+                        <small class="text-white">{{ image.caption|default:"Image "|add:forloop.counter|stringformat:"s" }}</small>
+                        <div class="btn-group btn-group-sm">
+                            {% if not image.is_primary %}
+                            <button class="btn btn-sm btn-light" onclick="setPrimaryImage({{ image.id }})" title="Set as Primary">
+                                <i class="fas fa-star"></i>
+                            </button>
+                            {% endif %}
+                            <button class="btn btn-sm btn-danger" onclick="deleteImage({{ image.id }})" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Image Modal -->
+            <div class="modal fade" id="imageModal{{ image.id }}" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Property Image</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <img src="{{ image.image.url }}" class="img-fluid" alt="Property Image">
+                            {% if image.caption %}
+                            <p class="mt-3">{{ image.caption }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-images fa-4x text-muted mb-3"></i>
+            <h4>No Photos Uploaded</h4>
+            <p class="text-muted mb-4">Add photos to make your listing more attractive.</p>
+            <a href="{% url 'seller_property_edit' property.slug %}#photos" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i> Add Photos
+            </a>
+        </div>
+        {% endif %}
+        
+        {% if property.virtual_tour or property.video_url %}
+        <div class="row mt-5">
+            {% if property.virtual_tour %}
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Virtual Tour</h5>
+                    </div>
+                    <div class="card-body">
+                        <a href="{{ property.virtual_tour }}" target="_blank" class="btn btn-outline-primary">
+                            <i class="fas fa-vr-cardboard me-2"></i> View Virtual Tour
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if property.video_url %}
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Video Tour</h5>
+                    </div>
+                    <div class="card-body">
+                        <a href="{{ property.video_url }}" target="_blank" class="btn btn-outline-primary">
+                            <i class="fas fa-video me-2"></i> Watch Video
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Analytics Tab -->
+    <div class="tab-pane fade" id="analytics" role="tabpanel">
+        <h4 class="mb-4">Property Analytics</h4>
+        
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h2 class="text-primary">{{ stats.total_views }}</h2>
+                        <p class="text-muted mb-0">Total Views</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h2 class="text-success">{{ stats.unique_visitors }}</h2>
+                        <p class="text-muted mb-0">Unique Visitors</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h2 class="text-warning">{{ stats.total_leads }}</h2>
+                        <p class="text-muted mb-0">Total Leads</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h2 class="text-info">{{ stats.lead_conversion_rate|floatformat:1 }}%</h2>
+                        <p class="text-muted mb-0">Conversion Rate</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Performance Overview (Last 30 Days)</h5>
+            </div>
+            <div class="card-body">
+                <div class="performance-chart">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Lead Sources</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm">
+                            <tr>
+                                <th>Source</th>
+                                <th class="text-end">Count</th>
+                                <th class="text-end">Percentage</th>
+                            </tr>
+                            <tr>
+                                <td>Phone</td>
+                                <td class="text-end">{{ stats.phone_leads }}</td>
+                                <td class="text-end">{{ stats.phone_leads|divisibleby:stats.total_leads|multiply:100|floatformat:1 }}%</td>
+                            </tr>
+                            <tr>
+                                <td>WhatsApp</td>
+                                <td class="text-end">{{ stats.whatsapp_leads }}</td>
+                                <td class="text-end">{{ stats.whatsapp_leads|divisibleby:stats.total_leads|multiply:100|floatformat:1 }}%</td>
+                            </tr>
+                            <tr>
+                                <td>Email</td>
+                                <td class="text-end">{{ stats.email_leads }}</td>
+                                <td class="text-end">{{ stats.email_leads|divisibleby:stats.total_leads|multiply:100|floatformat:1 }}%</td>
+                            </tr>
+                            <tr>
+                                <td>Contact Form</td>
+                                <td class="text-end">{{ stats.form_leads }}</td>
+                                <td class="text-end">{{ stats.form_leads|divisibleby:stats.total_leads|multiply:100|floatformat:1 }}%</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Lead Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm">
+                            <tr>
+                                <th>Status</th>
+                                <th class="text-end">Count</th>
+                            </tr>
+                            <tr>
+                                <td>New</td>
+                                <td class="text-end">{{ stats.new_leads }}</td>
+                            </tr>
+                            <tr>
+                                <td>Contacted</td>
+                                <td class="text-end">{{ stats.contacted_leads }}</td>
+                            </tr>
+                            <tr>
+                                <td>Interested</td>
+                                <td class="text-end">{{ stats.interested_leads }}</td>
+                            </tr>
+                            <tr>
+                                <td>Converted</td>
+                                <td class="text-end">{{ stats.converted_leads }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Leads Tab -->
+    <div class="tab-pane fade" id="leads" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0">Property Leads ({{ leads.count }})</h4>
+            <a href="{% url 'seller_leads' %}?property={{ property.id }}" class="btn btn-primary">
+                <i class="fas fa-external-link-alt"></i> View All in Leads Dashboard
+            </a>
+        </div>
+        
+        {% if leads %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Name</th>
+                        <th>Contact</th>
+                        <th>Message</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lead in leads %}
+                    <tr>
+                        <td>{{ lead.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            <strong>{{ lead.name }}</strong>
+                            {% if lead.priority == 'hot' %}
+                            <span class="badge bg-danger ms-1">Hot</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div>{{ lead.phone }}</div>
+                            {% if lead.email %}
+                            <small class="text-muted">{{ lead.email }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small>{{ lead.message|truncatechars:50 }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ lead.status }}">
+                                {{ lead.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'seller_lead_detail' lead.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+            <h4>No Leads Yet</h4>
+            <p class="text-muted">When people show interest in this property, they'll appear here.</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Settings Tab -->
+    <div class="tab-pane fade" id="settings" role="tabpanel">
+        <h4 class="mb-4">Property Settings</h4>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Listing Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Current Status</label>
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-{% if property.is_active %}success{% else %}warning{% endif %} me-3">
+                                    {% if property.is_active %}Active{% else %}Inactive{% endif %}
+                                </span>
+                                {% if property.is_active %}
+                                <a href="{% url 'seller_property_pause' property.slug %}" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-pause"></i> Pause Listing
+                                </a>
+                                {% else %}
+                                <a href="{% url 'seller_property_activate' property.slug %}" class="btn btn-sm btn-success">
+                                    <i class="fas fa-play"></i> Activate Listing
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Featured Status</label>
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-{% if property.is_featured %}warning{% else %}secondary{% endif %} me-3">
+                                    {% if property.is_featured %}Featured{% else %}Not Featured{% endif %}
+                                </span>
+                                {% if not property.is_featured %}
+                                <a href="{% url 'seller_property_feature' property.slug %}" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-rocket"></i> Make Featured
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% if property.expires_at %}
+                        <div class="mb-3">
+                            <label class="form-label">Expiry Date</label>
+                            <p class="mb-0">
+                                {{ property.expires_at|date:"M d, Y" }}
+                                ({{ property.days_remaining }} days remaining)
+                            </p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Danger Zone</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Duplicate Property</label>
+                            <p class="text-muted small mb-2">Create a copy of this property with similar details.</p>
+                            <a href="{% url 'seller_property_action' property.slug 'duplicate' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-copy"></i> Duplicate Property
+                            </a>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Renew Listing</label>
+                            <p class="text-muted small mb-2">Extend the expiry date of this listing.</p>
+                            <a href="{% url 'seller_property_action' property.slug 'renew' %}" class="btn btn-outline-info">
+                                <i class="fas fa-sync"></i> Renew Listing
+                            </a>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Archive Property</label>
+                            <p class="text-muted small mb-2">Remove this property from active listings.</p>
+                            <a href="{% url 'seller_property_delete' property.slug %}" class="btn btn-outline-danger" 
+                               onclick="return confirm('Are you sure you want to archive this property?')">
+                                <i class="fas fa-archive"></i> Archive Property
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Boost Modal -->
+<div class="modal fade" id="boostModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Boost This Listing</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Boost your listing to get more visibility and reach more potential buyers.</p>
+                <form id="boostForm" method="post" action="{% url 'seller_ajax_boost' property.id %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Select Duration</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="duration" id="duration7" value="7" checked>
+                            <label class="form-check-label" for="duration7">
+                                7 Days - ₹299
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="duration" id="duration15" value="15">
+                            <label class="form-check-label" for="duration15">
+                                15 Days - ₹499
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="duration" id="duration30" value="30">
+                            <label class="form-check-label" for="duration30">
+                                30 Days - ₹899
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Payment Method</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment_method" id="credits" value="credits" checked>
+                            <label class="form-check-label" for="credits">
+                                Use Credits (Available: {{ user.credits.balance|default:0 }})
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment_method" id="razorpay" value="razorpay">
+                            <label class="form-check-label" for="razorpay">
+                                Pay with Razorpay
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="boostListing()">Boost Now</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Share Modal -->
+<div class="modal fade" id="shareModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Share Property</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Share Link</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="shareLink" 
+                               value="{{ request.scheme }}://{{ request.get_host }}{% url 'detail' property.slug %}" readonly>
+                        <button class="btn btn-outline-secondary" type="button" onclick="copyShareLink()">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Share via</label>
+                    <div class="d-flex gap-2">
+                        <a href="https://wa.me/?text=Check out this property: {{ request.scheme }}://{{ request.get_host }}{% url 'detail' property.slug %}" 
+                           target="_blank" class="btn btn-success flex-fill">
+                            <i class="fab fa-whatsapp"></i> WhatsApp
+                        </a>
+                        <a href="mailto:?subject=Check out this property&body=Check out this property: {{ request.scheme }}://{{ request.get_host }}{% url 'detail' property.slug %}" 
+                           class="btn btn-primary flex-fill">
+                            <i class="fas fa-envelope"></i> Email
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+$(document).ready(function() {
+    // Initialize performance chart
+    var ctx = document.getElementById('performanceChart').getContext('2d');
+    var chartData = JSON.parse('{{ graph_data|escapejs }}');
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartData.days,
+            datasets: [{
+                label: 'Views',
+                data: chartData.views,
+                borderColor: '#4CAF50',
+                backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                tension: 0.1
+            }, {
+                label: 'Leads',
+                data: chartData.leads,
+                borderColor: '#2196F3',
+                backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    
+    // Image functions
+    window.setPrimaryImage = function(imageId) {
+        $.ajax({
+            url: '{% url "ajax_set_primary_image" 0 %}'.replace('0', imageId),
+            type: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            success: function(response) {
+                if (response.success) {
+                    showToast('Primary image updated successfully', 'success');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1000);
+                }
+            }
+        });
+    };
+    
+    window.deleteImage = function(imageId) {
+        if (confirm('Are you sure you want to delete this image?')) {
+            $.ajax({
+                url: '{% url "ajax_delete_property_image" 0 %}'.replace('0', imageId),
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                success: function(response) {
+                    if (response.success) {
+                        showToast('Image deleted successfully', 'success');
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
+                    }
+                }
+            });
+        }
+    };
+    
+    // Boost listing
+    window.boostListing = function() {
+        var formData = $('#boostForm').serialize();
+        
+        $.ajax({
+            url: $('#boostForm').attr('action'),
+            type: 'POST',
+            data: formData,
+            success: function(response) {
+                if (response.success) {
+                    showToast(response.message, 'success');
+                    $('#boostModal').modal('hide');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showToast(response.error, 'error');
+                }
+            }
+        });
+    };
+    
+    // Copy share link
+    window.copyShareLink = function() {
+        var shareLink = document.getElementById('shareLink');
+        shareLink.select();
+        shareLink.setSelectionRange(0, 99999);
+        document.execCommand('copy');
+        showToast('Link copied to clipboard', 'success');
+    };
+    
+    // Toast notification
+    function showToast(message, type) {
+        var toast = $(`
+            <div class="toast align-items-center text-white bg-${type} border-0" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body">${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        `);
+        
+        if ($('#toast-container').length === 0) {
+            $('body').append('<div id="toast-container" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050"></div>');
+        }
+        
+        $('#toast-container').append(toast);
+        var bsToast = new bootstrap.Toast(toast[0]);
+        bsToast.show();
+        
+        toast.on('hidden.bs.toast', function() {
+            $(this).remove();
+        });
+    }
+    
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+{% endblock %}

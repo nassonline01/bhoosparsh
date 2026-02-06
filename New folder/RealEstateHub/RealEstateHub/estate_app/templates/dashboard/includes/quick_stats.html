@@ -1,0 +1,102 @@
+<!-- Quick Stats Widget -->
+<div class="card h-100">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i> Quick Statistics</h5>
+    </div>
+    <div class="card-body">
+        <!-- Performance Metrics -->
+        <div class="row mb-4">
+            <div class="col-6 mb-3">
+                <div class="text-center p-3 rounded bg-primary bg-opacity-10">
+                    <div class="display-6 text-primary">{{ quick_stats.active_properties|default:0 }}</div>
+                    <small class="text-muted">Active Properties</small>
+                </div>
+            </div>
+            <div class="col-6 mb-3">
+                <div class="text-center p-3 rounded bg-success bg-opacity-10">
+                    <div class="display-6 text-success">{{ quick_stats.featured_properties|default:0 }}</div>
+                    <small class="text-muted">Featured</small>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="text-center p-3 rounded bg-warning bg-opacity-10">
+                    <div class="display-6 text-warning">{{ quick_stats.pending_inquiries|default:0 }}</div>
+                    <small class="text-muted">Pending Inquiries</small>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="text-center p-3 rounded bg-info bg-opacity-10">
+                    <div class="display-6 text-info">{{ quick_stats.converted_inquiries|default:0 }}</div>
+                    <small class="text-muted">Converted</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Usage Progress Bars -->
+        <div class="mb-4">
+            <h6 class="mb-3">Usage Overview</h6>
+            
+            <!-- Listings Usage -->
+            <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <small>Listings Used</small>
+                    <small>{{ subscription_stats.listings_used|default:0 }}/{{ subscription_stats.listings_limit|default:0 }}</small>
+                </div>
+                <div class="progress" style="height: 6px;">
+                    <div class="progress-bar bg-primary" 
+                         style="width: {% widthratio subscription_stats.listings_used|default:0 subscription_stats.listings_limit|default:1 100 %}%">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Featured Usage -->
+            <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <small>Featured Credits Used</small>
+                    <small>{{ subscription_stats.featured_used|default:0 }}/{{ subscription_stats.featured_limit|default:0 }}</small>
+                </div>
+                <div class="progress" style="height: 6px;">
+                    <div class="progress-bar bg-warning" 
+                         style="width: {% widthratio subscription_stats.featured_used|default:0 subscription_stats.featured_limit|default:1 100 %}%">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Profile Completion -->
+            <div>
+                <div class="d-flex justify-content-between mb-1">
+                    <small>Profile Completion</small>
+                    <small>{{ profile_completion|default:0 }}%</small>
+                </div>
+                <div class="progress" style="height: 6px;">
+                    <div class="progress-bar bg-success" 
+                         style="width: {{ profile_completion|default:0 }}%">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Links -->
+        <div class="mt-4">
+            <h6 class="mb-3">Quick Actions</h6>
+            <div class="row g-2">
+                {% for action in quick_actions|slice:":4" %}
+                <div class="col-6">
+                    <a href="{{ action.url }}" class="btn btn-outline-primary w-100 text-start">
+                        <i class="fas fa-{{ action.icon }} me-2"></i>
+                        {{ action.title }}
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Last Updated -->
+    <div class="card-footer text-center">
+        <small class="text-muted">
+            <i class="fas fa-sync-alt me-1"></i>
+            Updated {{ time_period }}
+        </small>
+    </div>
+</div>

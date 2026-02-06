@@ -1,0 +1,1390 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EverGreen - Seller Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
+  
+  <style>
+    body { 
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+    
+    .hero-bg-container {
+      position: relative;
+      min-height: 100vh;
+    }
+    
+    .content-container {
+      width: 95%;
+      margin: 0 auto;
+    }
+    
+    @media (min-width: 640px) {
+      .content-container {
+        width: 95%;
+      }
+    }
+    
+    @media (min-width: 768px) {
+      .content-container {
+        width: 95%;
+      }
+    }
+    
+    @media (min-width: 1024px) {
+      .content-container {
+        width: 95%;
+      }
+    }
+    
+    /* Custom Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateX(-30px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    .animate-fade-in {
+      animation: fadeIn 0.6s ease-out;
+    }
+    
+    .animate-slide-in {
+      animation: slideIn 0.8s ease-out;
+    }
+    
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: #15803d;
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: #166534;
+    }
+    
+    /* Loading Spinner */
+    .loader {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #15803d;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Property Card Hover Effects */
+    .property-card {
+      transition: all 0.3s ease;
+    }
+    
+    .property-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Sticky Header Enhancement */
+    .sticky-header {
+      transition: all 0.3s ease;
+      background: transparent;
+      width: 95%;
+      margin: 0 auto;
+    }
+    
+    .sticky-header.scrolled {
+      background: rgba(255, 255, 255, 0.95) !important;
+      backdrop-filter: none !important;
+      border-radius: 9999px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      width: 95% !important;
+      margin: 0.5rem auto !important;
+    }
+    
+    .sticky-header.scrolled .nav-container {
+      background: transparent !important;
+      backdrop-filter: none !important;
+    }
+    
+    /* Form Input Focus Effects */
+    .form-input:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.2);
+      border-color: #15803d;
+    }
+    
+    /* Text colors for hero theme */
+    .text-hero-title {
+      color: white;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    .text-hero-subtitle {
+      color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .text-hero-light {
+      color: rgba(255, 255, 255, 0.8);
+    }
+    
+    /* Section background */
+    .section-light {
+      background: #ffffff;
+    }
+    
+    .section-gray {
+      background: #f8fafc;
+    }
+    
+    /* Search section styling */
+    .search-section-white {
+      background: white;
+      color: #111827;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+    
+    .search-section-white label {
+      color: #374151 !important;
+    }
+    
+    .search-section-white input,
+    .search-section-white select {
+      background: white !important;
+      color: #111827 !important;
+      border-color: #d1d5db !important;
+    }
+    
+    .search-section-white input::placeholder {
+      color: #9ca3af !important;
+    }
+    
+    .search-section-white .filter-tag {
+      background: #f3f4f6 !important;
+      color: #374151 !important;
+      border-color: #d1d5db !important;
+    }
+    
+    .search-section-white .filter-tag:hover {
+      background: #e5e7eb !important;
+    }
+    
+    /* Dashboard specific styles */
+    .dashboard-sidebar {
+      width: 280px;
+      background: linear-gradient(180deg, #166534 0%, #15803d 100%);
+      color: white;
+      min-height: calc(100vh - 80px);
+    }
+    
+    .dashboard-content {
+      flex: 1;
+      background: #f8fafc;
+    }
+    
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .progress-bar {
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+    
+    /* Dropzone styling */
+    .dropzone {
+      border: 2px dashed #d1d5db;
+      border-radius: 12px;
+      background: #f9fafb;
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .dropzone:hover {
+      border-color: #10b981;
+      background: #f0fdf4;
+    }
+    
+    .dropzone.dz-drag-hover {
+      border-color: #10b981;
+      background: #f0fdf4;
+    }
+    
+    .image-thumbnail {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #f3f4f6;
+    }
+    
+    .image-thumbnail img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+    }
+    
+    .image-thumbnail .remove-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(239, 68, 68, 0.9);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    
+    /* Analytics chart styling */
+    .analytics-chart {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Message inbox styling */
+    .message-item {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 16px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    
+    .message-item:hover {
+      background: #f9fafb;
+    }
+    
+    .message-item.unread {
+      background: #f0f9ff;
+    }
+    
+    .message-item.selected {
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .hero-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      
+      .hero-text {
+        max-width: 100% !important;
+      }
+      
+      .hero-subtext {
+        max-width: 100% !important;
+        text-align: left !important;
+      }
+      
+      .search-grid {
+        grid-template-columns: 1fr !important;
+      }
+      
+      .sticky-header {
+        width: 95% !important;
+      }
+      
+      .sticky-header.scrolled {
+        width: 95% !important;
+        border-radius: 20px;
+      }
+      
+      .dashboard-sidebar {
+        width: 100%;
+        min-height: auto;
+      }
+    }
+    
+    @media (max-width: 1024px) and (min-width: 769px) {
+      .search-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+      
+      .sticky-header {
+        width: 95% !important;
+      }
+      
+      .sticky-header.scrolled {
+        width: 95% !important;
+        border-radius: 9999px;
+      }
+    }
+    
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: white;
+      padding: 16px 24px;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transform: translateX(150%);
+      transition: transform 0.3s ease;
+    }
+    
+    .toast.show {
+      transform: translateX(0);
+    }
+    
+    .toast.success { border-left: 4px solid #10b981; }
+    .toast.error { border-left: 4px solid #ef4444; }
+    .toast.info { border-left: 4px solid #3b82f6; }
+    
+    /* Modal styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      max-width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    /* Tab navigation */
+    .tab-button {
+      padding: 12px 24px;
+      background: transparent;
+      border: none;
+      color: #6b7280;
+      font-weight: 500;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s ease;
+    }
+    
+    .tab-button:hover {
+      color: #374151;
+    }
+    
+    .tab-button.active {
+      color: #15803d;
+      border-bottom-color: #15803d;
+    }
+    
+    /* Table styles */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .data-table th {
+      background: #f9fafb;
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+      color: #374151;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .data-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid #e5e7eb;
+      color: #4b5563;
+    }
+    
+    .data-table tr:hover {
+      background: #f9fafb;
+    }
+  </style>
+</head>
+<body class="bg-white">
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="loader"></div>
+  </div>
+
+  <!-- Navigation -->
+  <header id="main-header" class="sticky-header sticky top-2 z-50 py-2">
+    <div class="nav-container relative bg-white/20 backdrop-blur-sm rounded-full transition-all duration-300">
+      <div class="relative z-10 flex items-center justify-between px-4 md:px-5 lg:px-6 py-2">
+        <div class="text-lg md:text-xl font-bold text-white">EverGreen</div>
+        <nav class="hidden lg:flex items-center gap-3 xl:gap-4">
+          <a href="#home" class="px-3 md:px-4 py-1.5 md:py-2 bg-white/20 backdrop-blur-sm rounded-full text-xs md:text-sm font-medium hover:bg-white/30 transition-all text-white">Home</a>
+          <a href="#dashboard" class="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm text-white hover:text-gray-200 transition-colors">Dashboard</a>
+          <a href="#properties" class="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm text-white hover:text-gray-200 transition-colors">My Properties</a>
+          <a href="#analytics" class="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm text-white hover:text-gray-200 transition-colors">Analytics</a>
+        </nav>
+        <div class="flex items-center gap-3">
+          <button onclick="showNotifications()" class="relative p-2 text-white hover:bg-white/20 rounded-full">
+            <i class="fas fa-bell"></i>
+            <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+          </button>
+          <div class="relative group">
+            <button class="flex items-center gap-2 text-white hover:bg-white/20 px-3 py-1.5 rounded-full">
+              <div class="w-8 h-8 bg-white/30 rounded-full flex items-center justify-center">
+                <i class="fas fa-user text-white"></i>
+              </div>
+              <span class="hidden md:inline text-sm">John Doe</span>
+            </button>
+            <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 hidden group-hover:block">
+              <a href="#profile" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Profile</a>
+              <a href="#settings" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Settings</a>
+              <div class="border-t border-gray-200 mt-2 pt-2">
+                <a href="#logout" class="block px-4 py-2 text-red-600 hover:bg-gray-100">Logout</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Seller Dashboard -->
+  <section id="seller-dashboard" class="min-h-screen bg-gray-50 pt-20">
+    <div class="content-container">
+      <!-- Dashboard Header -->
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Seller Dashboard</h1>
+        <p class="text-gray-600">Manage your properties, track performance, and grow your business</p>
+      </div>
+      
+      <!-- Quick Stats -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="stat-card">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <p class="text-sm text-gray-500">Total Properties</p>
+              <p class="text-2xl font-bold text-gray-900">24</p>
+            </div>
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <i class="fas fa-home text-green-600 text-xl"></i>
+            </div>
+          </div>
+          <div class="text-sm text-green-600 flex items-center gap-1">
+            <i class="fas fa-arrow-up"></i>
+            <span>12% from last month</span>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <p class="text-sm text-gray-500">Total Views</p>
+              <p class="text-2xl font-bold text-gray-900">1,248</p>
+            </div>
+            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <i class="fas fa-eye text-blue-600 text-xl"></i>
+            </div>
+          </div>
+          <div class="text-sm text-blue-600 flex items-center gap-1">
+            <i class="fas fa-arrow-up"></i>
+            <span>24% from last week</span>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <p class="text-sm text-gray-500">Inquiries</p>
+              <p class="text-2xl font-bold text-gray-900">48</p>
+            </div>
+            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+              <i class="fas fa-envelope text-purple-600 text-xl"></i>
+            </div>
+          </div>
+          <div class="text-sm text-purple-600 flex items-center gap-1">
+            <i class="fas fa-arrow-up"></i>
+            <span>8 new today</span>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <p class="text-sm text-gray-500">Conversion Rate</p>
+              <p class="text-2xl font-bold text-gray-900">18%</p>
+            </div>
+            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+              <i class="fas fa-chart-line text-orange-600 text-xl"></i>
+            </div>
+          </div>
+          <div class="text-sm text-orange-600 flex items-center gap-1">
+            <i class="fas fa-arrow-up"></i>
+            <span>3% increase</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Main Dashboard Content -->
+      <div class="flex flex-col lg:flex-row gap-6">
+        <!-- Left Sidebar - Dashboard Navigation -->
+        <div class="lg:w-1/4">
+          <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-gray-200">
+              <h3 class="font-semibold text-gray-900 text-lg mb-4">Dashboard Menu</h3>
+              <nav class="space-y-2">
+                <a href="#overview" class="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 rounded-lg font-medium">
+                  <i class="fas fa-tachometer-alt mr-3"></i>
+                  Overview
+                </a>
+                <a href="#list-property" class="block px-4 py-3 bg-green-50 text-green-700 rounded-lg font-medium">
+                  <i class="fas fa-plus-circle mr-3"></i>
+                  List Property
+                </a>
+                <a href="#my-properties" class="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 rounded-lg font-medium">
+                  <i class="fas fa-home mr-3"></i>
+                  My Properties
+                </a>
+                <a href="#inbox" class="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 rounded-lg font-medium">
+                  <i class="fas fa-inbox mr-3"></i>
+                  Inbox
+                  <span class="float-right bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">8</span>
+                </a>
+                <a href="#analytics" class="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 rounded-lg font-medium">
+                  <i class="fas fa-chart-bar mr-3"></i>
+                  Analytics
+                </a>
+                <a href="#membership" class="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 rounded-lg font-medium">
+                  <i class="fas fa-crown mr-3"></i>
+                  Membership
+                </a>
+                <a href="#promotions" class="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 rounded-lg font-medium">
+                  <i class="fas fa-bullhorn mr-3"></i>
+                  Promotions
+                </a>
+                <a href="#bulk-upload" class="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 rounded-lg font-medium">
+                  <i class="fas fa-upload mr-3"></i>
+                  Bulk Upload
+                </a>
+                <a href="#reports" class="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 rounded-lg font-medium">
+                  <i class="fas fa-file-alt mr-3"></i>
+                  Reports
+                </a>
+                <a href="#settings" class="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 rounded-lg font-medium">
+                  <i class="fas fa-cog mr-3"></i>
+                  Settings
+                </a>
+              </nav>
+            </div>
+            
+            <!-- Membership Status -->
+            <div class="p-6">
+              <h4 class="font-semibold text-gray-900 mb-4">Membership Status</h4>
+              <div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg p-4 text-white">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="font-medium">Premium Plan</span>
+                  <span class="text-sm bg-white/20 px-2 py-1 rounded">Active</span>
+                </div>
+                <p class="text-sm mb-4">Expires in 15 days</p>
+                <div class="progress-bar mb-2">
+                  <div class="progress-fill" style="width: 75%"></div>
+                </div>
+                <p class="text-xs">75% of listings used (15/20)</p>
+              </div>
+              <button class="w-full mt-4 bg-white border border-green-600 text-green-600 py-2 rounded-lg font-medium hover:bg-green-50">
+                Upgrade Plan
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="lg:w-3/4">
+          <!-- Property Listing Form -->
+          <div id="list-property" class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-6">List New Property</h2>
+            
+            <!-- Form Tabs -->
+            <div class="border-b border-gray-200 mb-6">
+              <div class="flex space-x-4">
+                <button class="tab-button active" onclick="switchTab('basic-info')">Basic Info</button>
+                <button class="tab-button" onclick="switchTab('property-details')">Property Details</button>
+                <button class="tab-button" onclick="switchTab('images')">Images</button>
+                <button class="tab-button" onclick="switchTab('pricing')">Pricing</button>
+              </div>
+            </div>
+            
+            <!-- Tab Content: Basic Info -->
+            <div id="tab-basic-info" class="tab-content">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Property Type</label>
+                  <select class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    <option value="">Select Type</option>
+                    <option value="apartment">Apartment</option>
+                    <option value="house">House</option>
+                    <option value="villa">Villa</option>
+                    <option value="commercial">Commercial</option>
+                    <option value="land">Land</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Listing Type</label>
+                  <select class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    <option value="">Select Type</option>
+                    <option value="sale">For Sale</option>
+                    <option value="rent">For Rent</option>
+                    <option value="lease">For Lease</option>
+                  </select>
+                </div>
+                
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Property Title</label>
+                  <input type="text" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="e.g., Luxury 3 BHK Apartment with Sea View">
+                </div>
+                
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                  <textarea rows="4" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Describe your property in detail..."></textarea>
+                </div>
+                
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                  <input type="text" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Full address">
+                </div>
+              </div>
+              
+              <div class="flex justify-end mt-6">
+                <button class="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700" onclick="switchTab('property-details')">
+                  Next: Property Details
+                </button>
+              </div>
+            </div>
+            
+            <!-- Tab Content: Property Details -->
+            <div id="tab-property-details" class="tab-content hidden">
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Bedrooms</label>
+                  <select class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    <option value="">Select</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5+</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Bathrooms</label>
+                  <select class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    <option value="">Select</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Square Feet</label>
+                  <input type="number" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="e.g., 1500">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Year Built</label>
+                  <input type="number" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="e.g., 2020">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Furnishing</label>
+                  <select class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    <option value="">Select</option>
+                    <option value="furnished">Furnished</option>
+                    <option value="semi-furnished">Semi-Furnished</option>
+                    <option value="unfurnished">Unfurnished</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Parking</label>
+                  <select class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    <option value="">Select</option>
+                    <option value="1">1 Car</option>
+                    <option value="2">2 Cars</option>
+                    <option value="3">3+ Cars</option>
+                  </select>
+                </div>
+              </div>
+              
+              <!-- Amenities -->
+              <div class="mt-8">
+                <h4 class="font-medium text-gray-900 mb-4">Amenities</h4>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <label class="flex items-center gap-2">
+                    <input type="checkbox" class="w-4 h-4 text-green-600 rounded border-gray-300">
+                    <span class="text-sm text-gray-700">Swimming Pool</span>
+                  </label>
+                  <label class="flex items-center gap-2">
+                    <input type="checkbox" class="w-4 h-4 text-green-600 rounded border-gray-300">
+                    <span class="text-sm text-gray-700">Gym</span>
+                  </label>
+                  <label class="flex items-center gap-2">
+                    <input type="checkbox" class="w-4 h-4 text-green-600 rounded border-gray-300">
+                    <span class="text-sm text-gray-700">Security</span>
+                  </label>
+                  <label class="flex items-center gap-2">
+                    <input type="checkbox" class="w-4 h-4 text-green-600 rounded border-gray-300">
+                    <span class="text-sm text-gray-700">Park</span>
+                  </label>
+                  <label class="flex items-center gap-2">
+                    <input type="checkbox" class="w-4 h-4 text-green-600 rounded border-gray-300">
+                    <span class="text-sm text-gray-700">Elevator</span>
+                  </label>
+                  <label class="flex items-center gap-2">
+                    <input type="checkbox" class="w-4 h-4 text-green-600 rounded border-gray-300">
+                    <span class="text-sm text-gray-700">Power Backup</span>
+                  </label>
+                  <label class="flex items-center gap-2">
+                    <input type="checkbox" class="w-4 h-4 text-green-600 rounded border-gray-300">
+                    <span class="text-sm text-gray-700">Club House</span>
+                  </label>
+                  <label class="flex items-center gap-2">
+                    <input type="checkbox" class="w-4 h-4 text-green-600 rounded border-gray-300">
+                    <span class="text-sm text-gray-700">Water Supply</span>
+                  </label>
+                </div>
+              </div>
+              
+              <div class="flex justify-between mt-6">
+                <button class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50" onclick="switchTab('basic-info')">
+                  Back
+                </button>
+                <button class="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700" onclick="switchTab('images')">
+                  Next: Upload Images
+                </button>
+              </div>
+            </div>
+            
+            <!-- Tab Content: Images -->
+            <div id="tab-images" class="tab-content hidden">
+              <div class="mb-6">
+                <h4 class="font-medium text-gray-900 mb-2">Upload Property Images</h4>
+                <p class="text-sm text-gray-600 mb-4">Upload 5-15 images. First image will be used as the cover photo.</p>
+                
+                <!-- Dropzone Area -->
+                <div id="image-dropzone" class="dropzone">
+                  <div class="dz-message">
+                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
+                    <p class="text-gray-600">Drag & drop images here or click to browse</p>
+                    <p class="text-sm text-gray-500 mt-2">Minimum 5 images, maximum 15 images</p>
+                  </div>
+                </div>
+                
+                <!-- Image Thumbnails Preview -->
+                <div id="image-preview" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mt-6">
+                  <!-- Thumbnails will be added here dynamically -->
+                </div>
+                
+                <!-- Image Ordering Instructions -->
+                <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                  <div class="flex items-start gap-3">
+                    <i class="fas fa-info-circle text-blue-600 mt-1"></i>
+                    <div>
+                      <p class="text-sm text-blue-800 font-medium">Tips for better results:</p>
+                      <ul class="text-sm text-blue-700 mt-1 list-disc list-inside">
+                        <li>First image should be the best exterior or main room photo</li>
+                        <li>Include photos of all rooms, kitchen, bathrooms</li>
+                        <li>Use high-quality, well-lit images</li>
+                        <li>Include photos of amenities and neighborhood</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="flex justify-between mt-6">
+                <button class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50" onclick="switchTab('property-details')">
+                  Back
+                </button>
+                <button class="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700" onclick="switchTab('pricing')">
+                  Next: Pricing & Finalize
+                </button>
+              </div>
+            </div>
+            
+            <!-- Tab Content: Pricing -->
+            <div id="tab-pricing" class="tab-content hidden">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Price</label>
+                  <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span class="text-gray-500">₹</span>
+                    </div>
+                    <input type="number" class="w-full pl-8 border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Enter price">
+                  </div>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Price Negotiable?</label>
+                  <select class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                </div>
+                
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Promotion Options</label>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="border border-gray-300 rounded-lg p-4">
+                      <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                          <i class="fas fa-star text-green-600"></i>
+                        </div>
+                        <div>
+                          <p class="font-medium text-gray-900">Featured Listing</p>
+                          <p class="text-sm text-gray-600">₹ 999</p>
+                        </div>
+                      </div>
+                      <p class="text-sm text-gray-600 mb-3">Get 5x more views and appear at the top of search results</p>
+                      <label class="flex items-center gap-2">
+                        <input type="checkbox" class="w-4 h-4 text-green-600 rounded border-gray-300">
+                        <span class="text-sm text-gray-700">Add Featured</span>
+                      </label>
+                    </div>
+                    
+                    <div class="border border-gray-300 rounded-lg p-4">
+                      <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                          <i class="fas fa-bullhorn text-blue-600"></i>
+                        </div>
+                        <div>
+                          <p class="font-medium text-gray-900">Premium Bump</p>
+                          <p class="text-sm text-gray-600">₹ 499</p>
+                        </div>
+                      </div>
+                      <p class="text-sm text-gray-600 mb-3">Bump your listing to the top for 7 days</p>
+                      <label class="flex items-center gap-2">
+                        <input type="checkbox" class="w-4 h-4 text-green-600 rounded border-gray-300">
+                        <span class="text-sm text-gray-700">Add Bump</span>
+                      </label>
+                    </div>
+                    
+                    <div class="border border-gray-300 rounded-lg p-4">
+                      <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                          <i class="fas fa-crown text-purple-600"></i>
+                        </div>
+                        <div>
+                          <p class="font-medium text-gray-900">Urgent Tag</p>
+                          <p class="text-sm text-gray-600">₹ 299</p>
+                        </div>
+                      </div>
+                      <p class="text-sm text-gray-600 mb-3">Add "Urgent" tag for quick sale attention</p>
+                      <label class="flex items-center gap-2">
+                        <input type="checkbox" class="w-4 h-4 text-green-600 rounded border-gray-300">
+                        <span class="text-sm text-gray-700">Add Urgent Tag</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Terms and Submit -->
+              <div class="mt-8 p-4 bg-gray-50 rounded-lg">
+                <label class="flex items-start gap-3">
+                  <input type="checkbox" class="w-4 h-4 text-green-600 rounded border-gray-300 mt-1">
+                  <div>
+                    <p class="text-sm text-gray-700">I agree to the terms and conditions</p>
+                    <p class="text-xs text-gray-600 mt-1">By submitting, I confirm that all information provided is accurate and I have the right to list this property.</p>
+                  </div>
+                </label>
+              </div>
+              
+              <div class="flex justify-between mt-6">
+                <button class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50" onclick="switchTab('images')">
+                  Back
+                </button>
+                <button class="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 flex items-center gap-2">
+                  <i class="fas fa-paper-plane"></i>
+                  Publish Listing
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Analytics Section -->
+          <div id="analytics" class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-xl font-semibold text-gray-900">Performance Analytics</h2>
+              <select class="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                <option>Last 7 Days</option>
+                <option>Last 30 Days</option>
+                <option>Last 90 Days</option>
+                <option>This Year</option>
+              </select>
+            </div>
+            
+            <!-- Analytics Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              <div class="analytics-chart">
+                <h4 class="font-medium text-gray-900 mb-4">Views Over Time</h4>
+                <div class="h-64 flex items-end gap-1">
+                  <!-- Simple bar chart simulation -->
+                  <div class="flex-1 bg-gradient-to-t from-green-500 to-green-300 rounded-t" style="height: 80%"></div>
+                  <div class="flex-1 bg-gradient-to-t from-green-500 to-green-300 rounded-t" style="height: 60%"></div>
+                  <div class="flex-1 bg-gradient-to-t from-green-500 to-green-300 rounded-t" style="height: 90%"></div>
+                  <div class="flex-1 bg-gradient-to-t from-green-500 to-green-300 rounded-t" style="height: 70%"></div>
+                  <div class="flex-1 bg-gradient-to-t from-green-500 to-green-300 rounded-t" style="height: 85%"></div>
+                  <div class="flex-1 bg-gradient-to-t from-green-500 to-green-300 rounded-t" style="height: 95%"></div>
+                  <div class="flex-1 bg-gradient-to-t from-green-500 to-green-300 rounded-t" style="height: 75%"></div>
+                </div>
+                <div class="flex justify-between text-xs text-gray-500 mt-2">
+                  <span>Mon</span>
+                  <span>Tue</span>
+                  <span>Wed</span>
+                  <span>Thu</span>
+                  <span>Fri</span>
+                  <span>Sat</span>
+                  <span>Sun</span>
+                </div>
+              </div>
+              
+              <div class="analytics-chart">
+                <h4 class="font-medium text-gray-900 mb-4">Top Performing Properties</h4>
+                <div class="space-y-4">
+                  <div>
+                    <div class="flex justify-between text-sm mb-1">
+                      <span class="text-gray-700">3 BHK Apartment, Bandra</span>
+                      <span class="font-medium text-gray-900">1,248 views</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div class="progress-fill" style="width: 100%"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-sm mb-1">
+                      <span class="text-gray-700">2 BHK Villa, Powai</span>
+                      <span class="font-medium text-gray-900">892 views</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div class="progress-fill" style="width: 72%"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-sm mb-1">
+                      <span class="text-gray-700">4 BHK House, Juhu</span>
+                      <span class="font-medium text-gray-900">645 views</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div class="progress-fill" style="width: 52%"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-sm mb-1">
+                      <span class="text-gray-700">Commercial Space, BKC</span>
+                      <span class="font-medium text-gray-900">432 views</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div class="progress-fill" style="width: 35%"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Inquiries Analytics -->
+            <div class="mb-6">
+              <h4 class="font-medium text-gray-900 mb-4">Inquiry Sources</h4>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                  <p class="text-2xl font-bold text-gray-900 mb-1">48</p>
+                  <p class="text-sm text-gray-600">Total Inquiries</p>
+                </div>
+                <div class="text-center p-4 bg-blue-50 rounded-lg">
+                  <p class="text-2xl font-bold text-blue-900 mb-1">32</p>
+                  <p class="text-sm text-blue-600">Website</p>
+                </div>
+                <div class="text-center p-4 bg-green-50 rounded-lg">
+                  <p class="text-2xl font-bold text-green-900 mb-1">12</p>
+                  <p class="text-sm text-green-600">Mobile App</p>
+                </div>
+                <div class="text-center p-4 bg-purple-50 rounded-lg">
+                  <p class="text-2xl font-bold text-purple-900 mb-1">4</p>
+                  <p class="text-sm text-purple-600">Email</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Export Options -->
+            <div class="flex justify-end">
+              <button class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 flex items-center gap-2">
+                <i class="fas fa-download"></i>
+                Export Analytics
+              </button>
+            </div>
+          </div>
+          
+          <!-- Inbox Section -->
+          <div id="inbox" class="bg-white rounded-xl shadow-sm p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-xl font-semibold text-gray-900">Inbox</h2>
+              <div class="flex items-center gap-3">
+                <button class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 text-sm">
+                  Mark All Read
+                </button>
+                <button class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 text-sm flex items-center gap-2">
+                  <i class="fas fa-filter"></i>
+                  Filter
+                </button>
+              </div>
+            </div>
+            
+            <!-- Messages List -->
+            <div class="border border-gray-200 rounded-lg overflow-hidden">
+              <div class="message-item unread selected">
+                <div class="flex items-start justify-between">
+                  <div class="flex items-start gap-3">
+                    <img src="https://images.unsplash.com/photo-1494790108755-2616b786d4d9?ixlib=rb-4.0.3&w=40&h=40&fit=crop&crop=face&auto=format" alt="User" class="w-10 h-10 rounded-full">
+                    <div>
+                      <div class="flex items-center gap-2 mb-1">
+                        <h4 class="font-medium text-gray-900">Sarah Johnson</h4>
+                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Interested in 3 BHK</span>
+                      </div>
+                      <p class="text-sm text-gray-600 mb-1">Hi, I'm interested in your 3 BHK apartment in Bandra. When can I schedule a visit?</p>
+                      <p class="text-xs text-gray-500">2 hours ago</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button class="p-2 text-gray-400 hover:text-green-600">
+                      <i class="fas fa-reply"></i>
+                    </button>
+                    <button class="p-2 text-gray-400 hover:text-red-600">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="message-item unread">
+                <div class="flex items-start justify-between">
+                  <div class="flex items-start gap-3">
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&w=40&h=40&fit=crop&crop=face&auto=format" alt="User" class="w-10 h-10 rounded-full">
+                    <div>
+                      <div class="flex items-center gap-2 mb-1">
+                        <h4 class="font-medium text-gray-900">Michael Chen</h4>
+                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Price Negotiation</span>
+                      </div>
+                      <p class="text-sm text-gray-600 mb-1">Is the price negotiable for the villa in Powai? I'm ready to make an offer.</p>
+                      <p class="text-xs text-gray-500">5 hours ago</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="message-item">
+                <div class="flex items-start justify-between">
+                  <div class="flex items-start gap-3">
+                    <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&w=40&h=40&fit=crop&crop=face&auto=format" alt="User" class="w-10 h-10 rounded-full">
+                    <div>
+                      <div class="flex items-center gap-2 mb-1">
+                        <h4 class="font-medium text-gray-900">Priya Sharma</h4>
+                        <span class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Document Request</span>
+                      </div>
+                      <p class="text-sm text-gray-600 mb-1">Could you please share the property documents and RERA details?</p>
+                      <p class="text-xs text-gray-500">Yesterday</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Bulk Upload Section -->
+            <div id="bulk-upload" class="mt-8 p-6 bg-gray-50 rounded-xl">
+              <h3 class="font-semibold text-gray-900 mb-4">Bulk Property Upload</h3>
+              <div class="flex items-center gap-4 mb-4">
+                <div class="flex-1">
+                  <p class="text-sm text-gray-600 mb-2">Upload multiple properties via CSV/Excel file</p>
+                  <a href="#" class="text-sm text-green-600 hover:text-green-700 font-medium flex items-center gap-1">
+                    <i class="fas fa-download"></i>
+                    Download Template
+                  </a>
+                </div>
+                <div>
+                  <button class="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 flex items-center gap-2">
+                    <i class="fas fa-upload"></i>
+                    Upload CSV
+                  </button>
+                </div>
+              </div>
+              <div class="text-sm text-gray-500">
+                <p class="mb-1">Supported formats: CSV, XLSX</p>
+                <p>Maximum file size: 10MB | Maximum properties per file: 100</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="mt-12 py-8 border-t border-gray-200 bg-white">
+    <div class="content-container">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+        <div class="text-gray-900 text-xl sm:text-2xl font-bold">EverGreen</div>
+        <div class="flex flex-wrap gap-4 sm:gap-6 md:gap-8 justify-center">
+          <a href="#" class="text-gray-600 text-sm sm:text-base hover:text-gray-900">Privacy Policy</a>
+          <a href="#" class="text-gray-600 text-sm sm:text-base hover:text-gray-900">Terms of Service</a>
+          <a href="#" class="text-gray-600 text-sm sm:text-base hover:text-gray-900">Support</a>
+          <a href="#contact" class="text-gray-600 text-sm sm:text-base hover:text-gray-900">Contact</a>
+        </div>
+      </div>
+      <div class="text-center text-gray-500 text-sm sm:text-base mt-6">
+        © 2024 EverGreen Real Estate. All rights reserved. | Seller Dashboard v2.0
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modals -->
+  <div id="notification-modal" class="modal-overlay hidden">
+    <div class="modal-content w-full max-w-md">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-lg font-semibold text-gray-900">Notifications</h3>
+          <button onclick="closeNotifications()" class="text-gray-500 hover:text-gray-700">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="space-y-4">
+          <div class="p-3 bg-green-50 rounded-lg">
+            <p class="text-sm text-gray-700">Your listing "3 BHK Luxury Apartment" got 12 new views today</p>
+            <p class="text-xs text-gray-500 mt-1">2 hours ago</p>
+          </div>
+          <div class="p-3 bg-blue-50 rounded-lg">
+            <p class="text-sm text-gray-700">New inquiry received for your villa in Powai</p>
+            <p class="text-xs text-gray-500 mt-1">5 hours ago</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Libraries -->
+  <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+  <script>
+    // Initialize Dropzone for image uploads
+    Dropzone.autoDiscover = false;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize image dropzone
+      const dropzone = new Dropzone("#image-dropzone", {
+        url: "/upload",
+        paramName: "images",
+        maxFiles: 15,
+        maxFilesize: 5,
+        acceptedFiles: "image/*",
+        addRemoveLinks: true,
+        dictDefaultMessage: "",
+        dictRemoveFile: "Remove",
+        dictMaxFilesExceeded: "You can only upload up to 15 images",
+        init: function() {
+          this.on("success", function(file, response) {
+            // Add thumbnail preview
+            const preview = document.getElementById('image-preview');
+            const thumbnail = document.createElement('div');
+            thumbnail.className = 'image-thumbnail';
+            thumbnail.innerHTML = `
+              <img src="${response.url}" alt="Property Image">
+              <button type="button" class="remove-btn" data-dz-remove>
+                <i class="fas fa-times"></i>
+              </button>
+            `;
+            preview.appendChild(thumbnail);
+          });
+          
+          this.on("removedfile", function(file) {
+            // Remove thumbnail from preview
+            const thumbnails = document.querySelectorAll('.image-thumbnail');
+            thumbnails.forEach(thumb => {
+              if (thumb.querySelector('img').src.includes(file.name)) {
+                thumb.remove();
+              }
+            });
+          });
+        }
+      });
+    });
+    
+    // Tab switching functionality
+    function switchTab(tabName) {
+      // Hide all tab contents
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.add('hidden');
+      });
+      
+      // Remove active class from all tab buttons
+      document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('active');
+      });
+      
+      // Show selected tab content
+      document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+      
+      // Add active class to clicked tab button
+      event.target.classList.add('active');
+    }
+    
+    // Notification modal
+    function showNotifications() {
+      document.getElementById('notification-modal').classList.remove('hidden');
+    }
+    
+    function closeNotifications() {
+      document.getElementById('notification-modal').classList.add('hidden');
+    }
+    
+    // Toast notification system
+    function showToast(message, type = 'info', duration = 3000) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} 
+           ${type === 'success' ? 'text-green-500' : type === 'error' ? 'text-red-500' : 'text-blue-500'}"></i>
+        <div>${message}</div>
+      `;
+      
+      container.appendChild(toast);
+      setTimeout(() => toast.classList.add('show'), 10);
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      }, duration);
+    }
+    
+    // Scroll effect for sticky header
+    const mainHeader = document.getElementById('main-header');
+    
+    function checkScroll() {
+      if (window.scrollY > 100) {
+        mainHeader.classList.add('scrolled');
+      } else {
+        mainHeader.classList.remove('scrolled');
+      }
+    }
+    
+    window.addEventListener('scroll', checkScroll);
+    
+    // Demo functions for dashboard interactions
+    function publishListing() {
+      showLoading();
+      setTimeout(() => {
+        hideLoading();
+        showToast('Property listed successfully!', 'success');
+        // Reset form and go to first tab
+        switchTab('basic-info');
+      }, 2000);
+    }
+    
+    function showLoading() {
+      document.getElementById('loading-overlay').classList.remove('hidden');
+    }
+    
+    function hideLoading() {
+      document.getElementById('loading-overlay').classList.add('hidden');
+    }
+    
+    // Close modals on outside click
+    document.addEventListener('click', function(event) {
+      const notificationModal = document.getElementById('notification-modal');
+      if (event.target === notificationModal) {
+        closeNotifications();
+      }
+    });
+    
+    // Initialize dashboard with default tab
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set first tab as active
+      switchTab('basic-info');
+      
+      // Add demo images to dropzone preview
+      const demoImages = [
+        'https://images.unsplash.com/photo-1613490493576-7fde63acd811?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+        'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w-400&q=80',
+        'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+        'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
+      ];
+      
+      const preview = document.getElementById('image-preview');
+      demoImages.forEach((src, index) => {
+        const thumbnail = document.createElement('div');
+        thumbnail.className = 'image-thumbnail';
+        thumbnail.innerHTML = `
+          <img src="${src}" alt="Property Image ${index + 1}">
+          <button type="button" class="remove-btn" onclick="this.parentElement.remove()">
+            <i class="fas fa-times"></i>
+          </button>
+        `;
+        preview.appendChild(thumbnail);
+      });
+    });
+  </script>
+</body>
+</html>

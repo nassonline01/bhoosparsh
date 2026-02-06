@@ -1,0 +1,777 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block dashboard_content %}
+<!-- Dashboard Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-2">Buyer Dashboard</h1>
+        <p class="text-muted mb-0">
+            Welcome back, {{ user.first_name }}! 
+            <span class="badge bg-info">{{ user.get_user_type_display }}</span>
+        </p>
+    </div>
+    <div class="d-flex gap-2">
+        <!-- Time Period Selector -->
+        <select id="timePeriodSelect" class="form-select w-auto">
+            {% for period in time_periods %}
+            <option value="{{ period.value }}" {% if period.value == time_period %}selected{% endif %}>
+                {{ period.label }}
+            </option>
+            {% endfor %}
+        </select>
+        
+        <!-- Quick Actions -->
+        <div class="btn-group">
+            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="fas fa-bolt me-2"></i> Quick Actions
+            </button>
+            <ul class="dropdown-menu">
+                {% for action in quick_actions %}
+                <li>
+                    <a class="dropdown-item" href="{{ action.url }}">
+                        <i class="fas fa-{{ action.icon }} me-2"></i>
+                        {{ action.title }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card card-gradient-1">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon bg-white text-primary">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title mb-1">{{ stats.favorite_stats.total }}</h3>
+                        <p class="card-text mb-0">Saved Properties</p>
+                        <small>{{ stats.time_period }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card card-gradient-2">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon bg-white text-danger">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title mb-1">{{ stats.inquiry_stats.total }}</h3>
+                        <p class="card-text mb-0">Total Inquiries</p>
+                        <small>{{ stats.inquiry_stats.pending }} pending</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card card-gradient-3">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon bg-white text-info">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title mb-1">{{ stats.view_history|length }}</h3>
+                        <p class="card-text mb-0">Recent Views</p>
+                        <small>Last {{ time_period }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card card-gradient-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon bg-white text-success">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title mb-1">{{ saved_searches|length }}</h3>
+                        <p class="card-text mb-0">Saved Searches</p>
+                        <small>{{ alert_suggestions|length }} new alerts</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Property Alert Suggestions -->
+{% if alert_suggestions %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-bell me-2"></i> New Properties Alert</h5>
+                <span class="badge bg-warning">{{ alert_suggestions|length }} updates</span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for alert in alert_suggestions %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="card-title mb-1">{{ alert.city }}</h6>
+                                        <p class="card-text text-muted mb-0">
+                                            {{ alert.count }} new propert{{ alert.count|pluralize:"y,ies" }}
+                                        </p>
+                                    </div>
+                                    <span class="badge bg-primary">{{ alert.count }}</span>
+                                </div>
+                                <a href="{{ alert.url }}" class="btn btn-sm btn-outline-primary mt-3 w-100">
+                                    View Properties <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Recommended Properties -->
+{% if recommendations %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-star me-2"></i> Recommended For You</h5>
+                <small class="text-muted">Based on your preferences</small>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for property in recommendations %}
+                    <div class="col-xl-4 col-lg-6 mb-4">
+                        <div class="card property-card h-100">
+                            {% if property.primary_image %}
+                            <img src="{{ property.primary_image.url }}" 
+                                 class="card-img-top property-image" 
+                                 alt="{{ property.title }}">
+                            {% else %}
+                            <div class="property-image bg-light d-flex align-items-center justify-content-center">
+                                <i class="fas fa-home fa-3x text-muted"></i>
+                            </div>
+                            {% endif %}
+                            
+                            {% if property.is_featured %}
+                            <span class="property-badge badge bg-warning">
+                                <i class="fas fa-crown me-1"></i> Featured
+                            </span>
+                            {% endif %}
+                            
+                            <div class="card-body">
+                                <h6 class="card-title mb-1">{{ property.title|truncatechars:40 }}</h6>
+                                <p class="card-text text-muted mb-2">
+                                    <i class="fas fa-map-marker-alt me-1"></i>
+                                    {{ property.locality }}, {{ property.city }}
+                                </p>
+                                
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <span class="badge bg-light text-dark me-1">
+                                            <i class="fas fa-bed me-1"></i>{{ property.bedrooms }}
+                                        </span>
+                                        <span class="badge bg-light text-dark me-1">
+                                            <i class="fas fa-bath me-1"></i>{{ property.bathrooms }}
+                                        </span>
+                                        <span class="badge bg-light text-dark">
+                                            <i class="fas fa-expand-arrows-alt me-1"></i>{{ property.area }} {{ property.area_unit }}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="text-primary mb-0">₹{{ property.price|floatformat:0 }}</h5>
+                                    <div class="btn-group">
+                                        <a href="{% url 'properties:detail' property.slug %}" 
+                                           class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye me-1"></i> View
+                                        </a>
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-primary"
+                                                onclick="toggleFavorite({{ property.id }}, this)">
+                                            <i class="far fa-heart"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Saved Properties -->
+<div class="row mb-4" id="favorites-section">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-heart me-2"></i> Saved Properties</h5>
+                <span class="badge bg-danger">{{ stats.favorite_stats.total }}</span>
+            </div>
+            <div class="card-body">
+                {% if favorites %}
+                <div class="row">
+                    {% for favorite in favorites %}
+                    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+                        <div class="card property-card h-100">
+                            {% if favorite.property.primary_image %}
+                            <img src="{{ favorite.property.primary_image.url }}" 
+                                 class="card-img-top property-image" 
+                                 alt="{{ favorite.property.title }}">
+                            {% else %}
+                            <div class="property-image bg-light d-flex align-items-center justify-content-center">
+                                <i class="fas fa-home fa-3x text-muted"></i>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="card-body">
+                                <h6 class="card-title mb-1">{{ favorite.property.title|truncatechars:30 }}</h6>
+                                <p class="card-text text-muted mb-2">
+                                    <i class="fas fa-map-marker-alt me-1"></i>
+                                    {{ favorite.property.city }}
+                                </p>
+                                
+                                <div class="mb-3">
+                                    <span class="badge bg-{{ favorite.property.status|status_color }} me-1">
+                                        {{ favorite.property.get_status_display }}
+                                    </span>
+                                    <span class="badge bg-light text-dark">
+                                        ₹{{ favorite.property.price|floatformat:0 }}
+                                    </span>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        Saved {{ favorite.created_at|timesince }} ago
+                                    </small>
+                                    <div class="btn-group">
+                                        <a href="{% url 'properties:detail' favorite.property.slug %}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-danger"
+                                                onclick="removeFavorite({{ favorite.property.id }}, this)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                {% if favorite.notes %}
+                                <div class="mt-3">
+                                    <small class="text-muted">Your notes:</small>
+                                    <p class="mb-0 small">{{ favorite.notes|truncatechars:50 }}</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Pagination -->
+                {% if favorites.has_other_pages %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if favorites.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ favorites.previous_page_number }}&period={{ time_period }}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for num in favorites.paginator.page_range %}
+                            {% if favorites.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                            {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}&period={{ time_period }}">{{ num }}</a>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if favorites.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ favorites.next_page_number }}&period={{ time_period }}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+                {% else %}
+                <div class="text-center py-5">
+                    <div class="text-muted">
+                        <i class="fas fa-heart fa-3x mb-3"></i><br>
+                        No saved properties yet.<br>
+                        <a href="{% url 'properties:list' %}" class="btn btn-primary mt-3">
+                            <i class="fas fa-search me-1"></i> Browse Properties
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Inquiries -->
+<div class="row mb-4" id="inquiries-section">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-envelope me-2"></i> My Inquiries</h5>
+                <span class="badge bg-primary">{{ stats.inquiry_stats.total }} total</span>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Property</th>
+                                <th>Message</th>
+                                <th>Status</th>
+                                <th>Response</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for inquiry in recent_inquiries %}
+                            <tr>
+                                <td>
+                                    <strong>{{ inquiry.property_link.title|truncatechars:30 }}</strong><br>
+                                    <small class="text-muted">{{ inquiry.property_link.city }}</small>
+                                </td>
+                                <td>
+                                    <small>{{ inquiry.message|truncatechars:50 }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ inquiry.status|inquiry_status_color }}">
+                                        {{ inquiry.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if inquiry.response %}
+                                    <span class="badge bg-success">Responded</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ inquiry.created_at|date:"M d" }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'properties:detail' inquiry.property_link.slug %}" 
+                                           class="btn btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if inquiry.response %}
+                                        <button type="button" 
+                                                class="btn btn-outline-info"
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#responseModal{{ inquiry.id }}">
+                                            <i class="fas fa-reply"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <!-- Response Modal -->
+                            {% if inquiry.response %}
+                            <div class="modal fade" id="responseModal{{ inquiry.id }}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Seller's Response</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <strong>Your Inquiry:</strong><br>
+                                                <p class="mt-2">{{ inquiry.message }}</p>
+                                            </div>
+                                            <div class="mb-3">
+                                                <strong>Seller's Response:</strong><br>
+                                                <p class="mt-2">{{ inquiry.response }}</p>
+                                            </div>
+                                            <div class="text-muted small">
+                                                Responded on {{ inquiry.responded_at|date:"M d, Y h:i A" }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <div class="text-muted">
+                                        <i class="fas fa-envelope fa-2x mb-3"></i><br>
+                                        No inquiries sent yet.
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Saved Searches -->
+<div class="row" id="searches-section">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-search me-2"></i> Saved Searches</h5>
+                <a href="#" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#saveSearchModal">
+                    <i class="fas fa-plus me-1"></i> New Search
+                </a>
+            </div>
+            <div class="card-body">
+                {% if saved_searches %}
+                <div class="row">
+                    {% for search in saved_searches %}
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="card-title mb-0">{{ search.name }}</h6>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" 
+                                               type="checkbox" 
+                                               {% if search.is_active %}checked{% endif %}
+                                               onchange="toggleSearchAlert({{ search.id }}, this)">
+                                    </div>
+                                </div>
+                                
+                                <div class="small text-muted mb-3">
+                                    <div class="mb-1">
+                                        <i class="fas fa-map-marker-alt me-1"></i>
+                                        {{ search.city|default:"Any City" }}
+                                        {% if search.locality %}, {{ search.locality }}{% endif %}
+                                    </div>
+                                    <div class="mb-1">
+                                        <i class="fas fa-rupee-sign me-1"></i>
+                                        {% if search.min_price and search.max_price %}
+                                        ₹{{ search.min_price|floatformat:0 }} - ₹{{ search.max_price|floatformat:0 }}
+                                        {% elif search.min_price %}
+                                        Min ₹{{ search.min_price|floatformat:0 }}
+                                        {% elif search.max_price %}
+                                        Max ₹{{ search.max_price|floatformat:0 }}
+                                        {% else %}
+                                        Any Price
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <i class="fas fa-home me-1"></i>
+                                        {{ search.property_type|default:"Any Type" }}
+                                        {% if search.bedrooms %}
+                                        • {{ search.bedrooms }} BHK
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between">
+                                    <small class="text-muted">
+                                        {{ search.get_frequency_display }} alerts
+                                    </small>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'properties:list' %}?{{ search.get_search_params|urlencode }}" 
+                                           class="btn btn-outline-primary">
+                                            <i class="fas fa-search"></i>
+                                        </a>
+                                        <button type="button" 
+                                                class="btn btn-outline-danger"
+                                                onclick="deleteSearch({{ search.id }})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <div class="text-muted">
+                        <i class="fas fa-search fa-2x mb-3"></i><br>
+                        No saved searches yet.<br>
+                        <button type="button" 
+                                class="btn btn-primary mt-3"
+                                data-bs-toggle="modal" 
+                                data-bs-target="#saveSearchModal">
+                            <i class="fas fa-plus me-1"></i> Create First Search
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Save Search Modal -->
+<div class="modal fade" id="saveSearchModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Save Search</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'core:save_search' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="searchName" class="form-label">Search Name</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="searchName" 
+                               name="name" 
+                               required
+                               placeholder="e.g., 2BHK in Mumbai">
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="searchCity" class="form-label">City</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="searchCity" 
+                                   name="city"
+                                   placeholder="e.g., Mumbai">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="searchLocality" class="form-label">Locality</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="searchLocality" 
+                                   name="locality"
+                                   placeholder="e.g., Bandra">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="minPrice" class="form-label">Min Price (₹)</label>
+                            <input type="number" 
+                                   class="form-control" 
+                                   id="minPrice" 
+                                   name="min_price"
+                                   placeholder="e.g., 5000000">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="maxPrice" class="form-label">Max Price (₹)</label>
+                            <input type="number" 
+                                   class="form-control" 
+                                   id="maxPrice" 
+                                   name="max_price"
+                                   placeholder="e.g., 10000000">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="searchBedrooms" class="form-label">Bedrooms</label>
+                        <select class="form-select" id="searchBedrooms" name="bedrooms">
+                            <option value="">Any</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4+</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="searchFrequency" class="form-label">Alert Frequency</label>
+                        <select class="form-select" id="searchFrequency" name="frequency" required>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="instant" selected>Instant</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Save Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Toggle favorite
+    function toggleFavorite(propertyId, button) {
+        fetch(`/properties/ajax/toggle-favorite/${propertyId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (data.is_favorited) {
+                    button.innerHTML = '<i class="fas fa-heart"></i>';
+                    button.classList.remove('btn-outline-primary');
+                    button.classList.add('btn-primary');
+                    showToast('Property added to favorites!', 'success');
+                } else {
+                    button.innerHTML = '<i class="far fa-heart"></i>';
+                    button.classList.remove('btn-primary');
+                    button.classList.add('btn-outline-primary');
+                    showToast('Property removed from favorites!', 'info');
+                }
+            }
+        });
+    }
+    
+    // Remove favorite
+    function removeFavorite(propertyId, button) {
+        if (confirm('Remove this property from saved list?')) {
+            const card = button.closest('.card');
+            fetch(`/properties/ajax/toggle-favorite/${propertyId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && !data.is_favorited) {
+                    card.style.opacity = '0.5';
+                    setTimeout(() => {
+                        card.remove();
+                        showToast('Property removed from favorites!', 'info');
+                        // Reload stats
+                        loadDashboardStats();
+                    }, 300);
+                }
+            });
+        }
+    }
+    
+    // Toggle search alert
+    function toggleSearchAlert(searchId, checkbox) {
+        fetch(`/dashboard/ajax/toggle-search-alert/${searchId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                is_active: checkbox.checked
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(
+                    `Search alerts ${checkbox.checked ? 'enabled' : 'disabled'}!`,
+                    'success'
+                );
+            }
+        });
+    }
+    
+    // Delete search
+    function deleteSearch(searchId) {
+        if (confirm('Delete this saved search?')) {
+            fetch(`/dashboard/ajax/delete-search/${searchId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+        }
+    }
+    
+    // Utility functions
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white bg-${type} border-0`;
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        
+        const container = document.querySelector('.toast-container') || createToastContainer();
+        container.appendChild(toast);
+        
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+    
+    function createToastContainer() {
+        const container = document.createElement('div');
+        container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        document.body.appendChild(container);
+        return container;
+    }
+</script>
+{% endblock %}  

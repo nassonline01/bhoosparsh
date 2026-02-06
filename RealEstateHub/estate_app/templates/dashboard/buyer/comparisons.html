@@ -1,0 +1,1147 @@
+<!-- templates/dashboard/buyer/comparisons.html -->
+{% extends 'dashboard/buyer/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Property Comparisons - BHOOSPARSH Buyer{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Comparisons page specific styles */
+    .comparisons-section {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .comparisons-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .comparisons-header h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .comparisons-header p {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .create-comparison-btn {
+        background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+    .create-comparison-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+    }
+
+    .comparisons-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .comparison-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .comparison-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        border-color: rgba(255, 107, 53, 0.3);
+    }
+
+    .comparison-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .comparison-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.25rem;
+    }
+
+    .comparison-date {
+        font-size: 0.75rem;
+        color: #6b7280;
+    }
+
+    .comparison-properties {
+        margin-top: 1.5rem;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .property-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem;
+        background: #f8fafc;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .property-item:hover {
+        background: #f1f5f9;
+        transform: translateX(4px);
+    }
+
+    .property-image {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+
+    .property-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .property-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .property-name {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 0.25rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .property-location {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-bottom: 0.25rem;
+    }
+
+    .property-price {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: #FF6B35;
+    }
+
+    .remove-property-btn {
+        background: none;
+        border: none;
+        color: #9ca3af;
+        cursor: pointer;
+        padding: 0.25rem;
+        transition: all 0.3s ease;
+        margin-left: 0.5rem;
+    }
+
+    .remove-property-btn:hover {
+        color: #ef4444;
+        transform: scale(1.1);
+    }
+
+    .comparison-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .action-btn {
+        flex: 1;
+        padding: 0.5rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .view-btn {
+        background: #3b82f6;
+        color: white;
+        border: none;
+    }
+
+    .view-btn:hover {
+        background: #2563eb;
+        transform: translateY(-2px);
+    }
+
+    .edit-btn {
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #d1d5db;
+    }
+
+    .edit-btn:hover {
+        background: #e5e7eb;
+        transform: translateY(-2px);
+    }
+
+    .delete-btn {
+        background: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+    }
+
+    .delete-btn:hover {
+        background: #fee2e2;
+        transform: translateY(-2px);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 1rem;
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-radius: 16px;
+        border: 2px dashed #d1d5db;
+        margin-top: 2rem;
+    }
+
+    .empty-state i {
+        font-size: .8rem;
+        color: #9ca3af;
+        margin-top: 1rem;
+    }
+    .empty-state a {
+        font-size: .9rem;
+        
+    }
+
+    .empty-state h3 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        font-size: .8rem;
+        color: #6b7280;
+        max-width: 400px;
+        margin: 0 auto 2rem;
+    }
+
+    /* Comparison Detail Page Styles */
+    .comparison-detail-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .comparison-table-container {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        overflow-x: auto;
+        margin-bottom: 2rem;
+    }
+
+    .comparison-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 800px;
+    }
+
+    .comparison-table th {
+        background: #f8fafc;
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: #374151;
+        border-bottom: 2px solid #e5e7eb;
+        position: sticky;
+        left: 0;
+        z-index: 10;
+    }
+
+    .comparison-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+        vertical-align: top;
+    }
+
+    .comparison-table tr:hover td {
+        background: #f9fafb;
+    }
+
+    .property-header {
+        text-align: center;
+        background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+        border-radius: 8px;
+        padding: 1rem;
+        position: relative;
+    }
+
+    .property-image-large {
+        width: 100%;
+        height: 150px;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+    }
+
+    .property-image-large img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .remove-from-comparison {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: #9ca3af;
+    }
+
+    .remove-from-comparison:hover {
+        background: #ef4444;
+        color: white;
+        transform: scale(1.1);
+    }
+
+    .feature-value {
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .feature-label {
+        font-size: 0.875rem;
+        color: #6b7280;
+        display: block;
+        margin-top: 0.25rem;
+    }
+
+    .highlight-positive {
+        color: #059669;
+        font-weight: 600;
+    }
+
+    .highlight-negative {
+        color: #dc2626;
+        font-weight: 600;
+    }
+
+    .add-property-section {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .add-property-form {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .add-property-input {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 0.875rem;
+    }
+
+    .add-property-input:focus {
+        outline: none;
+        border-color: #FF6B35;
+        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    }
+
+    .share-comparison {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .share-url {
+        flex: 1;
+        background: white;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        padding: 0.75rem;
+        font-size: 0.875rem;
+        color: #374151;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .copy-share-btn {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .copy-share-btn:hover {
+        background: #2563eb;
+        transform: translateY(-2px);
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 1rem;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .modal-header h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .close-modal {
+        background: none;
+        border: none;
+        color: #9ca3af;
+        cursor: pointer;
+        font-size: 1.25rem;
+        transition: all 0.3s ease;
+    }
+
+    .close-modal:hover {
+        color: #374151;
+        transform: rotate(90deg);
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #FF6B35;
+        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 1rem;
+        padding: 1.5rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .modal-actions button {
+        flex: 1;
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .modal-cancel {
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #d1d5db;
+    }
+
+    .modal-cancel:hover {
+        background: #e5e7eb;
+        transform: translateY(-2px);
+    }
+
+    .modal-submit {
+        background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+        color: white;
+        border: none;
+    }
+
+    .modal-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+    }
+
+    /* Loading State */
+    .loading-skeleton {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .skeleton-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        padding: 1.5rem;
+        height: 250px;
+    }
+
+    .skeleton-line {
+        height: 1rem;
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+    }
+
+    .skeleton-line.short {
+        width: 60%;
+    }
+
+    .skeleton-line.medium {
+        width: 80%;
+    }
+
+    @keyframes shimmer {
+        0% {
+            background-position: -200% 0;
+        }
+        100% {
+            background-position: 200% 0;
+        }
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 767px) {
+        .comparisons-section {
+            padding: 1rem;
+        }
+
+        .comparisons-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+        }
+
+        .comparisons-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .comparison-card {
+            padding: 1rem;
+        }
+
+        .comparison-header {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .comparison-actions {
+            flex-direction: column;
+        }
+
+        .add-property-form {
+            flex-direction: column;
+        }
+
+        .share-comparison {
+            flex-direction: column;
+        }
+
+        .modal-content {
+            margin: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block header_title %}
+<h1 class="text-2xl font-bold text-gray-900">
+    <span class="gradient-text">Property Comparisons</span>
+</h1>
+<p class="text-sm text-gray-600 mt-2">
+    <i class="fas fa-balance-scale text-orange-500 mr-2"></i>
+    Compare properties side by side to make informed decisions
+</p>
+{% endblock %}
+
+{% block header_buttons %}
+<div class="flex flex-wrap gap-3">
+    <button onclick="window.history.back()" 
+            class="px-4 py-2 border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-all duration-300 flex items-center gap-2 font-medium">
+        <i class="fas fa-arrow-left"></i>
+        <span class="hidden sm:inline">Back</span>
+    </button>
+    
+    <button onclick="openCreateModal()" 
+            class="btn-gradient flex items-center gap-2 px-4 py-2">
+        <i class="fas fa-plus"></i>
+        <span class="hidden sm:inline">New Comparison</span>
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="content-spacing">
+    <!-- Comparisons List -->
+    <div class="comparisons-section">
+        <div class="comparisons-header">
+            <div>
+                <h2>Your Comparison Lists</h2>
+                <p>Create, manage, and share property comparisons</p>
+            </div>
+            
+            <button onclick="openCreateModal()" class="create-comparison-btn">
+                <i class="fas fa-plus"></i>
+                New Comparison
+            </button>
+        </div>
+
+        {% if comparisons %}
+        <div class="comparisons-grid">
+            {% for comparison in comparisons %}
+            <div class="comparison-card">
+                <div class="comparison-header">
+                    <div>
+                        <h3 class="comparison-title">{{ comparison.name }}</h3>
+                        <p class="comparison-date">
+                            Created {{ comparison.created_at|timesince }} ago
+                        </p>
+                    </div>
+                    
+                    <div class="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                        {{ comparison.properties.count }} properties
+                    </div>
+                </div>
+
+                {% if comparison.properties.all %}
+                <div class="comparison-properties">
+                    {% for property in comparison.properties.all|slice:":3" %}
+                    <div class="property-item">
+                        <div class="property-image">
+                            {% if property.primary_image %}
+                            <img src="{{ property.primary_image.url }}" alt="{{ property.title }}">
+                            {% else %}
+                            <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                                <i class="fas fa-home text-gray-400"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="property-info">
+                            <div class="property-name">{{ property.title }}</div>
+                            <div class="property-location">{{ property.city }}, {{ property.state }}</div>
+                            <div class="property-price">₹{{ property.price|intcomma }}</div>
+                        </div>
+                        
+                        <button onclick="removeFromComparison('{{ comparison.id }}', '{{ property.id }}', this)" 
+                                class="remove-property-btn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if comparison.properties.count > 3 %}
+                    <div class="text-center text-sm text-gray-500 mt-2">
+                        +{{ comparison.properties.count|add:"-3" }} more properties
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-gray-500">
+                    <i class="fas fa-inbox text-2xl mb-2"></i>
+                    <p>No properties added yet</p>
+                </div>
+                {% endif %}
+
+                <div class="comparison-actions">
+                    <a href="{% url 'buyer_comparison_detail' comparison.pk %}" 
+                       class="action-btn view-btn">
+                        <i class="fas fa-eye"></i>
+                        View
+                    </a>
+                    
+                    <button onclick="openEditModal('{{ comparison.id }}', '{{ comparison.name|escapejs }}')" 
+                            class="action-btn edit-btn">
+                        <i class="fas fa-edit"></i>
+                        Edit
+                    </button>
+                    
+                    <button onclick="deleteComparison('{{ comparison.id }}')" 
+                            class="action-btn delete-btn">
+                        <i class="fas fa-trash"></i>
+                        Delete
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <i class="fas fa-balance-scale"></i>
+            <h3>No Comparisons Yet</h3>
+            <p>Create your first property comparison to compare features, prices, and locations side by side.</p>
+            
+            <div class="flex flex-wrap gap-3 justify-center mt-6">
+                <button onclick="openCreateModal()" 
+                        class="btn-gradient flex items-center gap-2 px-6 py-0">
+                    <i class="fas fa-plus"></i>
+                    <span>Create First Comparison</span>
+                </button>
+                
+                <a href="{% url 'buyer_properties' %}" 
+                   class="px-6 py-0 border-2 border-blue-600 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all duration-300 font-medium flex items-center gap-2">
+                    <i class="fas fa-search"></i>
+                    <span>Browse Properties</span>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- How It Works -->
+    <div class="comparisons-section">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">How Property Comparisons Work</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="p-4 bg-orange-50 border border-orange-100 rounded-xl">
+                <div class="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600 text-xl mb-3">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <h4 class="font-bold text-gray-900 mb-2">Create Lists</h4>
+                <p class="text-sm text-gray-600">Create multiple comparison lists for different needs</p>
+            </div>
+            
+            <div class="p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 text-xl mb-3">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <h4 class="font-bold text-gray-900 mb-2">Add Properties</h4>
+                <p class="text-sm text-gray-600">Add up to 5 properties per comparison for detailed analysis</p>
+            </div>
+            
+            <div class="p-4 bg-green-50 border border-green-100 rounded-xl">
+                <div class="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center text-green-600 text-xl mb-3">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <h4 class="font-bold text-gray-900 mb-2">Compare & Decide</h4>
+                <p class="text-sm text-gray-600">View side-by-side comparisons to make informed decisions</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create/Edit Comparison Modal -->
+<div id="comparisonModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Create New Comparison</h3>
+            <button onclick="closeModal()" class="close-modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <form id="comparisonForm" method="POST" action="{% url 'buyer_comparisons' %}">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="comparisonName">Comparison Name</label>
+                    <input type="text" 
+                           id="comparisonName" 
+                           name="name" 
+                           required
+                           placeholder="e.g., Bangalore 3BHK Apartments"
+                           class="w-full">
+                </div>
+                
+                <div class="form-group">
+                    <label for="comparisonDescription">Description (Optional)</label>
+                    <textarea id="comparisonDescription" 
+                              name="description" 
+                              rows="3"
+                              placeholder="Describe what you're comparing..."
+                              class="w-full"></textarea>
+                </div>
+                
+                <input type="hidden" id="comparisonId" name="comparison_id">
+            </div>
+            
+            <div class="modal-actions">
+                <button type="button" onclick="closeModal()" class="modal-cancel">
+                    Cancel
+                </button>
+                <button type="submit" class="modal-submit">
+                    Save Comparison
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Delete Comparison</h3>
+            <button onclick="closeDeleteModal()" class="close-modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <div class="text-center py-4">
+                <i class="fas fa-exclamation-triangle text-4xl text-yellow-500 mb-4"></i>
+                <h4 class="text-lg font-bold text-gray-900 mb-2">Are you sure?</h4>
+                <p class="text-gray-600">
+                    This will permanently delete the comparison list and all its properties. 
+                    This action cannot be undone.
+                </p>
+            </div>
+        </div>
+        
+        <div class="modal-actions">
+            <button type="button" onclick="closeDeleteModal()" class="modal-cancel">
+                Cancel
+            </button>
+            <button type="button" onclick="confirmDelete()" class="action-btn delete-btn">
+                <i class="fas fa-trash"></i>
+                Delete Comparison
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeComparisons();
+    });
+
+    let currentComparisonId = null;
+
+    function initializeComparisons() {
+        // Initialize modal functionality
+        const modal = document.getElementById('comparisonModal');
+        const deleteModal = document.getElementById('deleteModal');
+        
+        // Close modal when clicking outside
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+        
+        deleteModal.addEventListener('click', function(e) {
+            if (e.target === deleteModal) {
+                closeDeleteModal();
+            }
+        });
+    }
+
+    function openCreateModal() {
+        document.getElementById('modalTitle').textContent = 'Create New Comparison';
+        document.getElementById('comparisonForm').action = "{% url 'buyer_comparisons' %}";
+        document.getElementById('comparisonId').value = '';
+        document.getElementById('comparisonName').value = '';
+        document.getElementById('comparisonDescription').value = '';
+        document.getElementById('comparisonModal').classList.add('active');
+        
+        // Prevent body scrolling
+        document.body.style.overflow = 'hidden';
+    }
+
+    function openEditModal(comparisonId, comparisonName) {
+        document.getElementById('modalTitle').textContent = 'Edit Comparison';
+        document.getElementById('comparisonForm').action = "{% url 'buyer_comparisons' %}";
+        document.getElementById('comparisonId').value = comparisonId;
+        document.getElementById('comparisonName').value = comparisonName;
+        document.getElementById('comparisonModal').classList.add('active');
+        
+        // Prevent body scrolling
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        document.getElementById('comparisonModal').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function deleteComparison(comparisonId) {
+        currentComparisonId = comparisonId;
+        document.getElementById('deleteModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('active');
+        currentComparisonId = null;
+        document.body.style.overflow = '';
+    }
+
+    function confirmDelete() {
+        if (!currentComparisonId) return;
+        
+        // Show loading
+        showLoading('Deleting comparison...');
+        
+        fetch(`/buyer/comparisons/${currentComparisonId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+        })
+        .then(response => {
+            hideLoading();
+            if (response.ok) {
+                showToast('Comparison deleted successfully', 'success');
+                closeDeleteModal();
+                // Reload the page to update the list
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showToast('Failed to delete comparison', 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            showToast('Network error. Please try again.', 'error');
+        });
+    }
+
+    function removeFromComparison(comparisonId, propertyId, button) {
+        // Show loading on the button
+        const icon = button.querySelector('i');
+        const originalIcon = icon.className;
+        icon.className = 'fas fa-spinner fa-spin';
+        
+        fetch(`/buyer/comparisons/${comparisonId}/remove-property/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify({
+                property_id: propertyId
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Property removed from comparison', 'success');
+                // Remove the property item with animation
+                const propertyItem = button.closest('.property-item');
+                propertyItem.style.opacity = '0';
+                propertyItem.style.transform = 'translateX(-20px)';
+                
+                setTimeout(() => {
+                    propertyItem.remove();
+                    
+                    // Update count
+                    const comparisonCard = propertyItem.closest('.comparison-card');
+                    const countBadge = comparisonCard.querySelector('.bg-gray-100');
+                    if (countBadge) {
+                        const currentCount = parseInt(countBadge.textContent);
+                        countBadge.textContent = `${currentCount - 1} properties`;
+                    }
+                }, 300);
+            } else {
+                icon.className = originalIcon;
+                showToast(data.error || 'Failed to remove property', 'error');
+            }
+        })
+        .catch(error => {
+            icon.className = originalIcon;
+            console.error('Error:', error);
+            showToast('Network error. Please try again.', 'error');
+        });
+    }
+
+    function showLoading(message = 'Loading...') {
+        const loadingOverlay = document.createElement('div');
+        loadingOverlay.id = 'loadingOverlay';
+        loadingOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        loadingOverlay.innerHTML = `
+            <div class="bg-white rounded-2xl p-8 shadow-2xl">
+                <div class="flex flex-col items-center gap-4">
+                    <div class="loading-spinner">
+                        <div class="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                    <p class="text-gray-700 font-medium">${message}</p>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(loadingOverlay);
+    }
+
+    function hideLoading() {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (loadingOverlay) {
+            loadingOverlay.remove();
+        }
+    }
+
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        if (!container) {
+            const toastContainer = document.createElement('div');
+            toastContainer.id = 'toastContainer';
+            toastContainer.className = 'toast-container';
+            document.body.appendChild(toastContainer);
+            container = toastContainer;
+        }
+        
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        
+        const icons = {
+            info: 'fa-info-circle',
+            success: 'fa-check-circle',
+            error: 'fa-exclamation-circle',
+            warning: 'fa-exclamation-triangle'
+        };
+        
+        toast.innerHTML = `
+            <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                <i class="fas ${icons[type]}"></i>
+            </div>
+            <div class="flex-1">
+                <span class="font-medium">${message}</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-white/80 hover:text-white transition-colors flex-shrink-0">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        container.appendChild(toast);
+        
+        // Auto remove after 4 seconds
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 4000);
+    }
+
+    // Utility function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}

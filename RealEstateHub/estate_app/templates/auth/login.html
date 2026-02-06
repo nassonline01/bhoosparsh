@@ -1,0 +1,580 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BHOOSPARSH - Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#3B82F6',
+            'primary-dark': '#2563EB',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Original Toast Styles (modified for better positioning) */
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: white;
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 300px;
+      max-width: 400px;
+      transform: translateX(calc(100% + 30px));
+      transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      border-left: 4px solid;
+      overflow: hidden;
+    }
+    
+    .toast.show {
+      transform: translateX(0);
+    }
+    
+    .toast.hide {
+      transform: translateX(calc(100% + 30px));
+    }
+    
+    .toast.success { 
+      border-left-color: #10b981;
+      background: linear-gradient(to right, #f0fdf4, #ffffff);
+    }
+    
+    .toast.error { 
+      border-left-color: #ef4444;
+      background: linear-gradient(to right, #fef2f2, #ffffff);
+    }
+    
+    .toast.warning { 
+      border-left-color: #f59e0b;
+      background: linear-gradient(to right, #fffbeb, #ffffff);
+    }
+    
+    .toast.info { 
+      border-left-color: #3b82f6;
+      background: linear-gradient(to right, #eff6ff, #ffffff);
+    }
+    
+    .toast-icon {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    
+    .toast-content {
+      flex: 1;
+    }
+    
+    .toast-title {
+      font-weight: 600;
+      font-size: 14px;
+      color: #1f2937;
+      margin-bottom: 4px;
+    }
+    
+    .toast-message {
+      font-size: 13px;
+      color: #4b5563;
+      line-height: 1.4;
+    }
+    
+    .toast-close {
+      color: #9ca3af;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      transition: all 0.2s;
+      margin-left: 8px;
+      flex-shrink: 0;
+    }
+    
+    .toast-close:hover {
+      color: #6b7280;
+      background: rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Toast stacking */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    /* Progress bar animation */
+    .toast-progress {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+    
+    .toast-progress-bar {
+      height: 100%;
+      width: 100%;
+      transform-origin: left;
+      animation: progress 5s linear forwards;
+    }
+    
+    .toast.success .toast-progress-bar {
+      background: #10b981;
+    }
+    
+    .toast.error .toast-progress-bar {
+      background: #ef4444;
+    }
+    
+    .toast.warning .toast-progress-bar {
+      background: #f59e0b;
+    }
+    
+    .toast.info .toast-progress-bar {
+      background: #3b82f6;
+    }
+    
+    @keyframes progress {
+      from {
+        transform: scaleX(1);
+      }
+      to {
+        transform: scaleX(0);
+      }
+    }
+    
+    /* Keep original loader styles */
+    .loader {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #3B82F6;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Keep original home icon styles */
+    .home-icon-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s ease;
+    }
+    
+    .home-icon-link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+      background-color: #f8fafc;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-white">
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+  
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="loader"></div>
+  </div>
+
+  <div class="flex min-h-screen shadow-lg overflow-hidden">
+    <!-- Left Side - Hero Image -->
+    <div class="hidden lg:flex lg:w-1/2 relative">
+      <img 
+        src="{% static 'images/pic-3.jpg' %}" 
+        alt="Colorful houses" 
+        class="absolute inset-0 w-full h-full object-cover object-left rounded-3xl p-2"
+      >
+     
+      <!-- Bottom Text -->
+      <div class="absolute bottom-12 left-8 right-8 text-white">
+        <h2 class="text-3xl font-bold mb-4">Manage Properties Efficiently</h2>
+        <p class="text-white/80 text-sm leading-relaxed">
+          Easily track rent payments, maintenance requests, and tenant communications in one place. Say goodbye to the hassle of manual management.
+        </p>
+      </div>
+    </div>
+    
+    <!-- Right Side - Login Form -->
+    <div class="w-full lg:w-1/2 flex flex-col">
+      <!-- Top Bar with Home Icon -->
+      <div class="flex justify-end p-6">
+        <a href="{% url 'home' %}" class="home-icon-link group">
+          <i class="fas fa-home text-lg text-gray-700 group-hover:text-primary transition-colors"></i>
+          <span class="absolute -top-8 -right-2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+            Go to Home
+          </span>
+        </a>
+      </div>
+      
+      <!-- Form Container -->
+      <div class="flex-1 flex items-center justify-center px-8 lg:px-16">
+        <div class="w-full max-w-md">
+          <!-- Header -->
+          <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-gray-900 mb-2">Welcome Back to Bhoosparsh!</h1>
+            <p class="text-gray-500 text-sm">Sign in to your account</p>
+          </div>
+          
+          <!-- Django Messages - Now handled by toasts -->
+          {% if messages %}
+          <div class="hidden" id="django-messages">
+            {% for message in messages %}
+            <div 
+              data-type="{{ message.tags }}" 
+              data-message="{{ message }}"
+            ></div>
+            {% endfor %}
+          </div>
+          {% endif %}
+          
+          <!-- Django Login Form -->
+          <form method="POST" novalidate id="login-form">
+            {% csrf_token %}
+            
+            <!-- CSRF Token Field -->
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+            
+            <!-- Username/Email Field -->
+            <div class="mb-5">
+              <label for="{{ form.username.id_for_label }}" class="block text-xs text-gray-500 mb-2">
+                Email Address *
+              </label>
+              <div class="relative">
+                <input 
+                  type="email" 
+                  name="{{ form.username.name }}"
+                  id="{{ form.username.id_for_label }}"
+                  value="{% if form.username.value %}{{ form.username.value }}{% endif %}"
+                  placeholder="Enter your email address"
+                  class="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary {% if form.username.errors %}border-red-300{% endif %}"
+                  required
+                >
+                {% if form.username.errors %}
+                <div class="absolute right-3 top-1/2 -translate-y-1/2">
+                  <i class="fas fa-exclamation-circle text-red-500"></i>
+                </div>
+                {% endif %}
+              </div>
+              {% if form.username.errors %}
+              <div class="text-red-500 text-xs mt-1 flex items-center">
+                <i class="fas fa-exclamation-circle mr-1"></i>
+                {{ form.username.errors.0 }}
+              </div>
+              {% endif %}
+            </div>
+            
+            <!-- Password Field -->
+            <div class="mb-5">
+              <label for="{{ form.password.id_for_label }}" class="block text-xs text-gray-500 mb-2">
+                Password *
+              </label>
+              <div class="relative">
+                <input 
+                  type="password" 
+                  name="{{ form.password.name }}"
+                  id="{{ form.password.id_for_label }}"
+                  class="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary pr-10 {% if form.password.errors %}border-red-300{% endif %}"
+                  required
+                >
+                <button type="button" onclick="togglePassword()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  <i class="fas fa-eye" id="toggleIcon"></i>
+                </button>
+              </div>
+              {% if form.password.errors %}
+              <div class="text-red-500 text-xs mt-1 flex items-center">
+                <i class="fas fa-exclamation-circle mr-1"></i>
+                {{ form.password.errors.0 }}
+              </div>
+              {% endif %}
+              <div class="text-end mt-1">
+                <a href="{% url 'password_reset' %}" class="text-sm text-primary hover:underline">Forgot Password?</a>
+              </div>
+            </div>
+            
+            <!-- Remember Me -->
+            <div class="flex items-center justify-between mb-6">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  name="{{ form.remember_me.name }}"
+                  id="{{ form.remember_me.id_for_label }}"
+                  {% if form.remember_me.value %}checked{% endif %}
+                  class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                >
+                <span class="text-sm text-gray-600">Remember Me</span>
+              </label>
+            </div>
+            
+            <!-- Form Errors (Non-field errors) -->
+            {% if form.non_field_errors %}
+            <div id="non-field-errors" class="hidden">
+              <div data-type="error" data-message="{{ form.non_field_errors.0 }}"></div>
+            </div>
+            {% endif %}
+            
+            <!-- Login Button -->
+            <button 
+              type="submit" 
+              class="w-full py-3 bg-gradient-to-r from-primary to-blue-400 text-white rounded-full font-medium text-sm hover:opacity-90 transition-opacity shadow-lg shadow-primary/30"
+              id="login-button"
+            >
+              <i class="fas fa-sign-in-alt mr-2"></i>Sign In
+            </button>
+          </form>
+          
+          <!-- Register Link -->
+          <p class="text-center text-sm text-gray-500 mt-4">
+            Don't have an account? 
+            <a href="{% url 'register' %}" class="text-primary font-medium hover:underline">Register Now</a>
+          </p>
+          
+          <!-- Resend Verification Link -->
+          {% if request.user.is_authenticated and not request.user.is_verified %}
+          <p class="text-center mt-2 text-sm text-gray-500">
+            <a href="{% url 'resend_verification' %}" class="text-primary hover:underline">
+              Didn't receive verification email?
+            </a>
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Password toggle function
+    function togglePassword() {
+      const passwordInput = document.getElementById('{{ form.password.id_for_label }}');
+      const toggleIcon = document.getElementById('toggleIcon');
+      
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+      } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+      }
+    }
+    
+    // Toast Notification System
+    class Toast {
+      constructor(type, message, duration = 5000) {
+        this.type = type;
+        this.message = message;
+        this.duration = duration;
+        this.element = null;
+        this.timeout = null;
+        this.create();
+      }
+      
+      create() {
+        const icons = {
+          success: 'check-circle',
+          error: 'exclamation-circle',
+          warning: 'exclamation-triangle',
+          info: 'info-circle',
+          danger: 'exclamation-circle' // Map danger to error
+        };
+        
+        const titles = {
+          success: 'Success',
+          error: 'Error',
+          warning: 'Warning',
+          info: 'Info',
+          danger: 'Error'
+        };
+        
+        const container = document.getElementById('toast-container');
+        
+        // Create toast element
+        this.element = document.createElement('div');
+        this.element.className = `toast ${this.type}`;
+        this.element.innerHTML = `
+          <div class="toast-icon">
+            <i class="fas fa-${icons[this.type] || 'info-circle'} 
+              ${this.type === 'success' ? 'text-green-500' : 
+                this.type === 'error' || this.type === 'danger' ? 'text-red-500' : 
+                this.type === 'warning' ? 'text-yellow-500' : 'text-blue-500'}"></i>
+          </div>
+          <div class="toast-content">
+            <div class="toast-title">${titles[this.type] || 'Info'}</div>
+            <div class="toast-message">${this.message}</div>
+          </div>
+          <div class="toast-close">
+            <i class="fas fa-times"></i>
+          </div>
+          <div class="toast-progress">
+            <div class="toast-progress-bar"></div>
+          </div>
+        `;
+        
+        // Add to container
+        container.appendChild(this.element);
+        
+        // Add close event
+        const closeBtn = this.element.querySelector('.toast-close');
+        if (closeBtn) {
+          closeBtn.addEventListener('click', () => this.remove());
+        }
+        
+        // Auto remove after duration
+        this.timeout = setTimeout(() => this.remove(), this.duration);
+        
+        // Show toast
+        setTimeout(() => {
+          this.element.classList.add('show');
+        }, 10);
+      }
+      
+      remove() {
+        if (this.timeout) clearTimeout(this.timeout);
+        this.element.classList.remove('show');
+        this.element.classList.add('hide');
+        
+        setTimeout(() => {
+          if (this.element.parentNode) {
+            this.element.parentNode.removeChild(this.element);
+          }
+        }, 400);
+      }
+    }
+    
+    // Function to show toast
+    function showToast(type, message, duration = 5000) {
+      new Toast(type, message, duration);
+    }
+    
+    // Convert Django messages to toasts on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      // Convert Django messages
+      const djangoMessages = document.getElementById('django-messages');
+      if (djangoMessages) {
+        const messages = djangoMessages.querySelectorAll('div[data-type]');
+        messages.forEach(msg => {
+          const type = msg.dataset.type || 'info';
+          const message = msg.dataset.message;
+          showToast(type, message);
+        });
+      }
+      
+      // Convert non-field errors
+      const nonFieldErrors = document.getElementById('non-field-errors');
+      if (nonFieldErrors) {
+        const errors = nonFieldErrors.querySelectorAll('div[data-type]');
+        errors.forEach(error => {
+          const type = error.dataset.type || 'error';
+          const message = error.dataset.message;
+          showToast(type, message);
+        });
+      }
+      
+      // Convert field errors to toasts
+      const fieldErrors = document.querySelectorAll('.text-red-500');
+      fieldErrors.forEach(el => {
+        if (el.textContent.trim()) {
+          showToast('error', el.textContent.trim());
+        }
+      });
+      
+      // Add animation to form
+      const formContainer = document.querySelector('.w-full.max-w-md');
+      formContainer.style.opacity = '0';
+      formContainer.style.transform = 'translateY(20px)';
+      formContainer.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+      
+      setTimeout(() => {
+        formContainer.style.opacity = '1';
+        formContainer.style.transform = 'translateY(0)';
+      }, 100);
+    });
+    
+    // Form submission handler
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+      const submitBtn = document.getElementById('login-button');
+      const originalText = submitBtn.innerHTML;
+      
+      // Show loading state
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Signing In...';
+      submitBtn.disabled = true;
+      
+      // Remove any existing error highlights
+      document.querySelectorAll('.border-red-300').forEach(el => {
+        el.classList.remove('border-red-300');
+      });
+      
+      // Hide error messages (they're now shown as toasts)
+      document.querySelectorAll('.text-red-500').forEach(el => {
+        el.style.display = 'none';
+      });
+    });
+    
+    // Auto-dismiss original alerts (now handled by toasts)
+    setTimeout(function() {
+      document.querySelectorAll('.alert').forEach(function(alert) {
+        alert.style.transition = 'opacity 0.5s ease';
+        alert.style.opacity = '0';
+        setTimeout(function() {
+          alert.remove();
+        }, 500);
+      });
+    }, 100);
+    
+    // Handle enter key in form
+    document.querySelectorAll('input').forEach(input => {
+      input.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          document.getElementById('login-form').dispatchEvent(new Event('submit'));
+        }
+      });
+    });
+    
+    // Add hover effect to form inputs
+    document.querySelectorAll('input, select, textarea').forEach(element => {
+      element.addEventListener('mouseenter', function() {
+        this.classList.add('border-primary/30');
+      });
+      
+      element.addEventListener('mouseleave', function() {
+        if (!this.matches(':focus')) {
+          this.classList.remove('border-primary/30');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

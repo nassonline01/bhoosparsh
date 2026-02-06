@@ -1,0 +1,1626 @@
+<!-- templates/dashboard/seller/property_form.html -->
+{% extends 'dashboard/seller/base.html' %}
+{% load static custom_filters %}
+
+{% block title %}
+    {% if property %}Edit Property - {{ property.title }}{% else %}Post New Property - BHOOSPARSH Seller{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-step {
+        display: none;
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    .form-step.active {
+        display: block;
+    }
+
+    .step-indicator {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .step-indicator.active {
+        background: linear-gradient(135deg, #0E68B9, #1E90FF);
+        color: white;
+    }
+
+    .step-indicator.completed {
+        background: linear-gradient(135deg, #10B981, #34D399);
+        color: white;
+    }
+
+    .step-indicator.pending {
+        background-color: #E5E7EB;
+        color: #6B7280;
+    }
+
+    .step-connector {
+        flex: 1;
+        height: 2px;
+        background-color: #E5E7EB;
+        margin: 0 8px;
+    }
+
+    .step-connector.active {
+        background: linear-gradient(90deg, #10B981, #0E68B9);
+    }
+
+    .required-field::after {
+        content: " *";
+        color: #EF4444;
+    }
+
+    .dynamic-section {
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    .image-preview-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 12px;
+    }
+
+    .image-preview {
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+    }
+
+    .image-preview:hover {
+        border-color: #0E68B9;
+        transform: translateY(-2px);
+    }
+
+    .image-preview.primary {
+        border-color: #0E68B9;
+        box-shadow: 0 4px 12px rgba(14, 104, 185, 0.2);
+    }
+
+    .image-preview img {
+        width: 100%;
+        height: 100px;
+        object-fit: cover;
+    }
+
+    .image-actions {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        display: flex;
+        gap: 4px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .image-preview:hover .image-actions {
+        opacity: 1;
+    }
+
+    .error-field {
+        border-color: #EF4444 !important;
+    }
+
+    .error-message {
+        color: #EF4444;
+        font-size: 12px;
+        margin-top: 4px;
+    }
+
+    /* Toast notifications */
+    @keyframes slide-in {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes slide-out {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+
+    .animate-slide-in {
+        animation: slide-in 0.3s ease-out;
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .form-step input:invalid,
+    .form-step select:invalid,
+    .form-step textarea:invalid {
+        border-color: #EF4444;
+    }
+
+    .form-step input:valid,
+    .form-step select:valid,
+    .form-step textarea:valid {
+        border-color: #10B981;
+    }
+</style>
+{% endblock %}
+
+{% block header_title %}
+<h1 class="text-xl font-bold text-gray-900 dark:text-white">
+    {% if property %}
+    Edit Property: {{ property.title|truncatechars:30 }}
+    {% else %}
+    Post New Property
+    {% endif %}
+</h1>
+<p class="text-sm text-gray-600 dark:text-gray-400">
+    {% if property %}
+    Update your property listing details
+    {% else %}
+    Fill in the details to list your property
+    {% endif %}
+</p>
+{% endblock %}
+
+{% block header_buttons %}
+<button type="button" onclick="goBack()" 
+        class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-2">
+    <i class="fas fa-arrow-left"></i>
+    <span>Back</span>
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 mb-6">
+    <!-- Progress Steps -->
+    <div class="mb-8">
+        <div class="flex items-center justify-center mb-4">
+            <div class="flex items-center">
+                <div id="step1Indicator" class="step-indicator active" onclick="goToStep(1)">
+                    1
+                </div>
+                <div id="step1Connector" class="step-connector active"></div>
+                
+                <div id="step2Indicator" class="step-indicator pending" onclick="goToStep(2)">
+                    2
+                </div>
+                <div id="step2Connector" class="step-connector"></div>
+                
+                <div id="step3Indicator" class="step-indicator pending" onclick="goToStep(3)">
+                    3
+                </div>
+                <div id="step3Connector" class="step-connector"></div>
+                
+                <div id="step4Indicator" class="step-indicator pending" onclick="goToStep(4)">
+                    4
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex justify-center gap-8">
+            <div class="text-center">
+                <div class="text-sm font-medium text-gray-900 dark:text-white">Basic Info</div>
+                <div class="text-xs text-gray-500">Step 1</div>
+            </div>
+            <div class="text-center">
+                <div class="text-sm font-medium text-gray-500">Location & Price</div>
+                <div class="text-xs text-gray-500">Step 2</div>
+            </div>
+            <div class="text-center">
+                <div class="text-sm font-medium text-gray-500">Details & Features</div>
+                <div class="text-xs text-gray-500">Step 3</div>
+            </div>
+            <div class="text-center">
+                <div class="text-sm font-medium text-gray-500">Photos & Contact</div>
+                <div class="text-xs text-gray-500">Step 4</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Container -->
+    <form id="propertyForm" method="POST" enctype="multipart/form-data" data-submitting="false">
+        {% csrf_token %}
+        <input type="hidden" name="current_step" id="currentStepField" value="1">
+        
+        <!-- Display messages -->
+        {% if messages %}
+        <div class="mb-6">
+            {% for message in messages %}
+            <div class="p-4 rounded-lg {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200{% elif message.tags == 'success' %}bg-green-50 text-green-700 border border-green-200{% else %}bg-blue-50 text-blue-700 border border-blue-200 %}">
+                <div class="flex items-center">
+                    <i class="fas {% if message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'success' %}fa-check-circle{% else %}fa-info-circle{% endif %} mr-2"></i>
+                    {{ message }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <!-- Step 1: Basic Information -->
+        <div id="step1" class="form-step active">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Basic Information</h3>
+            
+            <div class="space-y-6">
+                <!-- Property Category & Type -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="id_category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 required-field">
+                            Property Category
+                        </label>
+                        <select id="id_category" name="category" required
+                                class="w-full p-3 border {% if errors and errors.category %}border-red-500{% else %}border-gray-300 dark:border-gray-600{% endif %} rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent"
+                                onchange="updatePropertyTypes(this.value)">
+                            <option value="">Select Category</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}"
+                                {% if form_data.category == category.id|stringformat:'s' or (property and property.category and property.category.id == category.id) %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        {% if errors and errors.category %}
+                        <p class="mt-1 text-sm text-red-600">{{ errors.category }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label for="id_property_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 required-field">
+                            Property Type
+                        </label>
+                        <select id="id_property_type" name="property_type" required
+                                class="w-full p-3 border {% if errors and errors.property_type %}border-red-500{% else %}border-gray-300 dark:border-gray-600{% endif %} rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
+                            <option value="">Select Type</option>
+                            {% for type in property_types %}
+                            <option value="{{ type.id }}"
+                                {% if form_data.property_type == type.id|stringformat:'s' or (property and property.property_type and property.property_type.id == type.id) %}selected{% endif %}>
+                                {{ type.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        {% if errors and errors.property_type %}
+                        <p class="mt-1 text-sm text-red-600">{{ errors.property_type }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Property For & Listing Type -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 required-field">
+                            Property For
+                        </label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="relative flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                                <input type="radio" name="property_for" value="sale" 
+                                       class="sr-only peer" 
+                                       {% if form_data.property_for == 'sale' %}checked{% endif %}
+                                       required>
+                                <div class="w-5 h-5 border rounded-full mr-3 flex items-center justify-center peer-checked:border-bhoosparsh-blue">
+                                    <div class="w-3 h-3 rounded-full bg-bhoosparsh-blue opacity-0 peer-checked:opacity-100"></div>
+                                </div>
+                                <span class="text-sm">For Sale</span>
+                            </label>
+                            
+                            <label class="relative flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                                <input type="radio" name="property_for" value="rent" 
+                                       class="sr-only peer" 
+                                       {% if form_data.property_for == 'rent' %}checked{% endif %}
+                                       required>
+                                <div class="w-5 h-5 border rounded-full mr-3 flex items-center justify-center peer-checked:border-bhoosparsh-blue">
+                                    <div class="w-3 h-3 rounded-full bg-bhoosparsh-blue opacity-0 peer-checked:opacity-100"></div>
+                                </div>
+                                <span class="text-sm">For Rent</span>
+                            </label>
+                            
+                            <label class="relative flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                                <input type="radio" name="property_for" value="pg" 
+                                       class="sr-only peer" 
+                                       {% if form_data.property_for == 'pg' %}checked{% endif %}
+                                       required>
+                                <div class="w-5 h-5 border rounded-full mr-3 flex items-center justify-center peer-checked:border-bhoosparsh-blue">
+                                    <div class="w-3 h-3 rounded-full bg-bhoosparsh-blue opacity-0 peer-checked:opacity-100"></div>
+                                </div>
+                                <span class="text-sm">PG/Hostel</span>
+                            </label>
+                            
+                            <label class="relative flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                                <input type="radio" name="property_for" value="plot" 
+                                       class="sr-only peer" 
+                                       {% if form_data.property_for == 'plot' %}checked{% endif %}
+                                       required>
+                                <div class="w-5 h-5 border rounded-full mr-3 flex items-center justify-center peer-checked:border-bhoosparsh-blue">
+                                    <div class="w-3 h-3 rounded-full bg-bhoosparsh-blue opacity-0 peer-checked:opacity-100"></div>
+                                </div>
+                                <span class="text-sm">Plot/Land</span>
+                            </label>
+                        </div>
+                        {% if errors and errors.property_for %}
+                        <p class="mt-1 text-sm text-red-600">{{ errors.property_for }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Listing Type
+                        </label>
+                        <select name="listing_type" 
+                                class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
+                            <option value="basic" {% if form_data.listing_type == 'basic' %}selected{% endif %}>Basic Listing</option>
+                            <option value="featured" {% if form_data.listing_type == 'featured' %}selected{% endif %}>Featured Listing</option>
+                            <option value="premium" {% if form_data.listing_type == 'premium' %}selected{% endif %}>Premium Listing</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Title & Description -->
+                <div>
+                    <label for="id_title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 required-field">
+                        Property Title
+                    </label>
+                    <input type="text" id="id_title" name="title" 
+                           value="{% if form_data.title %}{{ form_data.title }}{% elif property %}{{ property.title }}{% endif %}"
+                           maxlength="200" required
+                           class="w-full p-3 border {% if errors and errors.title %}border-red-500{% else %}border-gray-300 dark:border-gray-600{% endif %} rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent"
+                           placeholder="e.g., 3BHK Luxury Apartment in Prime Location">
+                    <p class="mt-1 text-xs text-gray-500">Write an attractive title that highlights key features</p>
+                    {% if errors and errors.title %}
+                    <p class="mt-1 text-sm text-red-600">{{ errors.title }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label for="id_description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 required-field">
+                        Description
+                    </label>
+                    <textarea id="id_description" name="description" rows="4" required
+                              class="w-full p-3 border {% if errors and errors.description %}border-red-500{% else %}border-gray-300 dark:border-gray-600{% endif %} rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent"
+                              placeholder="Describe your property in detail...">{% if form_data.description %}{{ form_data.description }}{% elif property %}{{ property.description }}{% endif %}</textarea>
+                    <p class="mt-1 text-xs text-gray-500">
+                        Include details about the property, amenities, neighborhood, and unique features
+                    </p>
+                    {% if errors and errors.description %}
+                    <p class="mt-1 text-sm text-red-600">{{ errors.description }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="flex justify-end mt-8">
+                <button type="button" onclick="nextStep()" 
+                        class="px-6 py-3 bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg hover:opacity-90 transition font-medium flex items-center gap-2">
+                    <span>Next: Location & Price</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Step 2: Location & Price -->
+        <div id="step2" class="form-step">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Location & Pricing</h3>
+            
+            <div class="space-y-6">
+                <!-- Address -->
+                <div>
+                    <label for="id_address" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 required-field">
+                        Complete Address
+                    </label>
+                    <textarea id="id_address" name="address" rows="3" required
+                              class="w-full p-3 border {% if errors and errors.address %}border-red-500{% else %}border-gray-300 dark:border-gray-600{% endif %} rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">{% if form_data.address %}{{ form_data.address }}{% elif property %}{{ property.address }}{% endif %}</textarea>
+                    {% if errors and errors.address %}
+                    <p class="mt-1 text-sm text-red-600">{{ errors.address }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Location Details -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                        <label for="id_city" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 required-field">
+                            City
+                        </label>
+                        <input type="text" id="id_city" name="city" 
+                               value="{% if form_data.city %}{{ form_data.city }}{% elif property %}{{ property.city }}{% endif %}" 
+                               required
+                               class="w-full p-3 border {% if errors and errors.city %}border-red-500{% else %}border-gray-300 dark:border-gray-600{% endif %} rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
+                        {% if errors and errors.city %}
+                        <p class="mt-1 text-sm text-red-600">{{ errors.city }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label for="id_state" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 required-field">
+                            State
+                        </label>
+                        <input type="text" id="id_state" name="state" 
+                               value="{% if form_data.state %}{{ form_data.state }}{% elif property %}{{ property.state }}{% endif %}" 
+                               required
+                               class="w-full p-3 border {% if errors and errors.state %}border-red-500{% else %}border-gray-300 dark:border-gray-600{% endif %} rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
+                        {% if errors and errors.state %}
+                        <p class="mt-1 text-sm text-red-600">{{ errors.state }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label for="id_pincode" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 required-field">
+                            Pincode
+                        </label>
+                        <input type="text" id="id_pincode" name="pincode" 
+                               value="{% if form_data.pincode %}{{ form_data.pincode }}{% elif property %}{{ property.pincode }}{% endif %}" 
+                               required
+                               class="w-full p-3 border {% if errors and errors.pincode %}border-red-500{% else %}border-gray-300 dark:border-gray-600{% endif %} rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
+                        {% if errors and errors.pincode %}
+                        <p class="mt-1 text-sm text-red-600">{{ errors.pincode }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label for="id_landmark" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Landmark
+                        </label>
+                        <input type="text" id="id_landmark" name="landmark" 
+                               value="{% if form_data.landmark %}{{ form_data.landmark }}{% elif property %}{{ property.landmark }}{% endif %}"
+                               class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent"
+                               placeholder="e.g., Near Metro Station">
+                    </div>
+                </div>
+                
+                <!-- Google Maps -->
+                <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h4 class="font-medium text-gray-900 dark:text-white">Location on Map</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Add exact location for better visibility</p>
+                        </div>
+                        <button type="button" onclick="openMapPicker()" 
+                                class="px-4 py-2 bg-bhoosparsh-blue text-white rounded-lg hover:bg-blue-700 transition text-sm">
+                            <i class="fas fa-map-marker-alt mr-2"></i>Pick on Map
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="id_latitude" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Latitude
+                            </label>
+                            <input type="number" step="any" id="id_latitude" name="latitude" 
+                                   value="{% if form_data.latitude %}{{ form_data.latitude }}{% elif property and property.latitude %}{{ property.latitude }}{% endif %}"
+                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300"
+                                   placeholder="e.g., 19.076090">
+                        </div>
+                        
+                        <div>
+                            <label for="id_longitude" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Longitude
+                            </label>
+                            <input type="number" step="any" id="id_longitude" name="longitude" 
+                                   value="{% if form_data.longitude %}{{ form_data.longitude }}{% elif property and property.longitude %}{{ property.longitude }}{% endif %}"
+                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300"
+                                   placeholder="e.g., 72.877426">
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <label for="id_google_map_url" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Google Maps URL
+                        </label>
+                        <input type="url" id="id_google_map_url" name="google_map_url" 
+                               value="{% if form_data.google_map_url %}{{ form_data.google_map_url }}{% elif property and property.google_map_url %}{{ property.google_map_url }}{% endif %}"
+                               class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300"
+                               placeholder="https://maps.google.com/?q=...">
+                    </div>
+                </div>
+                
+                <!-- Pricing -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="id_price" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 required-field">
+                            Price
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500">₹</span>
+                            </div>
+                            <input type="number" id="id_price" name="price" 
+                                   value="{% if form_data.price %}{{ form_data.price }}{% elif property %}{{ property.price }}{% endif %}" 
+                                   step="0.01" min="0" required
+                                   class="w-full pl-8 p-3 border {% if errors and errors.price %}border-red-500{% else %}border-gray-300 dark:border-gray-600{% endif %} rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent"
+                                   placeholder="Enter price">
+                        </div>
+                        <div class="mt-2 flex items-center">
+                            <input type="checkbox" id="id_price_negotiable" name="price_negotiable" 
+                                   {% if form_data.price_negotiable == 'on' %}checked{% endif %}
+                                   {% if property and property.price_negotiable %}checked{% endif %}
+                                   class="w-4 h-4 text-bhoosparsh-blue rounded border-gray-300 focus:ring-bhoosparsh-blue">
+                            <label for="id_price_negotiable" class="ml-2 text-sm text-gray-600 dark:text-gray-400">
+                                Price is negotiable
+                            </label>
+                        </div>
+                        {% if errors and errors.price %}
+                        <p class="mt-1 text-sm text-red-600">{{ errors.price }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="id_maintenance_charges" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Maintenance
+                            </label>
+                            <input type="number" id="id_maintenance_charges" name="maintenance_charges" 
+                                   value="{% if form_data.maintenance_charges %}{{ form_data.maintenance_charges }}{% elif property and property.maintenance_charges %}{{ property.maintenance_charges }}{% endif %}"
+                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300"
+                                   placeholder="Monthly">
+                        </div>
+                        
+                        <div>
+                            <label for="id_booking_amount" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Booking Amount
+                            </label>
+                            <input type="number" id="id_booking_amount" name="booking_amount" 
+                                   value="{% if form_data.booking_amount %}{{ form_data.booking_amount }}{% elif property and property.booking_amount %}{{ property.booking_amount }}{% endif %}" 
+                                   step="0.01" min="0"
+                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Area Details -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                        <label for="id_carpet_area" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 required-field">
+                            Carpet Area (sq.ft.)
+                        </label>
+                        <input type="number" id="id_carpet_area" name="carpet_area" 
+                               value="{% if form_data.carpet_area %}{{ form_data.carpet_area }}{% elif property %}{{ property.carpet_area }}{% endif %}" 
+                               step="0.01" min="0" required
+                               class="w-full p-3 border {% if errors and errors.carpet_area %}border-red-500{% else %}border-gray-300 dark:border-gray-600{% endif %} rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                        {% if errors and errors.carpet_area %}
+                        <p class="mt-1 text-sm text-red-600">{{ errors.carpet_area }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label for="id_builtup_area" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Built-up Area (sq.ft.)
+                        </label>
+                        <input type="number" id="id_builtup_area" name="builtup_area" 
+                               value="{% if form_data.builtup_area %}{{ form_data.builtup_area }}{% elif property and property.builtup_area %}{{ property.builtup_area }}{% endif %}" 
+                               step="0.01" min="0"
+                               class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                    </div>
+                    
+                    <div>
+                        <label for="id_super_builtup_area" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Super Built-up Area (sq.ft.)
+                        </label>
+                        <input type="number" id="id_super_builtup_area" name="super_builtup_area" 
+                               value="{% if form_data.super_builtup_area %}{{ form_data.super_builtup_area }}{% elif property and property.super_builtup_area %}{{ property.super_builtup_area }}{% endif %}" 
+                               step="0.01" min="0"
+                               class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                    </div>
+                    
+                    <div>
+                        <label for="id_plot_area" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Plot Area (sq.ft.)
+                        </label>
+                        <input type="number" id="id_plot_area" name="plot_area" 
+                               value="{% if form_data.plot_area %}{{ form_data.plot_area }}{% elif property and property.plot_area %}{{ property.plot_area }}{% endif %}" 
+                               step="0.01" min="0"
+                               class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-between mt-8">
+                <button type="button" onclick="prevStep()" 
+                        class="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition font-medium flex items-center gap-2">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Previous</span>
+                </button>
+                
+                <button type="button" onclick="nextStep()" 
+                        class="px-6 py-3 bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg hover:opacity-90 transition font-medium flex items-center gap-2">
+                    <span>Next: Details & Features</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Step 3: Details & Features -->
+        <div id="step3" class="form-step">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Property Details & Features</h3>
+            
+            <div class="space-y-6">
+                <!-- Residential Fields -->
+                <div id="residentialSection" class="dynamic-section">
+                    <h4 class="font-medium text-gray-900 dark:text-white mb-4">Residential Details</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                            <label for="id_bedrooms" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Bedrooms
+                            </label>
+                            <select id="id_bedrooms" name="bedrooms"
+                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                                <option value="">Select</option>
+                                {% for i in "123456789101112"|make_list %}
+                                <option value="{{ i }}" 
+                                    {% if form_data.bedrooms == i %}selected{% endif %}
+                                    {% if property and property.bedrooms and property.bedrooms|stringformat:'s' == i %}selected{% endif %}>
+                                    {{ i }} {% if i == "1" %}Bedroom{% else %}Bedrooms{% endif %}
+                                </option>
+                                {% endfor %}
+                                <option value="13" 
+                                    {% if form_data.bedrooms == "13" %}selected{% endif %}
+                                    {% if property and property.bedrooms and property.bedrooms >= 13 %}selected{% endif %}>13+ Bedrooms</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="id_bathrooms" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Bathrooms
+                            </label>
+                            <select id="id_bathrooms" name="bathrooms"
+                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                                <option value="">Select</option>
+                                {% for i in "123456"|make_list %}
+                                <option value="{{ i }}" 
+                                    {% if form_data.bathrooms == i %}selected{% endif %}
+                                    {% if property and property.bathrooms and property.bathrooms|stringformat:'s' == i %}selected{% endif %}>
+                                    {{ i }} {% if i == "1" %}Bathroom{% else %}Bathrooms{% endif %}
+                                </option>
+                                {% endfor %}
+                                <option value="7" 
+                                    {% if form_data.bathrooms == "7" %}selected{% endif %}
+                                    {% if property and property.bathrooms and property.bathrooms >= 7 %}selected{% endif %}>7+ Bathrooms</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="id_balconies" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Balconies
+                            </label>
+                            <input type="number" id="id_balconies" name="balconies" 
+                                   value="{% if form_data.balconies %}{{ form_data.balconies }}{% elif property %}{{ property.balconies }}{% else %}0{% endif %}" min="0"
+                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                        </div>
+                        
+                        <div>
+                            <label for="id_furnishing" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Furnishing
+                            </label>
+                            <select id="id_furnishing" name="furnishing"
+                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                                <option value="">Select</option>
+                                <option value="furnished" 
+                                    {% if form_data.furnishing == 'furnished' %}selected{% endif %}
+                                    {% if property and property.furnishing == 'furnished' %}selected{% endif %}>Fully Furnished</option>
+                                <option value="semi_furnished" 
+                                    {% if form_data.furnishing == 'semi_furnished' %}selected{% endif %}
+                                    {% if property and property.furnishing == 'semi_furnished' %}selected{% endif %}>Semi Furnished</option>
+                                <option value="unfurnished" 
+                                    {% if form_data.furnishing == 'unfurnished' %}selected{% endif %}
+                                    {% if property and property.furnishing == 'unfurnished' %}selected{% endif %}>Unfurnished</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Additional Details -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="id_age_of_property" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Age of Property
+                        </label>
+                        <input type="text" id="id_age_of_property" name="age_of_property" 
+                               value="{% if form_data.age_of_property %}{{ form_data.age_of_property }}{% elif property %}{{ property.age_of_property }}{% endif %}"
+                               class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300"
+                               placeholder="e.g., 5 years, New Construction">
+                    </div>
+                    
+                    <div>
+                        <label for="id_possession_status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Possession Status
+                        </label>
+                        <input type="text" id="id_possession_status" name="possession_status" 
+                               value="{% if form_data.possession_status %}{{ form_data.possession_status }}{% elif property %}{{ property.possession_status }}{% endif %}"
+                               class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300"
+                               placeholder="e.g., Ready to Move, Under Construction">
+                    </div>
+                </div>
+                
+                <!-- Amenities -->
+                <div>
+                    <h4 class="font-medium text-gray-900 dark:text-white mb-4">Amenities & Facilities</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                        {% for amenity in amenities_list %}
+                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                            <input type="checkbox" name="amenities" value="{{ amenity.id }}" 
+                                   class="w-4 h-4 text-bhoosparsh-blue rounded border-gray-300 focus:ring-bhoosparsh-blue"
+                                   {% if amenity.id in selected_amenities %}checked{% endif %}>
+                            <span class="ml-3 text-sm text-gray-700 dark:text-gray-300">{{ amenity.name }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Boost Features -->
+                <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg p-6 border border-blue-100 dark:border-blue-800">
+                    <h4 class="font-medium text-gray-900 dark:text-white mb-4">Boost Your Listing</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        Get more visibility and leads with these premium features
+                    </p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label class="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-white dark:hover:bg-gray-800 transition">
+                            <input type="checkbox" name="is_featured" 
+                                   {% if form_data.is_featured == 'on' %}checked{% endif %}
+                                   {% if property and property.is_featured %}checked{% endif %}
+                                   class="mt-1 w-4 h-4 text-bhoosparsh-blue rounded border-gray-300 focus:ring-bhoosparsh-blue">
+                            <div class="ml-3">
+                                <div class="flex items-center">
+                                    <span class="font-medium text-gray-900 dark:text-white">Featured Listing</span>
+                                    <span class="ml-2 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Premium</span>
+                                </div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                    Highlight your property with a "Featured" badge and top placement
+                                </p>
+                                <p class="text-sm text-bhoosparsh-orange font-medium mt-1">
+                                    <i class="fas fa-bolt mr-1"></i> Get 3x more leads
+                                </p>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-white dark:hover:bg-gray-800 transition">
+                            <input type="checkbox" name="is_urgent" 
+                                   {% if form_data.is_urgent == 'on' %}checked{% endif %}
+                                   {% if property and property.is_urgent %}checked{% endif %}
+                                   class="mt-1 w-4 h-4 text-bhoosparsh-blue rounded border-gray-300 focus:ring-bhoosparsh-blue">
+                            <div class="ml-3">
+                                <div class="flex items-center">
+                                    <span class="font-medium text-gray-900 dark:text-white">Urgent Sale</span>
+                                    <span class="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">Hot</span>
+                                </div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                    Add "Urgent" tag for quick sale/rent properties
+                                </p>
+                                <p class="text-sm text-bhoosparsh-orange font-medium mt-1">
+                                    <i class="fas fa-fire mr-1"></i> Priority placement
+                                </p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-between mt-8">
+                <button type="button" onclick="prevStep()" 
+                        class="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition font-medium flex items-center gap-2">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Previous</span>
+                </button>
+                
+                <button type="button" onclick="nextStep()" 
+                        class="px-6 py-3 bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg hover:opacity-90 transition font-medium flex items-center gap-2">
+                    <span>Next: Photos & Contact</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Step 4: Photos & Contact -->
+        <div id="step4" class="form-step">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Photos & Contact Information</h3>
+            
+            <div class="space-y-6">
+                <!-- Primary Image -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 required-field">
+                        Primary Photo
+                    </label>
+                    <div class="border-2 border-dashed {% if errors and errors.primary_image %}border-red-500{% else %}border-gray-300 dark:border-gray-600{% endif %} rounded-lg p-8 text-center hover:border-bhoosparsh-blue transition cursor-pointer"
+                         onclick="document.getElementById('id_primary_image').click()">
+                        <input type="file" id="id_primary_image" name="primary_image" accept="image/*" 
+                               class="hidden" onchange="previewPrimaryImage(this)" 
+                               {% if not property or not property.primary_image %}required{% endif %}
+                               {% if property and property.primary_image %}data-has-existing="true"{% endif %}>
+                        
+                        <div id="primaryImagePreview" class="flex flex-col items-center justify-center">
+                            {% if property and property.primary_image %}
+                            <img src="{{ property.primary_image.url }}" alt="Primary" 
+                                 class="w-48 h-48 object-cover rounded-lg mb-4">
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                Click to change primary photo
+                            </p>
+                            {% else %}
+                            <i class="fas fa-camera text-gray-400 text-4xl mb-4"></i>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                Click to upload primary property photo
+                            </p>
+                            <p class="text-xs text-gray-500">
+                                Recommended: 1200x800 pixels, max 5MB
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if errors and errors.primary_image %}
+                    <p class="mt-1 text-sm text-red-600">{{ errors.primary_image }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Additional Images -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Additional Photos
+                    </label>
+                    <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-bhoosparsh-blue transition cursor-pointer"
+                         onclick="document.getElementById('id_additional_images').click()">
+                        <input type="file" id="id_additional_images" name="additional_images" 
+                               accept="image/*" multiple class="hidden">
+                        
+                        <i class="fas fa-images text-gray-400 text-3xl mb-3"></i>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                            Click to upload additional photos
+                        </p>
+                        <p class="text-xs text-gray-500">
+                            Upload up to 10 photos (max 5MB each)
+                        </p>
+                    </div>
+                    
+                    <!-- Image Previews -->
+                    <div id="imagePreviews" class="mt-4 image-preview-container">
+                        {% if property %}
+                            {% for image in images %}
+                            <div class="image-preview {% if image.is_primary %}primary{% endif %}" data-id="{{ image.id }}">
+                                <img src="{{ image.image.url }}" alt="Property Image">
+                                <div class="image-actions">
+                                    <button type="button" onclick="setAsPrimary('{{ image.id }}')" 
+                                            class="w-8 h-8 bg-blue-500 text-white rounded-full hover:bg-blue-600"
+                                            title="Set as Primary">
+                                        <i class="fas fa-star text-xs"></i>
+                                    </button>
+                                    <button type="button" onclick="removeImage('{{ image.id }}')" 
+                                            class="w-8 h-8 bg-red-500 text-white rounded-full hover:bg-red-600"
+                                            title="Remove">
+                                        <i class="fas fa-times text-xs"></i>
+                                    </button>
+                                </div>
+                                <input type="checkbox" name="delete_images" value="{{ image.id }}" class="hidden" id="delete_{{ image.id }}">
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Contact Information -->
+                <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6">
+                    <h4 class="font-medium text-gray-900 dark:text-white mb-4">Contact Information</h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="id_contact_person" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 required-field">
+                                Contact Person
+                            </label>
+                            <input type="text" id="id_contact_person" name="contact_person" 
+                                   value="{% if form_data.contact_person %}{{ form_data.contact_person }}{% elif property %}{{ property.contact_person }}{% else %}{{ user.get_full_name }}{% endif %}" required
+                                   class="w-full p-3 border {% if errors and errors.contact_person %}border-red-500{% else %}border-gray-300 dark:border-gray-600{% endif %} rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
+                            {% if errors and errors.contact_person %}
+                            <p class="mt-1 text-sm text-red-600">{{ errors.contact_person }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <label for="id_contact_phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 required-field">
+                                Contact Phone
+                            </label>
+                            <input type="tel" id="id_contact_phone" name="contact_phone" 
+                                   value="{% if form_data.contact_phone %}{{ form_data.contact_phone }}{% elif property %}{{ property.contact_phone }}{% else %}{{ user.phone }}{% endif %}" required
+                                   pattern="^\+?1?\d{9,15}$"
+                                   class="w-full p-3 border {% if errors and errors.contact_phone %}border-red-500{% else %}border-gray-300 dark:border-gray-600{% endif %} rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
+                            {% if errors and errors.contact_phone %}
+                            <p class="mt-1 text-sm text-red-600">{{ errors.contact_phone }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <label for="id_contact_email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Contact Email
+                            </label>
+                            <input type="email" id="id_contact_email" name="contact_email" 
+                                   value="{% if form_data.contact_email %}{{ form_data.contact_email }}{% elif property %}{{ property.contact_email }}{% else %}{{ user.email }}{% endif %}"
+                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <input type="checkbox" id="id_show_contact" name="show_contact"
+                                   {% if form_data.show_contact == 'on' %}checked{% endif %}
+                                   {% if property and property.show_contact %}checked{% endif %}
+                                   class="w-4 h-4 text-bhoosparsh-blue rounded border-gray-300 focus:ring-bhoosparsh-blue">
+                            <label for="id_show_contact" class="ml-3 text-sm text-gray-700 dark:text-gray-300">
+                                Show contact details publicly
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                        <div class="flex items-start gap-3">
+                            <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+                            <div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">
+                                    Contact information will be visible to potential buyers/tenants. 
+                                    For privacy, you can choose to show only inquiry form.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Terms & Submission -->
+                <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+                    <div class="flex items-start mb-6">
+                        <input type="checkbox" id="id_terms" name="terms" required
+                               class="mt-1 w-4 h-4 text-bhoosparsh-blue rounded border-gray-300 focus:ring-bhoosparsh-blue">
+                        <label for="id_terms" class="ml-3 text-sm text-gray-700 dark:text-gray-300">
+                            I confirm that all information provided is accurate and I agree to the 
+                            <a href="#" class="text-bhoosparsh-blue hover:text-blue-700">Terms of Service</a> and 
+                            <a href="#" class="text-bhoosparsh-blue hover:text-blue-700">Privacy Policy</a>.
+                        </label>
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row justify-between gap-4">
+                        <div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                <i class="fas fa-shield-alt text-green-500 mr-2"></i>
+                                Your listing will be reviewed before publishing (usually within 24 hours)
+                            </p>
+                        </div>
+                        
+                        <div class="flex gap-3">
+                            <button type="button" onclick="saveAsDraft()" 
+                                    class="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition font-medium">
+                                Save as Draft
+                            </button>
+                            
+                            <button type="submit" id="submitBtn"
+                                    class="px-6 py-3 bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg hover:opacity-90 transition font-medium flex items-center gap-2">
+                                <i class="fas fa-paper-plane"></i>
+                                <span>{% if property %}Update Property{% else %}Submit for Review{% endif %}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-start mt-8">
+                <button type="button" onclick="prevStep()" 
+                        class="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition font-medium flex items-center gap-2">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Previous</span>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Map Picker Modal -->
+<div id="mapModal" class="modal-overlay">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl mx-4 h-[80vh]">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Pick Location on Map</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Click on the map to select exact location</p>
+                </div>
+                <button onclick="closeModal('mapModal')" 
+                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-6 h-[calc(80vh-140px)]">
+            <div id="mapContainer" class="w-full h-full bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden">
+                <!-- Google Maps will be loaded here -->
+                <div class="w-full h-full flex items-center justify-center">
+                    <div class="text-center">
+                        <i class="fas fa-map text-gray-400 text-4xl mb-3"></i>
+                        <p class="text-gray-600 dark:text-gray-400">Google Maps integration</p>
+                        <p class="text-sm text-gray-500 mt-1">In production, this would show an interactive map</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4 grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Selected Latitude
+                    </label>
+                    <input type="text" id="selectedLatitude" readonly
+                           class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-300">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Selected Longitude
+                    </label>
+                    <input type="text" id="selectedLongitude" readonly
+                           class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-300">
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+            <button onclick="closeModal('mapModal')" 
+                    class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                Cancel
+            </button>
+            <button onclick="applyMapSelection()" 
+                    class="px-4 py-2 bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg hover:opacity-90 transition font-medium">
+                Apply Location
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentStep = 1;
+    const totalSteps = 4;
+    let formIsSubmitting = false;
+    
+    // Initialize the form
+    document.addEventListener('DOMContentLoaded', function() {
+        // Show dynamic sections based on category
+        const categorySelect = document.getElementById('id_category');
+        if (categorySelect.value) {
+            updateDynamicSections(categorySelect.value);
+        }
+        
+        // Handle image preview for additional images
+        const additionalImagesInput = document.getElementById('id_additional_images');
+        if (additionalImagesInput) {
+            additionalImagesInput.addEventListener('change', function(e) {
+                previewAdditionalImages(e.target.files);
+            });
+        }
+        
+        // Update step headers
+        updateStepHeaders();
+        
+        // Form submission handler
+        document.getElementById('propertyForm').addEventListener('submit', function(e) {
+            if (!validateAllSteps() || formIsSubmitting) {
+                e.preventDefault();
+                if (formIsSubmitting) {
+                    showToast('Please wait, form is submitting...', 'info');
+                } else {
+                    showToast('Please complete all required fields', 'error');
+                }
+            } else {
+                formIsSubmitting = true;
+                // Disable submit button to prevent double submission
+                const submitBtn = document.getElementById('submitBtn');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+                }
+            }
+        });
+    });
+    
+    // Navigation functions
+    function nextStep() {
+        if (validateStep(currentStep)) {
+            if (currentStep < totalSteps) {
+                document.getElementById(`step${currentStep}`).classList.remove('active');
+                document.getElementById(`step${currentStep}Indicator`).classList.remove('active');
+                document.getElementById(`step${currentStep}Indicator`).classList.add('completed');
+                
+                if (currentStep < totalSteps - 1) {
+                    document.getElementById(`step${currentStep}Connector`).classList.add('active');
+                }
+                
+                currentStep++;
+                document.getElementById(`step${currentStep}`).classList.add('active');
+                document.getElementById(`step${currentStep}Indicator`).classList.add('active');
+                
+                updateStepHeaders();
+                updateCurrentStepField();
+                scrollToTop();
+            }
+        }
+    }
+    
+    function prevStep() {
+        if (currentStep > 1) {
+            document.getElementById(`step${currentStep}`).classList.remove('active');
+            document.getElementById(`step${currentStep}Indicator`).classList.remove('active');
+            
+            currentStep--;
+            document.getElementById(`step${currentStep}`).classList.add('active');
+            document.getElementById(`step${currentStep}Indicator`).classList.add('active');
+            
+            updateStepHeaders();
+            updateCurrentStepField();
+            scrollToTop();
+        }
+    }
+    
+    function goToStep(step) {
+        if (step >= 1 && step <= totalSteps) {
+            // Validate all previous steps
+            for (let i = 1; i < step; i++) {
+                if (!validateStep(i)) {
+                    showToast(`Please complete step ${i} first`, 'warning');
+                    goToStep(i);
+                    return;
+                }
+            }
+            
+            // Hide all steps
+            for (let i = 1; i <= totalSteps; i++) {
+                document.getElementById(`step${i}`).classList.remove('active');
+                document.getElementById(`step${i}Indicator`).classList.remove('active');
+            }
+            
+            // Show selected step
+            currentStep = step;
+            document.getElementById(`step${step}`).classList.add('active');
+            document.getElementById(`step${step}Indicator`).classList.add('active');
+            
+            updateStepHeaders();
+            updateCurrentStepField();
+            scrollToTop();
+        }
+    }
+    
+    function updateCurrentStepField() {
+        const currentStepField = document.getElementById('currentStepField');
+        if (currentStepField) {
+            currentStepField.value = currentStep;
+        }
+    }
+    
+    function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
+    function updateStepHeaders() {
+        const headers = document.querySelectorAll('.text-center .text-sm');
+        headers.forEach((header, index) => {
+            if (index + 1 === currentStep) {
+                header.classList.remove('text-gray-500');
+                header.classList.add('text-gray-900', 'dark:text-white');
+            } else {
+                header.classList.remove('text-gray-900', 'dark:text-white');
+                header.classList.add('text-gray-500');
+            }
+        });
+    }
+    
+    function validateAllSteps() {
+        let allValid = true;
+        for (let i = 1; i <= totalSteps; i++) {
+            if (!validateStep(i, true)) {
+                allValid = false;
+                if (i !== currentStep) {
+                    goToStep(i);
+                }
+                break;
+            }
+        }
+        return allValid;
+    }
+    
+    function validateStep(step, silent = false) {
+        let isValid = true;
+        const stepElement = document.getElementById(`step${step}`);
+        
+        // Clear previous errors
+        stepElement.querySelectorAll('.error-field').forEach(el => {
+            el.classList.remove('border-red-500', 'error-field');
+        });
+        stepElement.querySelectorAll('.error-message').forEach(el => {
+            el.remove();
+        });
+        
+        // Get all required inputs in this step
+        const requiredInputs = stepElement.querySelectorAll('[required]');
+        
+        requiredInputs.forEach(input => {
+            let value = input.value;
+            
+            // Handle different input types
+            if (input.type === 'checkbox' && !input.checked) {
+                isValid = false;
+                markFieldAsError(input, 'This field is required');
+            } 
+            else if (input.type === 'radio') {
+                // Check if any radio with same name is checked
+                const radioName = input.name;
+                const radioGroup = document.querySelectorAll(`input[name="${radioName}"]`);
+                const isRadioChecked = Array.from(radioGroup).some(radio => radio.checked);
+                if (!isRadioChecked) {
+                    isValid = false;
+                    const radioContainer = radioGroup[0].closest('div');
+                    if (radioContainer && !radioContainer.querySelector('.error-message')) {
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'error-message';
+                        errorDiv.textContent = 'Please select an option';
+                        radioContainer.parentNode.appendChild(errorDiv);
+                    }
+                }
+            }
+            else if (input.type === 'file' && !input.files.length) {
+                // Check if primary image is required (only for new properties)
+                if (input.id === 'id_primary_image' && !input.hasAttribute('data-has-existing')) {
+                    isValid = false;
+                    markFieldAsError(input, 'Primary image is required');
+                }
+            }
+            else if (!value.trim()) {
+                isValid = false;
+                markFieldAsError(input, 'This field is required');
+            }
+            
+            // Additional validation for specific fields
+            if (input.name === 'price' && value) {
+                const price = parseFloat(value);
+                if (price <= 0 || isNaN(price)) {
+                    isValid = false;
+                    markFieldAsError(input, 'Please enter a valid price');
+                }
+            }
+            
+            if (input.name === 'carpet_area' && value) {
+                const area = parseFloat(value);
+                if (area <= 0 || isNaN(area)) {
+                    isValid = false;
+                    markFieldAsError(input, 'Please enter a valid area');
+                }
+            }
+            
+            if (input.name === 'contact_phone' && value) {
+                const phoneRegex = /^[+]?[1-9][\d]{0,15}$/;
+                if (!phoneRegex.test(value.replace(/[\s()-]/g, ''))) {
+                    isValid = false;
+                    markFieldAsError(input, 'Please enter a valid phone number');
+                }
+            }
+            
+            if (input.name === 'contact_email' && value) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(value)) {
+                    isValid = false;
+                    markFieldAsError(input, 'Please enter a valid email address');
+                }
+            }
+        });
+        
+        if (!isValid && !silent) {
+            showToast('Please complete all required fields in this step', 'warning');
+            // Scroll to first error
+            const firstError = stepElement.querySelector('.error-field');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstError.focus();
+            }
+        }
+        
+        return isValid;
+    }
+    
+    function markFieldAsError(input, message) {
+        input.classList.add('border-red-500', 'error-field');
+        
+        // Add error message if not exists
+        let errorContainer = input.parentNode;
+        if (input.type === 'file') {
+            errorContainer = errorContainer.parentNode; // Go up one more level for file inputs
+        }
+        
+        if (!errorContainer.querySelector('.error-message')) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            errorContainer.appendChild(errorDiv);
+        }
+    }
+    
+    function updateDynamicSections(categoryId) {
+        // Hide all dynamic sections
+        document.querySelectorAll('.dynamic-section').forEach(section => {
+            section.classList.add('hidden');
+        });
+        
+        // Show relevant section based on category
+        if (categoryId) {
+            // For demo, show residential section
+            document.getElementById('residentialSection').classList.remove('hidden');
+        }
+    }
+    
+    function previewPrimaryImage(input) {
+        const preview = document.getElementById('primaryImagePreview');
+        
+        if (input.files && input.files[0]) {
+            // Validate file size (5MB max)
+            if (input.files[0].size > 5 * 1024 * 1024) {
+                showToast('Image size should be less than 5MB', 'error');
+                input.value = '';
+                return;
+            }
+            
+            // Validate file type
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+            if (!validTypes.includes(input.files[0].type)) {
+                showToast('Please upload a valid image file (JPEG, PNG, WebP, GIF)', 'error');
+                input.value = '';
+                return;
+            }
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                preview.innerHTML = `
+                    <img src="${e.target.result}" alt="Primary" 
+                         class="w-48 h-48 object-cover rounded-lg mb-4">
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        Click to change primary photo
+                    </p>
+                `;
+            };
+            
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    
+    function previewAdditionalImages(files) {
+        const previewsContainer = document.getElementById('imagePreviews');
+        const maxImages = 10;
+        const existingImages = previewsContainer.querySelectorAll('.image-preview').length;
+        
+        // Check total images limit
+        if (files.length + existingImages > maxImages) {
+            showToast(`You can only upload up to ${maxImages} images total`, 'warning');
+            return;
+        }
+        
+        for (let i = 0; i < files.length && i < maxImages - existingImages; i++) {
+            const file = files[i];
+            
+            // Validate file size (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                showToast(`Image ${file.name} is too large (max 5MB)`, 'error');
+                continue;
+            }
+            
+            // Validate file type
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+            if (!validTypes.includes(file.type)) {
+                showToast(`Image ${file.name} has invalid format`, 'error');
+                continue;
+            }
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const previewDiv = document.createElement('div');
+                previewDiv.className = 'image-preview';
+                previewDiv.innerHTML = `
+                    <img src="${e.target.result}" alt="Additional Image">
+                    <div class="image-actions">
+                        <button type="button" onclick="setAsPrimaryNew(this)" 
+                                class="w-8 h-8 bg-blue-500 text-white rounded-full hover:bg-blue-600"
+                                title="Set as Primary">
+                            <i class="fas fa-star text-xs"></i>
+                        </button>
+                        <button type="button" onclick="removeNewImage(this)" 
+                                class="w-8 h-8 bg-red-500 text-white rounded-full hover:bg-red-600"
+                                title="Remove">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    </div>
+                `;
+                
+                previewsContainer.appendChild(previewDiv);
+            };
+            
+            reader.readAsDataURL(file);
+        }
+    }
+    
+    function setAsPrimary(imageId) {
+        // In real app, make AJAX call to update primary image
+        showToast('Setting as primary image...', 'info');
+        
+        document.querySelectorAll('.image-preview').forEach(preview => {
+            preview.classList.remove('primary');
+        });
+        
+        const primaryPreview = document.querySelector(`[data-id="${imageId}"]`);
+        if (primaryPreview) {
+            primaryPreview.classList.add('primary');
+        }
+        
+        showToast('Primary image updated!', 'success');
+    }
+    
+    function setAsPrimaryNew(button) {
+        const preview = button.closest('.image-preview');
+        document.querySelectorAll('.image-preview').forEach(p => {
+            p.classList.remove('primary');
+        });
+        preview.classList.add('primary');
+        showToast('Set as primary image', 'info');
+    }
+    
+    function removeImage(imageId) {
+        if (confirm('Are you sure you want to remove this image?')) {
+            const preview = document.querySelector(`[data-id="${imageId}"]`);
+            if (preview) {
+                // Mark for deletion
+                const deleteCheckbox = document.getElementById(`delete_${imageId}`);
+                if (deleteCheckbox) {
+                    deleteCheckbox.checked = true;
+                }
+                preview.style.display = 'none';
+                showToast('Image marked for removal', 'success');
+            }
+        }
+    }
+    
+    function removeNewImage(button) {
+        const preview = button.closest('.image-preview');
+        preview.remove();
+        showToast('Image removed', 'info');
+    }
+    
+    function openMapPicker() {
+        openModal('mapModal');
+        
+        // In production, initialize Google Maps here
+        // For demo, simulate coordinates
+        setTimeout(() => {
+            const lat = document.getElementById('id_latitude').value || '19.076090';
+            const lng = document.getElementById('id_longitude').value || '72.877426';
+            document.getElementById('selectedLatitude').value = lat;
+            document.getElementById('selectedLongitude').value = lng;
+        }, 500);
+    }
+    
+    function applyMapSelection() {
+        const lat = document.getElementById('selectedLatitude').value;
+        const lng = document.getElementById('selectedLongitude').value;
+        
+        if (lat && lng) {
+            document.getElementById('id_latitude').value = lat;
+            document.getElementById('id_longitude').value = lng;
+            
+            // Generate Google Maps URL
+            const mapUrl = `https://maps.google.com/?q=${lat},${lng}`;
+            document.getElementById('id_google_map_url').value = mapUrl;
+            
+            closeModal('mapModal');
+            showToast('Location applied successfully!', 'success');
+        } else {
+            showToast('Please select a location on the map', 'warning');
+        }
+    }
+    
+    function saveAsDraft() {
+        if (!validateAllSteps()) {
+            showToast('Please complete all required fields', 'error');
+            return;
+        }
+        
+        // Create hidden field for draft
+        const draftField = document.createElement('input');
+        draftField.type = 'hidden';
+        draftField.name = 'save_as_draft';
+        draftField.value = 'true';
+        document.getElementById('propertyForm').appendChild(draftField);
+        
+        // Submit form
+        document.getElementById('propertyForm').submit();
+    }
+    
+    function goBack() {
+        if (confirm('Are you sure? Any unsaved changes will be lost.')) {
+            window.history.back();
+        }
+    }
+    
+    // Toast notification function
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-medium animate-slide-in ${
+            type === 'error' ? 'bg-red-500' :
+            type === 'success' ? 'bg-green-500' :
+            type === 'warning' ? 'bg-yellow-500' :
+            'bg-blue-500'
+        }`;
+        toast.innerHTML = `
+            <div class="flex items-center gap-2">
+                <i class="fas ${
+                    type === 'error' ? 'fa-exclamation-circle' :
+                    type === 'success' ? 'fa-check-circle' :
+                    type === 'warning' ? 'fa-exclamation-triangle' :
+                    'fa-info-circle'
+                }"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Remove toast after 5 seconds
+        setTimeout(() => {
+            toast.style.animation = 'slide-out 0.3s ease-out forwards';
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 300);
+        }, 5000);
+    }
+    
+    // Modal functions
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+    
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    }
+</script>
+{% endblock %}

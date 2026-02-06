@@ -1,0 +1,557 @@
+{% extends 'dashboard/base_seller.html' %}
+
+{% block title %}Lead: {{ lead.name }} - Seller Dashboard{% endblock %}
+
+{% block page_title %}{{ lead.name }} - Lead Details{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group me-2">
+    <a href="tel:{{ lead.phone }}" class="btn btn-sm btn-success">
+        <i class="fas fa-phone me-1"></i>Call
+    </a>
+    {% if lead.whatsapp_enabled %}
+    <a href="https://wa.me/{{ lead.phone }}" target="_blank" class="btn btn-sm btn-success">
+        <i class="fab fa-whatsapp me-1"></i>WhatsApp
+    </a>
+    {% endif %}
+    {% if lead.email %}
+    <a href="mailto:{{ lead.email }}" class="btn btn-sm btn-primary">
+        <i class="fas fa-envelope me-1"></i>Email
+    </a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Lead Information -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Lead Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="rounded-circle bg-primary bg-opacity-10 d-inline-flex align-items-center justify-content-center mb-3" 
+                         style="width: 80px; height: 80px;">
+                        <i class="fas fa-user fa-2x text-primary"></i>
+                    </div>
+                    <h4 class="mb-1">{{ lead.name }}</h4>
+                    <p class="text-muted mb-0">
+                        {% if lead.timeline %}
+                        Looking to buy in {{ lead.timeline }}
+                        {% endif %}
+                    </p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-muted mb-2">Contact Details</h6>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-phone text-success me-3"></i>
+                        <div>
+                            <strong>{{ lead.phone }}</strong>
+                            {% if lead.whatsapp_enabled %}
+                            <span class="badge bg-success ms-2">WhatsApp</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if lead.email %}
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-envelope text-primary me-3"></i>
+                        <div>{{ lead.email }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-muted mb-2">Lead Details</h6>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Status:</span>
+                        <span class="badge bg-{% if lead.status == 'new' %}primary{% elif lead.status == 'contacted' %}warning{% elif lead.status == 'interested' %}success{% else %}secondary{% endif %}">
+                            {{ lead.get_status_display }}
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Priority:</span>
+                        <span class="badge bg-{% if lead.priority == 'hot' %}danger{% elif lead.priority == 'high' %}warning{% elif lead.priority == 'medium' %}info{% else %}secondary{% endif %}">
+                            {{ lead.get_priority_display }}
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Source:</span>
+                        <span>{{ lead.get_contact_method_display }}</span>
+                    </div>
+                    {% if lead.budget %}
+                    <div class="d-flex justify-content-between">
+                        <span>Budget:</span>
+                        <strong class="text-primary">₹{{ lead.budget|floatformat:0 }}</strong>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-muted mb-2">Property of Interest</h6>
+                    <div class="card border">
+                        <div class="card-body">
+                            <h6 class="card-title">{{ lead.property_link.title|truncatechars:40 }}</h6>
+                            <p class="text-muted small mb-2">
+                                <i class="fas fa-map-marker-alt me-1"></i>
+                                {{ lead.property_link.locality }}, {{ lead.property_link.city }}
+                            </p>
+                            <div class="d-flex justify-content-between">
+                                <strong class="text-primary">₹{{ lead.property_link.price|floatformat:0 }}</strong>
+                                <span>{{ lead.property_link.area }} {{ lead.property_link.area_unit }}</span>
+                            </div>
+                            <a href="{% url 'detail' lead.property_link.slug %}" target="_blank" class="btn btn-sm btn-outline-primary w-100 mt-2">
+                                <i class="fas fa-external-link-alt me-1"></i>View Property
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h6 class="text-muted mb-2">Inquiry Message</h6>
+                    <div class="border rounded p-3 bg-light">
+                        {{ lead.message|default:"No message provided"|linebreaks }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-success" onclick="logInteraction('call')">
+                        <i class="fas fa-phone me-2"></i>Log Call
+                    </button>
+                    <button class="btn btn-success" onclick="logInteraction('whatsapp')">
+                        <i class="fab fa-whatsapp me-2"></i>Log WhatsApp
+                    </button>
+                    <button class="btn btn-primary" onclick="logInteraction('email')">
+                        <i class="fas fa-envelope me-2"></i>Log Email
+                    </button>
+                    <button class="btn btn-warning" onclick="logInteraction('visit')">
+                        <i class="fas fa-home me-2"></i>Log Site Visit
+                    </button>
+                    <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#followupModal">
+                        <i class="fas fa-calendar me-2"></i>Schedule Follow-up
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Lead Timeline & Interactions -->
+    <div class="col-lg-8">
+        <!-- Status Update Form -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Update Lead Status</h5>
+            </div>
+            <div class="card-body">
+                <form id="leadUpdateForm" method="POST">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Status</label>
+                            {{ update_form.status }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Priority</label>
+                            {{ update_form.priority }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notes</label>
+                        {{ update_form.notes }}
+                        <small class="text-muted">Add notes about this lead or conversation</small>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Update Lead
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Interaction Timeline -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Interaction Timeline</h5>
+                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#interactionModal">
+                    <i class="fas fa-plus me-1"></i>Add Interaction
+                </button>
+            </div>
+            <div class="card-body">
+                {% if timeline %}
+                <div class="timeline">
+                    {% for event in timeline %}
+                    <div class="timeline-item {% if forloop.first %}timeline-item-active{% endif %}">
+                        <div class="timeline-marker">
+                            <i class="fas fa-{{ event.icon }}"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <div class="d-flex justify-content-between">
+                                <h6 class="mb-1">{{ event.event }}</h6>
+                                <small class="text-muted">{{ event.date|date:"d M Y, h:i A" }}</small>
+                            </div>
+                            {% if event.description %}
+                            <p class="mb-0 text-muted">{{ event.description }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No interactions recorded yet</p>
+                    <p class="text-muted small">Start by logging your first interaction with this lead</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Interaction History -->
+        {% if interactions %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Detailed Interactions</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for interaction in interactions %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="mb-0">
+                                    <i class="fas fa-{{ interaction.get_interaction_type_display|lower }} me-2"></i>
+                                    {{ interaction.get_interaction_type_display }}
+                                </h6>
+                                {% if interaction.subject %}
+                                <small class="text-muted">{{ interaction.subject }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted">{{ interaction.created_at|date:"d M Y" }}</small><br>
+                                <small class="text-muted">{{ interaction.created_at|time }}</small>
+                            </div>
+                        </div>
+                        {% if interaction.message %}
+                        <p class="mb-2">{{ interaction.message|linebreaks }}</p>
+                        {% endif %}
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                {% if interaction.performed_by %}
+                                By: {{ interaction.performed_by.full_name }}
+                                {% endif %}
+                                {% if interaction.duration %}
+                                • Duration: {{ interaction.duration }}
+                                {% endif %}
+                            </small>
+                            {% if interaction.follow_up_date %}
+                            <small class="text-warning">
+                                <i class="fas fa-calendar me-1"></i>
+                                Follow-up: {{ interaction.follow_up_date|date:"d M Y" }}
+                            </small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Similar Leads -->
+        {% if similar_leads %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Similar Leads (Same Person)</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for similar in similar_leads %}
+                    <a href="{% url 'seller_lead_detail' similar.id %}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <div>
+                                <h6 class="mb-1">{{ similar.property_link.title|truncatechars:40 }}</h6>
+                                <small class="text-muted">{{ similar.created_at|date:"d M Y" }}</small>
+                            </div>
+                            <span class="badge bg-{% if similar.status == 'new' %}primary{% elif similar.status == 'contacted' %}warning{% elif similar.status == 'interested' %}success{% else %}secondary{% endif %}">
+                                {{ similar.get_status_display }}
+                            </span>
+                        </div>
+                        {% if similar.message %}
+                        <p class="mb-1 small text-muted">{{ similar.message|truncatechars:80 }}</p>
+                        {% endif %}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modals -->
+<!-- Interaction Modal -->
+<div class="modal fade" id="interactionModal" tabindex="-1" aria-labelledby="interactionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="interactionForm" method="POST">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="interactionModalLabel">Log Interaction</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Interaction Type</label>
+                        {{ interaction_form.interaction_type }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Subject</label>
+                        {{ interaction_form.subject }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Message/Details</label>
+                        {{ interaction_form.message }}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Duration (HH:MM:SS)</label>
+                            {{ interaction_form.duration }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Follow-up Date</label>
+                            {{ interaction_form.follow_up_date }}
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Log Interaction</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Follow-up Modal -->
+<div class="modal fade" id="followupModal" tabindex="-1" aria-labelledby="followupModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="followupModalLabel">Schedule Follow-up</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Follow-up Date & Time</label>
+                    <input type="datetime-local" class="form-control" id="followupDateTime">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Notes</label>
+                    <textarea class="form-control" id="followupNotes" rows="3" placeholder="Notes for follow-up..."></textarea>
+                </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-bell me-2"></i>
+                    You will receive a reminder 1 hour before the scheduled follow-up.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="scheduleFollowup()">Schedule</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: #e9ecef;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-item-active .timeline-marker {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -30px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #6c757d;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.timeline-content {
+    background: white;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Lead update form
+    $('#leadUpdateForm').submit(function(e) {
+        e.preventDefault();
+        const formData = $(this).serialize();
+        
+        $.ajax({
+            url: `{% url 'seller_ajax_update_lead' lead.id %}`,
+            method: 'POST',
+            data: formData,
+            success: function(response) {
+                if (response.success) {
+                    showToast('Lead updated successfully', 'success');
+                    // Update status badges
+                    $('.lead-status-badge').removeClass().addClass('badge bg-' + getStatusColor(response.lead.status));
+                    $('.lead-status-badge').text(response.lead.status_display);
+                    setTimeout(() => location.reload(), 1000);
+                }
+            }
+        });
+    });
+    
+    // Interaction form
+    $('#interactionForm').submit(function(e) {
+        e.preventDefault();
+        const formData = $(this).serialize();
+        
+        $.ajax({
+            url: `{% url 'seller_ajax_log_interaction' lead.id %}`,
+            method: 'POST',
+            data: formData,
+            success: function(response) {
+                if (response.success) {
+                    showToast('Interaction logged successfully', 'success');
+                    $('#interactionModal').modal('hide');
+                    setTimeout(() => location.reload(), 1000);
+                }
+            }
+        });
+    });
+    
+    // Quick interaction logging
+    window.logInteraction = function(type) {
+        let subject = '';
+        let message = '';
+        
+        switch(type) {
+            case 'call':
+                subject = 'Phone call with ' + '{{ lead.name }}';
+                message = 'Called the lead to discuss property inquiry';
+                break;
+            case 'whatsapp':
+                subject = 'WhatsApp conversation with ' + '{{ lead.name }}';
+                message = 'Sent WhatsApp message regarding property inquiry';
+                break;
+            case 'email':
+                subject = 'Email sent to ' + '{{ lead.name }}';
+                message = 'Sent email with property details and follow-up';
+                break;
+            case 'visit':
+                subject = 'Site visit scheduled with ' + '{{ lead.name }}';
+                message = 'Discussed and scheduled site visit for the property';
+                break;
+        }
+        
+        $.ajax({
+            url: `{% url 'seller_ajax_log_interaction' lead.id %}`,
+            method: 'POST',
+            data: {
+                'interaction_type': type,
+                'subject': subject,
+                'message': message,
+                'csrfmiddlewaretoken': csrftoken
+            },
+            success: function(response) {
+                if (response.success) {
+                    showToast(type.charAt(0).toUpperCase() + type.slice(1) + ' interaction logged', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                }
+            }
+        });
+    };
+    
+    // Schedule follow-up
+    window.scheduleFollowup = function() {
+        const dateTime = $('#followupDateTime').val();
+        const notes = $('#followupNotes').val();
+        
+        if (!dateTime) {
+            showToast('Please select a date and time', 'warning');
+            return;
+        }
+        
+        $.ajax({
+            url: `{% url 'seller_ajax_log_interaction' lead.id %}`,
+            method: 'POST',
+            data: {
+                'interaction_type': 'note',
+                'subject': 'Follow-up scheduled',
+                'message': notes,
+                'follow_up_date': dateTime,
+                'csrfmiddlewaretoken': csrftoken
+            },
+            success: function(response) {
+                if (response.success) {
+                    showToast('Follow-up scheduled successfully', 'success');
+                    $('#followupModal').modal('hide');
+                    setTimeout(() => location.reload(), 1000);
+                }
+            }
+        });
+    };
+    
+    // Helper function
+    function getStatusColor(status) {
+        const colors = {
+            'new': 'primary',
+            'contacted': 'warning',
+            'interested': 'success',
+            'scheduled': 'info',
+            'negotiation': 'info',
+            'closed_won': 'success',
+            'closed_lost': 'danger'
+        };
+        return colors[status] || 'secondary';
+    }
+});
+</script>
+{% endblock %}

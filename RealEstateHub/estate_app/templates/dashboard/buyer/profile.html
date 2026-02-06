@@ -1,0 +1,1465 @@
+<!-- templates/dashboard/buyer/profile.html -->
+{% extends 'dashboard/buyer/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Profile & Settings - BHOOSPARSH Buyer{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Profile page specific styles */
+    .profile-section {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .profile-section h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .profile-header {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .avatar-container {
+        position: relative;
+    }
+
+    .profile-avatar-large {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 4px solid #FF6B35;
+        box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
+    }
+
+    .profile-avatar-large img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .avatar-placeholder {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2.5rem;
+        font-weight: bold;
+    }
+
+    .avatar-upload-btn {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 36px;
+        height: 36px;
+        background: #3b82f6;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        cursor: pointer;
+        border: 2px solid white;
+        transition: all 0.3s ease;
+    }
+
+    .avatar-upload-btn:hover {
+        background: #2563eb;
+        transform: scale(1.1);
+    }
+
+    .profile-info h2 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.5rem;
+    }
+
+    .profile-info p {
+        color: #6b7280;
+        margin-bottom: 0.75rem;
+    }
+
+    .verification-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+        background: #f8fafc;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #111827;
+        display: block;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6b7280;
+        display: block;
+        margin-top: 0.25rem;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-group .form-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-group .form-input:focus {
+        outline: none;
+        border-color: #FF6B35;
+        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    }
+
+    .form-group select.form-input {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+    }
+
+    .form-group textarea.form-input {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .form-group .form-input[readonly] {
+        background-color: #f9fafb;
+        border-color: #d1d5db;
+        cursor: not-allowed;
+    }
+
+    .location-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .location-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: #e0f2fe;
+        color: #0369a1;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .location-tag button {
+        background: none;
+        border: none;
+        color: #0369a1;
+        cursor: pointer;
+        padding: 0;
+        font-size: 0.875rem;
+    }
+
+    .location-tag button:hover {
+        color: #0c4a6e;
+    }
+
+    .add-location-input {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .add-location-input input {
+        flex: 1;
+        padding: 0.5rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+    }
+
+    .add-location-input input:focus {
+        outline: none;
+        border-color: #FF6B35;
+    }
+
+    .range-slider-container {
+        position: relative;
+        margin-top: 1rem;
+    }
+
+    .range-slider {
+        width: 100%;
+        height: 6px;
+        border-radius: 3px;
+        background: #e5e7eb;
+        outline: none;
+        -webkit-appearance: none;
+    }
+
+    .range-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #FF6B35;
+        cursor: pointer;
+        border: 2px solid white;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .range-values {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+
+    .preference-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .preference-tag {
+        padding: 0.5rem 1rem;
+        background: #f3f4f6;
+        color: #374151;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .preference-tag:hover {
+        background: #e5e7eb;
+    }
+
+    .preference-tag.active {
+        background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+        color: white;
+        border-color: #FF6B35;
+    }
+
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 30px;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #d1d5db;
+        transition: .4s;
+        border-radius: 34px;
+    }
+
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 22px;
+        width: 22px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+        background-color: #FF6B35;
+    }
+
+    .toggle-switch input:checked + .toggle-slider:before {
+        transform: translateX(30px);
+    }
+
+    .notification-options {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .notification-option {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem;
+        background: #f8fafc;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .notification-option label {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        cursor: pointer;
+        flex: 1;
+    }
+
+    .notification-option i {
+        font-size: 1.25rem;
+        color: #FF6B35;
+        width: 24px;
+    }
+
+    .notification-option .option-text {
+        flex: 1;
+    }
+
+    .notification-option .option-text h4 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 0.25rem;
+    }
+
+    .notification-option .option-text p {
+        font-size: 0.75rem;
+        color: #6b7280;
+    }
+
+    .save-button {
+        position: sticky;
+        bottom: 2rem;
+        background: white;
+        padding: 1.5rem;
+        border-top: 1px solid #e5e7eb;
+        margin-top: 2rem;
+        border-radius: 0 0 16px 16px;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .progress-section {
+        background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+        border: 2px solid rgba(14, 165, 233, 0.2);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .progress-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+
+    .progress-header h4 {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #0c4a6e;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .progress-percentage {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #0c4a6e;
+    }
+
+    .progress-bar-container {
+        height: 8px;
+        background: #e0f2fe;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 0.75rem;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #0ea5e9, #38bdf8);
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+
+    .progress-steps {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 1rem;
+    }
+
+    .progress-step {
+        text-align: center;
+        flex: 1;
+    }
+
+    .step-indicator {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #e0f2fe;
+        border: 2px solid #e0f2fe;
+        margin: 0 auto 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #0c4a6e;
+    }
+
+    .step-indicator.completed {
+        background: #0ea5e9;
+        border-color: #0ea5e9;
+        color: white;
+    }
+
+    .step-label {
+        font-size: 0.75rem;
+        color: #6b7280;
+    }
+
+    .step-label.active {
+        color: #0c4a6e;
+        font-weight: 600;
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        padding: 1rem;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .modal-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .modal-header h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .modal-header button {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: #6b7280;
+        cursor: pointer;
+        padding: 0.25rem;
+        border-radius: 6px;
+    }
+
+    .modal-header button:hover {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .avatar-options {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .avatar-option {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        overflow: hidden;
+        cursor: pointer;
+        border: 3px solid transparent;
+        transition: all 0.3s ease;
+    }
+
+    .avatar-option:hover {
+        transform: scale(1.05);
+    }
+
+    .avatar-option.selected {
+        border-color: #FF6B35;
+        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.3);
+    }
+
+    .avatar-option img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 767px) {
+        .profile-header {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+        }
+
+        .profile-info {
+            text-align: center;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .avatar-options {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .save-button {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            border-radius: 0;
+            z-index: 40;
+        }
+    }
+
+    @media (min-width: 768px) and (max-width: 1023px) {
+        .form-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block header_title %}
+<h1 class="text-2xl font-bold text-gray-900">
+    <span class="gradient-text">Profile & Settings</span>
+</h1>
+<p class="text-sm text-gray-600 mt-2">
+    <i class="fas fa-user-cog text-orange-500 mr-2"></i>
+    Manage your preferences and settings
+</p>
+{% endblock %}
+
+{% block header_buttons %}
+<div class="flex flex-wrap gap-3">
+    <button onclick="window.history.back()" 
+            class="px-4 py-2 border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-all duration-300 flex items-center gap-2 font-medium">
+        <i class="fas fa-arrow-left"></i>
+        <span class="hidden sm:inline">Back</span>
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="content-spacing">
+    <!-- Profile Header -->
+    <div class="profile-section">
+        <div class="profile-header">
+            <div class="avatar-container">
+                <div class="profile-avatar-large">
+                    {% if user.profile.avatar %}
+                    <img src="{{ user.profile.avatar.url }}" alt="{{ user.get_full_name }}">
+                    {% else %}
+                    <div class="avatar-placeholder">
+                        {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                    </div>
+                    {% endif %}
+                </div>
+                <button class="avatar-upload-btn" onclick="openAvatarModal()">
+                    <i class="fas fa-camera"></i>
+                </button>
+            </div>
+            
+            <div class="profile-info">
+                <h2>{{ user.get_full_name|default:user.username }}</h2>
+                <p class="text-gray-600">
+                    <i class="fas fa-envelope mr-2"></i>{{ user.email }}
+                    {% if user.phone %}
+                    <span class="mx-3">•</span>
+                    <i class="fas fa-phone mr-2"></i>{{ user.phone }}
+                    {% endif %}
+                </p>
+                
+                <div class="flex flex-wrap gap-2">
+                    <span class="verification-badge">
+                        <i class="fas fa-check-circle"></i>
+                        Verified Buyer
+                    </span>
+                    
+                    <span class="px-3 py-1 bg-gradient-to-r from-orange-500 to-yellow-500 text-white rounded-full text-sm font-medium">
+                        Premium Member
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-item">
+                <span class="stat-value">{{ stats.total_searches|default:"0" }}</span>
+                <span class="stat-label">Total Searches</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">{{ stats.properties_viewed|default:"0" }}</span>
+                <span class="stat-label">Properties Viewed</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">{{ stats.properties_saved|default:"0" }}</span>
+                <span class="stat-label">Saved Properties</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">{{ stats.site_visits_completed|default:"0" }}</span>
+                <span class="stat-label">Site Visits</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Progress -->
+    <div class="progress-section">
+        <div class="progress-header">
+            <h4>
+                <i class="fas fa-chart-line"></i>
+                Profile Completion
+            </h4>
+            <span class="progress-percentage" id="completionPercentage">0%</span>
+        </div>
+        
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="completionBar" style="width: 0%"></div>
+        </div>
+        
+        <div class="progress-steps">
+            <div class="progress-step">
+                <div class="step-indicator completed">1</div>
+                <div class="step-label active">Basic Info</div>
+            </div>
+            <div class="progress-step">
+                <div class="step-indicator" id="step2">2</div>
+                <div class="step-label" id="step2Label">Preferences</div>
+            </div>
+            <div class="progress-step">
+                <div class="step-indicator" id="step3">3</div>
+                <div class="step-label" id="step3Label">Verification</div>
+            </div>
+            <div class="progress-step">
+                <div class="step-indicator" id="step4">4</div>
+                <div class="step-label" id="step4Label">Complete</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preferences Form -->
+    <form method="POST" action="{% url 'buyer_profile' %}" id="preferencesForm" class="profile-section">
+        {% csrf_token %}
+        
+        <h3>Property Preferences</h3>
+        
+        <div class="form-grid">
+            <!-- Budget Range -->
+            <div class="form-group">
+                <label for="budget_range">Budget Range (₹)</label>
+                <div class="range-slider-container">
+                    <input type="range" 
+                           min="0" 
+                           max="100000000" 
+                           step="100000" 
+                           value="{{ buyer_profile.min_budget|default:'0' }}"
+                           class="range-slider" 
+                           id="min_budget_slider"
+                           oninput="updateMinBudget(this.value)">
+                    <input type="range" 
+                           min="0" 
+                           max="100000000" 
+                           step="100000" 
+                           value="{{ buyer_profile.max_budget|default:'100000000' }}"
+                           class="range-slider" 
+                           id="max_budget_slider"
+                           oninput="updateMaxBudget(this.value)">
+                    <div class="range-values">
+                        <span id="min_budget_display">₹0</span>
+                        <span id="max_budget_display">₹10 Cr</span>
+                    </div>
+                </div>
+                <input type="hidden" name="min_budget" id="min_budget" value="{{ buyer_profile.min_budget|default:'0' }}">
+                <input type="hidden" name="max_budget" id="max_budget" value="{{ buyer_profile.max_budget|default:'100000000' }}">
+            </div>
+
+            <!-- Property For -->
+            <div class="form-group">
+                <label>Property For</label>
+                <div class="preference-tags">
+                    <span class="preference-tag {% if buyer_profile.property_for == 'sale' %}active{% endif %}" 
+                          onclick="togglePreference('property_for', 'sale', this)">
+                        For Sale
+                    </span>
+                    <span class="preference-tag {% if buyer_profile.property_for == 'rent' %}active{% endif %}" 
+                          onclick="togglePreference('property_for', 'rent', this)">
+                        For Rent
+                    </span>
+                    <span class="preference-tag {% if buyer_profile.property_for == 'pg' %}active{% endif %}" 
+                          onclick="togglePreference('property_for', 'pg', this)">
+                        PG/Hostel
+                    </span>
+                </div>
+                <input type="hidden" name="property_for" id="property_for" value="{{ buyer_profile.property_for|default:'sale' }}">
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <!-- Bedrooms -->
+            <div class="form-group">
+                <label for="min_bedrooms">Minimum Bedrooms</label>
+                <select name="min_bedrooms" id="min_bedrooms" class="form-input">
+                    <option value="">Any</option>
+                    <option value="1" {% if buyer_profile.min_bedrooms == 1 %}selected{% endif %}>1 BHK</option>
+                    <option value="2" {% if buyer_profile.min_bedrooms == 2 %}selected{% endif %}>2 BHK</option>
+                    <option value="3" {% if buyer_profile.min_bedrooms == 3 %}selected{% endif %}>3 BHK</option>
+                    <option value="4" {% if buyer_profile.min_bedrooms == 4 %}selected{% endif %}>4+ BHK</option>
+                </select>
+            </div>
+
+            <!-- Bathrooms -->
+            <div class="form-group">
+                <label for="min_bathrooms">Minimum Bathrooms</label>
+                <select name="min_bathrooms" id="min_bathrooms" class="form-input">
+                    <option value="">Any</option>
+                    <option value="1" {% if buyer_profile.min_bathrooms == 1 %}selected{% endif %}>1</option>
+                    <option value="2" {% if buyer_profile.min_bathrooms == 2 %}selected{% endif %}>2</option>
+                    <option value="3" {% if buyer_profile.min_bathrooms == 3 %}selected{% endif %}>3+</option>
+                </select>
+            </div>
+
+            <!-- Furnishing -->
+            <div class="form-group">
+                <label>Furnishing Preference</label>
+                <div class="preference-tags">
+                    <span class="preference-tag {% if buyer_profile.furnishing_preference == 'furnished' %}active{% endif %}" 
+                          onclick="togglePreference('furnishing_preference', 'furnished', this)">
+                        Fully Furnished
+                    </span>
+                    <span class="preference-tag {% if buyer_profile.furnishing_preference == 'semi_furnished' %}active{% endif %}" 
+                          onclick="togglePreference('furnishing_preference', 'semi_furnished', this)">
+                        Semi Furnished
+                    </span>
+                    <span class="preference-tag {% if buyer_profile.furnishing_preference == 'unfurnished' %}active{% endif %}" 
+                          onclick="togglePreference('furnishing_preference', 'unfurnished', this)">
+                        Unfurnished
+                    </span>
+                </div>
+                <input type="hidden" name="furnishing_preference" id="furnishing_preference" value="{{ buyer_profile.furnishing_preference|default:'' }}">
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <!-- Area Range -->
+            <div class="form-group">
+                <label for="min_area">Minimum Area (sq.ft.)</label>
+                <input type="number" 
+                       name="min_area" 
+                       id="min_area" 
+                       value="{{ buyer_profile.min_area|default:'500' }}"
+                       min="100"
+                       max="10000"
+                       step="50"
+                       class="form-input">
+            </div>
+
+            <div class="form-group">
+                <label for="max_area">Maximum Area (sq.ft.)</label>
+                <input type="number" 
+                       name="max_area" 
+                       id="max_area" 
+                       value="{{ buyer_profile.max_area|default:'5000' }}"
+                       min="500"
+                       max="50000"
+                       step="50"
+                       class="form-input">
+            </div>
+
+            <!-- Possession -->
+            <div class="form-group">
+                <label for="possession_preference">Possession Preference</label>
+                <select name="possession_preference" id="possession_preference" class="form-input">
+                    <option value="any" {% if buyer_profile.possession_preference == 'any' %}selected{% endif %}>Any</option>
+                    <option value="ready" {% if buyer_profile.possession_preference == 'ready' %}selected{% endif %}>Ready to Move</option>
+                    <option value="under_construction" {% if buyer_profile.possession_preference == 'under_construction' %}selected{% endif %}>Under Construction</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Location Preferences -->
+        <div class="form-group">
+            <label>Preferred Locations</label>
+            <div class="location-tags" id="locationTags">
+                {% for location in buyer_profile.preferred_locations|default:'' %}
+                <div class="location-tag">
+                    {{ location }}
+                    <button type="button" onclick="removeLocation('{{ location }}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="add-location-input">
+                <input type="text" 
+                       id="newLocation" 
+                       placeholder="Enter city or locality..."
+                       class="w-full">
+                <button type="button" 
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        onclick="addLocation()">
+                    Add
+                </button>
+            </div>
+            <input type="hidden" name="locations[]" id="locationsInput" value="{{ buyer_profile.preferred_locations|join:',' }}">
+        </div>
+
+        <!-- Property Types -->
+        <div class="form-group">
+            <label>Preferred Property Types</label>
+            <div class="preference-tags" id="propertyTypeTags">
+                {% for prop_type in property_types %}
+                <span class="preference-tag" 
+                      onclick="togglePropertyType('{{ prop_type.id }}', this)">
+                    {{ prop_type.name }}
+                </span>
+                {% endfor %}
+            </div>
+            <input type="hidden" name="property_types[]" id="propertyTypesInput">
+        </div>
+
+        <h3>Notification Settings</h3>
+        
+        <div class="form-grid">
+            <!-- Receive Notifications -->
+            <div class="form-group">
+                <label class="flex items-center justify-between">
+                    <span>Receive Email Notifications</span>
+                    <div class="toggle-switch">
+                        <input type="checkbox" 
+                               name="receive_notifications" 
+                               id="receive_notifications"
+                               {% if buyer_profile.receive_notifications %}checked{% endif %}>
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+            </div>
+
+            <!-- Notification Frequency -->
+            <div class="form-group">
+                <label for="notification_frequency">Notification Frequency</label>
+                <select name="notification_frequency" id="notification_frequency" class="form-input">
+                    <option value="immediate" {% if buyer_profile.notification_frequency == 'immediate' %}selected{% endif %}>Immediate</option>
+                    <option value="daily" {% if buyer_profile.notification_frequency == 'daily' %}selected{% endif %}>Daily Digest</option>
+                    <option value="weekly" {% if buyer_profile.notification_frequency == 'weekly' %}selected{% endif %}>Weekly Digest</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Notification Options -->
+        <div class="notification-options">
+            <div class="notification-option">
+                <label>
+                    <i class="fas fa-bell"></i>
+                    <div class="option-text">
+                        <h4>Property Alerts</h4>
+                        <p>Get notified when new properties match your criteria</p>
+                    </div>
+                    <div class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+            </div>
+            
+            <div class="notification-option">
+                <label>
+                    <i class="fas fa-calendar-alt"></i>
+                    <div class="option-text">
+                        <h4>Site Visit Reminders</h4>
+                        <p>Reminders for scheduled property visits</p>
+                    </div>
+                    <div class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+            </div>
+            
+            <div class="notification-option">
+                <label>
+                    <i class="fas fa-chart-line"></i>
+                    <div class="option-text">
+                        <h4>Market Updates</h4>
+                        <p>Price changes and market trends in your areas</p>
+                    </div>
+                    <div class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Save Button -->
+        <div class="save-button">
+            <button type="submit" 
+                    class="w-full btn-gradient py-3 text-lg font-bold">
+                <i class="fas fa-save mr-2"></i>
+                Save Preferences
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Avatar Modal -->
+<div class="modal-overlay" id="avatarModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Update Profile Picture</h3>
+            <button onclick="closeAvatarModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <div class="avatar-options">
+                <!-- Default avatars -->
+                <div class="avatar-option" onclick="selectAvatar('default-1')">
+                    <div class="w-full h-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-2xl font-bold">
+                        {{ user.first_name|first|upper }}
+                    </div>
+                </div>
+                
+                <div class="avatar-option" onclick="selectAvatar('default-2')">
+                    <div class="w-full h-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white text-2xl font-bold">
+                        {{ user.first_name|first|upper }}
+                    </div>
+                </div>
+                
+                <div class="avatar-option" onclick="selectAvatar('default-3')">
+                    <div class="w-full h-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
+                        {{ user.first_name|first|upper }}
+                    </div>
+                </div>
+                
+                <div class="avatar-option" onclick="selectAvatar('default-4')">
+                    <div class="w-full h-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white text-2xl font-bold">
+                        {{ user.first_name|first|upper }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Upload Custom -->
+            <div class="mt-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Upload Custom Image</label>
+                <input type="file" 
+                       id="avatarUpload"
+                       accept="image/*"
+                       class="w-full p-3 border border-gray-300 rounded-lg"
+                       onchange="uploadAvatar()">
+                <p class="text-xs text-gray-500 mt-2">Recommended: Square image, max 5MB</p>
+            </div>
+            
+            <div class="mt-6 flex justify-end gap-3">
+                <button type="button" 
+                        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                        onclick="closeAvatarModal()">
+                    Cancel
+                </button>
+                <button type="button" 
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                        onclick="saveAvatar()">
+                    Save Avatar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize form values
+        initializeForm();
+        
+        // Calculate profile completion
+        calculateProfileCompletion();
+        
+        // Initialize budget sliders
+        initializeBudgetSliders();
+    });
+
+    function initializeForm() {
+        // Set initial budget display
+        updateBudgetDisplay();
+        
+        // Initialize property types
+        initializePropertyTypes();
+    }
+
+    function calculateProfileCompletion() {
+        let completion = 25; // Start with basic info
+        
+        // Check preferences
+        const minBudget = document.getElementById('min_budget').value;
+        const maxBudget = document.getElementById('max_budget').value;
+        const propertyFor = document.getElementById('property_for').value;
+        const minBedrooms = document.getElementById('min_bedrooms').value;
+        const minBathrooms = document.getElementById('min_bathrooms').value;
+        
+        if (minBudget > 0 && maxBudget > 0) completion += 15;
+        if (propertyFor) completion += 10;
+        if (minBedrooms) completion += 10;
+        if (minBathrooms) completion += 10;
+        
+        // Check locations
+        const locations = document.getElementById('locationsInput').value;
+        if (locations && locations.length > 0) completion += 15;
+        
+        // Check property types
+        const propertyTypes = document.getElementById('propertyTypesInput').value;
+        if (propertyTypes && propertyTypes.length > 0) completion += 15;
+        
+        // Cap at 100%
+        completion = Math.min(completion, 100);
+        
+        // Update UI
+        document.getElementById('completionPercentage').textContent = completion + '%';
+        document.getElementById('completionBar').style.width = completion + '%';
+        
+        // Update steps
+        updateProgressSteps(completion);
+    }
+
+    function updateProgressSteps(completion) {
+        if (completion >= 25) {
+            document.getElementById('step2').classList.add('completed');
+            document.getElementById('step2Label').classList.add('active');
+        }
+        if (completion >= 50) {
+            document.getElementById('step3').classList.add('completed');
+            document.getElementById('step3Label').classList.add('active');
+        }
+        if (completion >= 75) {
+            document.getElementById('step4').classList.add('completed');
+            document.getElementById('step4Label').classList.add('active');
+        }
+    }
+
+    function initializeBudgetSliders() {
+        const minSlider = document.getElementById('min_budget_slider');
+        const maxSlider = document.getElementById('max_budget_slider');
+        const minBudget = document.getElementById('min_budget');
+        const maxBudget = document.getElementById('max_budget');
+        
+        // Ensure max is greater than min
+        minSlider.addEventListener('input', function() {
+            if (parseInt(this.value) > parseInt(maxSlider.value)) {
+                maxSlider.value = this.value;
+                maxBudget.value = this.value;
+                updateBudgetDisplay();
+            }
+        });
+        
+        maxSlider.addEventListener('input', function() {
+            if (parseInt(this.value) < parseInt(minSlider.value)) {
+                minSlider.value = this.value;
+                minBudget.value = this.value;
+                updateBudgetDisplay();
+            }
+        });
+    }
+
+    function updateMinBudget(value) {
+        document.getElementById('min_budget').value = value;
+        document.getElementById('min_budget_display').textContent = formatPrice(value);
+        calculateProfileCompletion();
+    }
+
+    function updateMaxBudget(value) {
+        document.getElementById('max_budget').value = value;
+        document.getElementById('max_budget_display').textContent = formatPrice(value);
+        calculateProfileCompletion();
+    }
+
+    function updateBudgetDisplay() {
+        const minBudget = document.getElementById('min_budget').value;
+        const maxBudget = document.getElementById('max_budget').value;
+        
+        document.getElementById('min_budget_display').textContent = formatPrice(minBudget);
+        document.getElementById('max_budget_display').textContent = formatPrice(maxBudget);
+        
+        // Update sliders
+        document.getElementById('min_budget_slider').value = minBudget;
+        document.getElementById('max_budget_slider').value = maxBudget;
+    }
+
+    function formatPrice(amount) {
+        amount = parseInt(amount);
+        if (amount >= 10000000) {
+            return '₹' + (amount / 10000000).toFixed(1) + ' Cr';
+        } else if (amount >= 100000) {
+            return '₹' + (amount / 100000).toFixed(1) + ' L';
+        } else {
+            return '₹' + amount.toLocaleString();
+        }
+    }
+
+    function togglePreference(field, value, element) {
+        // Remove active class from all siblings
+        const siblings = element.parentElement.children;
+        for (let sibling of siblings) {
+            sibling.classList.remove('active');
+        }
+        
+        // Add active class to clicked element
+        element.classList.add('active');
+        
+        // Update hidden input
+        document.getElementById(field).value = value;
+        calculateProfileCompletion();
+    }
+
+    function initializePropertyTypes() {
+        // Initialize property types selection
+        const propertyTypeTags = document.querySelectorAll('#propertyTypeTags .preference-tag');
+        propertyTypeTags.forEach(tag => {
+            tag.addEventListener('click', function() {
+                this.classList.toggle('active');
+                updatePropertyTypesInput();
+            });
+        });
+    }
+
+    function togglePropertyType(typeId, element) {
+        element.classList.toggle('active');
+        updatePropertyTypesInput();
+    }
+
+    function updatePropertyTypesInput() {
+        const selectedTypes = [];
+        const activeTags = document.querySelectorAll('#propertyTypeTags .preference-tag.active');
+        
+        activeTags.forEach(tag => {
+            selectedTypes.push(tag.textContent.trim());
+        });
+        
+        document.getElementById('propertyTypesInput').value = selectedTypes.join(',');
+        calculateProfileCompletion();
+    }
+
+    function addLocation() {
+        const input = document.getElementById('newLocation');
+        const location = input.value.trim();
+        
+        if (location && location.length > 0) {
+            // Check if location already exists
+            const existingLocations = document.getElementById('locationsInput').value.split(',');
+            if (!existingLocations.includes(location)) {
+                // Add to tags
+                const tag = document.createElement('div');
+                tag.className = 'location-tag';
+                tag.innerHTML = `
+                    ${location}
+                    <button type="button" onclick="removeLocation('${location}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                document.getElementById('locationTags').appendChild(tag);
+                
+                // Update hidden input
+                updateLocationsInput();
+                
+                // Clear input
+                input.value = '';
+            }
+        }
+    }
+
+    function removeLocation(location) {
+        // Remove tag
+        const tags = document.querySelectorAll('#locationTags .location-tag');
+        tags.forEach(tag => {
+            if (tag.textContent.includes(location)) {
+                tag.remove();
+            }
+        });
+        
+        // Update hidden input
+        updateLocationsInput();
+    }
+
+    function updateLocationsInput() {
+        const locations = [];
+        const tags = document.querySelectorAll('#locationTags .location-tag');
+        
+        tags.forEach(tag => {
+            // Extract location text (remove the X button text)
+            const location = tag.textContent.trim().replace('×', '').trim();
+            if (location) {
+                locations.push(location);
+            }
+        });
+        
+        document.getElementById('locationsInput').value = locations.join(',');
+        calculateProfileCompletion();
+    }
+
+    // Avatar Modal Functions
+    let selectedAvatar = null;
+
+    function openAvatarModal() {
+        document.getElementById('avatarModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeAvatarModal() {
+        document.getElementById('avatarModal').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function selectAvatar(avatarId) {
+        // Remove selected class from all avatars
+        document.querySelectorAll('.avatar-option').forEach(avatar => {
+            avatar.classList.remove('selected');
+        });
+        
+        // Add selected class to clicked avatar
+        event.target.closest('.avatar-option').classList.add('selected');
+        selectedAvatar = avatarId;
+    }
+
+    function uploadAvatar() {
+        const fileInput = document.getElementById('avatarUpload');
+        const file = fileInput.files[0];
+        
+        if (file) {
+            // Validate file
+            const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            
+            if (!validTypes.includes(file.type)) {
+                showToast('Please upload a valid image file (JPEG, PNG, GIF)', 'error');
+                return;
+            }
+            
+            if (file.size > maxSize) {
+                showToast('Image size should be less than 5MB', 'error');
+                return;
+            }
+            
+            // Preview image
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Create preview avatar
+                const previewAvatar = document.createElement('div');
+                previewAvatar.className = 'avatar-option selected';
+                previewAvatar.innerHTML = `
+                    <img src="${e.target.result}" alt="Preview">
+                `;
+                previewAvatar.onclick = function() { selectAvatar('custom'); };
+                
+                // Remove existing selected
+                document.querySelectorAll('.avatar-option').forEach(avatar => {
+                    avatar.classList.remove('selected');
+                });
+                
+                // Add to avatar options
+                document.querySelector('.avatar-options').appendChild(previewAvatar);
+                selectedAvatar = 'custom';
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function saveAvatar() {
+        if (!selectedAvatar) {
+            showToast('Please select or upload an avatar', 'error');
+            return;
+        }
+        
+        // Here you would typically upload to server
+        // For now, just show success message
+        showToast('Profile picture updated successfully!', 'success');
+        closeAvatarModal();
+    }
+
+    // Form submission
+    document.getElementById('preferencesForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Validate form
+        const minBudget = parseInt(document.getElementById('min_budget').value);
+        const maxBudget = parseInt(document.getElementById('max_budget').value);
+        
+        if (minBudget > maxBudget) {
+            showToast('Minimum budget cannot be greater than maximum budget', 'error');
+            return;
+        }
+        
+        // Show loading
+        showLoading();
+        
+        // Submit form
+        this.submit();
+    });
+
+    function showLoading() {
+        const loadingOverlay = document.createElement('div');
+        loadingOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        loadingOverlay.innerHTML = `
+            <div class="bg-white rounded-2xl p-8 shadow-2xl">
+                <div class="flex flex-col items-center gap-4">
+                    <div class="loading-spinner">
+                        <div class="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                    <p class="text-gray-700 font-medium">Saving preferences...</p>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(loadingOverlay);
+    }
+
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        if (!container) {
+            const toastContainer = document.createElement('div');
+            toastContainer.id = 'toastContainer';
+            toastContainer.className = 'toast-container';
+            document.body.appendChild(toastContainer);
+            container = toastContainer;
+        }
+        
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        
+        const icons = {
+            info: 'fa-info-circle',
+            success: 'fa-check-circle',
+            error: 'fa-exclamation-circle',
+            warning: 'fa-exclamation-triangle'
+        };
+        
+        toast.innerHTML = `
+            <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                <i class="fas ${icons[type]}"></i>
+            </div>
+            <div class="flex-1">
+                <span class="font-medium">${message}</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-white/80 hover:text-white transition-colors flex-shrink-0">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        container.appendChild(toast);
+        
+        // Auto remove after 4 seconds
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 4000);
+    }
+</script>
+{% endblock %}

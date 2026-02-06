@@ -1,0 +1,771 @@
+{% extends 'dashboard/buyer/base.html' %}
+
+{% block title %}Dashboard - BHOOSPARSH Pro{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Sidebar Navigation Styles */
+    .nav-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        border-radius: 12px;
+        color: #64748b;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        margin-bottom: 4px;
+        position: relative;
+    }
+
+    .nav-item:hover {
+        background-color: #f8fafc;
+        color: #FF6B35;
+        transform: translateX(5px);
+    }
+
+    .nav-item.active {
+        background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+        color: white;
+        box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+    }
+
+    .nav-item i {
+        width: 20px;
+        text-align: center;
+        font-size: 16px;
+        margin-right: 12px;
+        flex-shrink: 0;
+    }
+
+    .nav-text {
+        font-size: 14px;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex: 1;
+    }
+
+    .badge-count {
+        background: #EF4444;
+        color: white;
+        font-size: 10px;
+        font-weight: bold;
+        padding: 2px 6px;
+        border-radius: 10px;
+        min-width: 20px;
+        text-align: center;
+        animation: pulse-glow 2s infinite;
+    }
+
+    /* Property Image Animation */
+    .property-image {
+        position: relative;
+        overflow: hidden;
+        height: 200px;
+    }
+
+    .property-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .property-card:hover .property-image img {
+        transform: scale(1.1);
+    }
+
+    .property-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.7) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .property-card:hover .property-overlay {
+        opacity: 1;
+    }
+
+    /* Heart Button */
+    .heart-btn {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        width: 36px;
+        height: 36px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        z-index: 2;
+    }
+
+    .heart-btn:hover {
+        background: white;
+        transform: scale(1.1);
+    }
+
+    /* Line clamp utilities */
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .line-clamp-1 {
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* Stats progress bars */
+    .progress-bar {
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 1.5s ease-in-out;
+    }
+
+    /* Floating animation for welcome card */
+    .welcome-card {
+        animation: float 6s ease-in-out infinite;
+    }
+
+    /* Property cards stagger animation */
+    .property-card:nth-child(1) { transition-delay: 0.1s; }
+    .property-card:nth-child(2) { transition-delay: 0.2s; }
+    .property-card:nth-child(3) { transition-delay: 0.3s; }
+    .property-card:nth-child(4) { transition-delay: 0.4s; }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="main-content pb-8">
+    <div class="max-w-full">
+        <!-- Welcome Section with Motion -->
+        <div class="mb-8 fade-in stagger-1">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-4">
+                <div class="slide-in-left stagger-1">
+                    <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Welcome back, Alex! 👋</h2>
+                    <p class="text-gray-600 mt-2">Here's what's happening with your property search</p>
+                </div>
+                <div class="slide-in-right stagger-2">
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm text-gray-500 hidden lg:block">Last updated: Just now</span>
+                        <button class="btn-primary flex items-center space-x-2">
+                            <i class="fas fa-sync-alt"></i>
+                            <span>Refresh</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Grid with Motion -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Stat Card 1 -->
+            <div class="stats-card fade-in stagger-1">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-gray-600 text-sm font-medium truncate">Properties Viewed</p>
+                        <p class="text-3xl sm:text-4xl font-bold text-gray-900 mt-2">384</p>
+                        <p class="text-xs text-green-600 mt-1 flex items-center truncate">
+                            <i class="fas fa-arrow-up mr-1"></i> 12% this week
+                        </p>
+                    </div>
+                    <div class="w-12 h-12 bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl flex items-center justify-center text-orange-600 text-xl ml-4 flex-shrink-0">
+                        <i class="fas fa-eye animate-bounce-slow"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stat Card 2 -->
+            <div class="stats-card fade-in stagger-2">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-gray-600 text-sm font-medium truncate">Saved Properties</p>
+                        <p class="text-3xl sm:text-4xl font-bold text-gray-900 mt-2">48</p>
+                        <p class="text-xs text-blue-600 mt-1 flex items-center truncate">
+                            <i class="fas fa-plus mr-1"></i> 5 new today
+                        </p>
+                    </div>
+                    <div class="w-12 h-12 bg-gradient-to-br from-red-100 to-red-200 rounded-xl flex items-center justify-center text-red-600 text-xl ml-4 flex-shrink-0">
+                        <i class="fas fa-heart animate-pulse-glow"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stat Card 3 -->
+            <div class="stats-card fade-in stagger-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-gray-600 text-sm font-medium truncate">Agent Contacts</p>
+                        <p class="text-3xl sm:text-4xl font-bold text-gray-900 mt-2">16</p>
+                        <p class="text-xs text-purple-600 mt-1 flex items-center truncate">
+                            <i class="fas fa-comment mr-1"></i> 3 new messages
+                        </p>
+                    </div>
+                    <div class="w-12 h-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl flex items-center justify-center text-purple-600 text-xl ml-4 flex-shrink-0">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stat Card 4 -->
+            <div class="stats-card fade-in stagger-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-gray-600 text-sm font-medium truncate">Search Score</p>
+                        <p class="text-3xl sm:text-4xl font-bold text-gray-900 mt-2">92%</p>
+                        <p class="text-xs text-green-600 mt-1 flex items-center truncate">
+                            <i class="fas fa-star mr-1"></i> Excellent match
+                        </p>
+                    </div>
+                    <div class="progress-ring ml-4 flex-shrink-0">
+                        <svg class="w-full h-full" viewBox="0 0 100 100">
+                            <circle class="text-gray-200" stroke-width="8" stroke="currentColor" fill="transparent" r="42" cx="50" cy="50"/>
+                            <circle class="text-green-500 progress-ring-circle" stroke-width="8" stroke-linecap="round" stroke="currentColor" fill="transparent" r="42" cx="50" cy="50" stroke-dasharray="264" stroke-dashoffset="79.2"/>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center text-lg font-bold text-gray-900">
+                            92%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column - Property Listings -->
+            <div class="lg:col-span-2">
+                <!-- Quick Filters -->
+                <div class="dashboard-card p-6 mb-6 fade-in stagger-1">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
+                        <h3 class="text-xl font-bold text-gray-900">Smart Property Filters</h3>
+                        <button class="text-sm text-orange-500 font-semibold hover:text-orange-600 transition">
+                            <i class="fas fa-sliders-h mr-2"></i>Advanced Filters
+                        </button>
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <button class="filter-chip active">
+                            <i class="fas fa-home mr-2"></i> All
+                        </button>
+                        <button class="filter-chip">
+                            <i class="fas fa-building mr-2"></i> Apartments
+                        </button>
+                        <button class="filter-chip">
+                            <i class="fas fa-city mr-2"></i> Villas
+                        </button>
+                        <button class="filter-chip">
+                            <i class="fas fa-rupee-sign mr-2"></i> Under 50L
+                        </button>
+                        <button class="filter-chip">
+                            <i class="fas fa-bed mr-2"></i> 3+ BHK
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recommended Properties -->
+                <div class="mb-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 fade-in stagger-1 gap-4">
+                        <h3 class="text-xl font-bold text-gray-900">AI Recommended Properties</h3>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm text-gray-500">Based on your preferences</span>
+                            <i class="fas fa-robot text-orange-500 animate-bounce-slow"></i>
+                        </div>
+                    </div>
+
+                    <!-- Property Cards Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Property Card 1 -->
+                        <div class="property-card fade-in">
+                            <div class="property-image">
+                                <img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop" alt="Luxury Apartment" />
+                                <div class="property-overlay"></div>
+                                <span class="badge badge-premium absolute top-3 right-3">PREMIUM</span>
+                                <button class="heart-btn" onclick="toggleHeart(this)">
+                                    <i class="fas fa-heart text-red-500"></i>
+                                </button>
+                            </div>
+                            <div class="p-4">
+                                <h4 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2">Luxury Sea View Apartment</h4>
+                                <p class="text-gray-600 text-sm mb-3 truncate">📍 Marine Drive, Mumbai</p>
+                                <div class="flex items-center justify-between mb-4">
+                                    <span class="text-orange-500 font-bold text-xl">₹2.8 Cr</span>
+                                    <div class="text-sm text-gray-500">
+                                        <i class="fas fa-bed mr-1"></i> 3 BHK
+                                        <i class="fas fa-bath ml-3 mr-1"></i> 3
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-500 truncate">
+                                        <i class="fas fa-ruler-combined mr-1"></i> 1,850 sq.ft
+                                    </span>
+                                    <button class="btn-primary text-sm px-4 py-2">
+                                        View Details
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Property Card 2 -->
+                        <div class="property-card fade-in">
+                            <div class="property-image">
+                                <img src="https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&h=300&fit=crop" alt="Modern Villa" />
+                                <div class="property-overlay"></div>
+                                <span class="badge badge-premium absolute top-3 right-3">NEW</span>
+                                <button class="heart-btn" onclick="toggleHeart(this)">
+                                    <i class="far fa-heart text-gray-600"></i>
+                                </button>
+                            </div>
+                            <div class="p-4">
+                                <h4 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2">Garden Villa with Pool</h4>
+                                <p class="text-gray-600 text-sm mb-3 truncate">📍 Whitefield, Bangalore</p>
+                                <div class="flex items-center justify-between mb-4">
+                                    <span class="text-orange-500 font-bold text-xl">₹4.2 Cr</span>
+                                    <div class="text-sm text-gray-500">
+                                        <i class="fas fa-bed mr-1"></i> 4 BHK
+                                        <i class="fas fa-bath ml-3 mr-1"></i> 4
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-500 truncate">
+                                        <i class="fas fa-ruler-combined mr-1"></i> 3,200 sq.ft
+                                    </span>
+                                    <button class="btn-primary text-sm px-4 py-2">
+                                        View Details
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Property Card 3 -->
+                        <div class="property-card fade-in">
+                            <div class="property-image">
+                                <img src="https://images.unsplash.com/photo-1545324418-cc1a9a6fded0?w=400&h=300&fit=crop" alt="Penthouse" />
+                                <div class="property-overlay"></div>
+                                <span class="badge badge-premium absolute top-3 right-3">FEATURED</span>
+                                <button class="heart-btn" onclick="toggleHeart(this)">
+                                    <i class="fas fa-heart text-red-500"></i>
+                                </button>
+                            </div>
+                            <div class="p-4">
+                                <h4 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2">Premium Penthouse Suite</h4>
+                                <p class="text-gray-600 text-sm mb-3 truncate">📍 South Delhi</p>
+                                <div class="flex items-center justify-between mb-4">
+                                    <span class="text-orange-500 font-bold text-xl">₹6.5 Cr</span>
+                                    <div class="text-sm text-gray-500">
+                                        <i class="fas fa-bed mr-1"></i> 5 BHK
+                                        <i class="fas fa-bath ml-3 mr-1"></i> 5
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-500 truncate">
+                                        <i class="fas fa-ruler-combined mr-1"></i> 4,500 sq.ft
+                                    </span>
+                                    <button class="btn-primary text-sm px-4 py-2">
+                                        View Details
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Property Card 4 -->
+                        <div class="property-card fade-in">
+                            <div class="property-image">
+                                <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&h=300&fit=crop" alt="Studio" />
+                                <div class="property-overlay"></div>
+                                <span class="badge badge-premium absolute top-3 right-3">PREMIUM</span>
+                                <button class="heart-btn" onclick="toggleHeart(this)">
+                                    <i class="far fa-heart text-gray-600"></i>
+                                </button>
+                            </div>
+                            <div class="p-4">
+                                <h4 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2">Luxury Studio Apartment</h4>
+                                <p class="text-gray-600 text-sm mb-3 truncate">📍 Koramangala, Bangalore</p>
+                                <div class="flex items-center justify-between mb-4">
+                                    <span class="text-orange-500 font-bold text-xl">₹75 L</span>
+                                    <div class="text-sm text-gray-500">
+                                        <i class="fas fa-bed mr-1"></i> 1 BHK
+                                        <i class="fas fa-bath ml-3 mr-1"></i> 1
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-500 truncate">
+                                        <i class="fas fa-ruler-combined mr-1"></i> 650 sq.ft
+                                    </span>
+                                    <button class="btn-primary text-sm px-4 py-2">
+                                        View Details
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Load More -->
+                <div class="text-center mt-8 fade-in">
+                    <button class="px-8 py-3 border-2 border-orange-500 text-orange-500 rounded-xl font-bold hover:bg-orange-50 transition hover-lift">
+                        <i class="fas fa-sync-alt mr-2 animate-rotate"></i>
+                        Load More Properties
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Column - Sidebar Widgets -->
+            <div class="space-y-6">
+                <!-- Saved Properties -->
+                <div class="dashboard-card p-6 fade-in stagger-1">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-heart text-red-500 mr-2"></i>
+                        <span>Saved Properties</span>
+                        <span class="ml-auto bg-red-100 text-red-600 text-xs font-bold px-3 py-1 rounded-full animate-pulse-glow min-w-[24px] text-center">12</span>
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="p-3 bg-gradient-to-r from-orange-50 to-transparent rounded-lg border-l-4 border-orange-500 hover-lift cursor-pointer">
+                            <div class="flex items-center justify-between">
+                                <div class="min-w-0">
+                                    <p class="font-semibold text-gray-900 text-sm truncate">Sea View Apartment</p>
+                                    <p class="text-orange-500 font-bold text-sm mt-1 truncate">₹2.8 Cr</p>
+                                </div>
+                                <i class="fas fa-external-link-alt text-gray-400 ml-2 flex-shrink-0"></i>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg hover:shadow-md transition hover-lift cursor-pointer">
+                            <div class="flex items-center justify-between">
+                                <div class="min-w-0">
+                                    <p class="font-semibold text-gray-900 text-sm truncate">Garden Villa</p>
+                                    <p class="text-orange-500 font-bold text-sm mt-1 truncate">₹4.2 Cr</p>
+                                </div>
+                                <i class="fas fa-external-link-alt text-gray-400 ml-2 flex-shrink-0"></i>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg hover:shadow-md transition hover-lift cursor-pointer">
+                            <div class="flex items-center justify-between">
+                                <div class="min-w-0">
+                                    <p class="font-semibold text-gray-900 text-sm truncate">Penthouse Suite</p>
+                                    <p class="text-orange-500 font-bold text-sm mt-1 truncate">₹6.5 Cr</p>
+                                </div>
+                                <i class="fas fa-external-link-alt text-gray-400 ml-2 flex-shrink-0"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-primary w-full mt-4">
+                        <i class="fas fa-list mr-2"></i>View All Saved
+                    </button>
+                </div>
+
+                <!-- Market Trends -->
+                <div class="dashboard-card p-6 fade-in stagger-2">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">
+                        <i class="fas fa-chart-line text-green-500 mr-2"></i>
+                        Market Trends
+                    </h3>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="font-medium text-gray-700 truncate">Bangalore Prices</span>
+                                <span class="text-green-600 font-bold flex-shrink-0 ml-2">+8.5%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill bg-gradient-to-r from-green-400 to-green-600" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="font-medium text-gray-700 truncate">Mumbai Demand</span>
+                                <span class="text-blue-600 font-bold flex-shrink-0 ml-2">+12.3%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill bg-gradient-to-r from-blue-400 to-blue-600" style="width: 92%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="font-medium text-gray-700 truncate">Delhi ROI</span>
+                                <span class="text-purple-600 font-bold flex-shrink-0 ml-2">+6.8%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill bg-gradient-to-r from-purple-400 to-purple-600" style="width: 68%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upcoming Site Visits -->
+                <div class="dashboard-card p-6 fade-in stagger-3">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">
+                        <i class="fas fa-calendar-alt text-blue-500 mr-2"></i>
+                        Upcoming Visits
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="p-3 bg-gradient-to-r from-blue-50 to-transparent rounded-lg border-l-4 border-blue-500 hover-lift">
+                            <div class="flex items-center justify-between">
+                                <div class="min-w-0">
+                                    <p class="font-semibold text-gray-900 text-sm truncate">Sea View Apartment</p>
+                                    <p class="text-gray-500 text-xs mt-1 truncate">Tomorrow, 3:00 PM</p>
+                                </div>
+                                <span class="bg-blue-100 text-blue-600 text-xs px-2 py-1 rounded-full flex-shrink-0 ml-2">Confirmed</span>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg hover-lift">
+                            <div class="flex items-center justify-between">
+                                <div class="min-w-0">
+                                    <p class="font-semibold text-gray-900 text-sm truncate">Garden Villa</p>
+                                    <p class="text-gray-500 text-xs mt-1 truncate">Friday, 11:00 AM</p>
+                                </div>
+                                <span class="bg-yellow-100 text-yellow-600 text-xs px-2 py-1 rounded-full flex-shrink-0 ml-2">Pending</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="w-full mt-4 px-4 py-2 border-2 border-blue-500 text-blue-500 rounded-lg font-semibold hover:bg-blue-50 transition hover-lift">
+                        <i class="fas fa-plus mr-2"></i>Schedule New Visit
+                    </button>
+                </div>
+
+                <!-- AI Recommendations -->
+                <div class="dashboard-card p-6 fade-in stagger-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-gray-900">
+                            <i class="fas fa-robot text-orange-500 mr-2"></i>
+                            AI Suggestions
+                        </h3>
+                        <i class="fas fa-bolt text-yellow-500 animate-bounce-slow"></i>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="p-3 bg-gradient-to-r from-orange-50 to-transparent rounded-lg hover-lift cursor-pointer">
+                            <p class="font-medium text-gray-900 text-sm line-clamp-2">Consider properties in Whitefield</p>
+                            <p class="text-gray-500 text-xs mt-1">Better ROI potential</p>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg hover-lift cursor-pointer">
+                            <p class="font-medium text-gray-900 text-sm line-clamp-2">Expand budget by 15%</p>
+                            <p class="text-gray-500 text-xs mt-1">For better options</p>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg hover-lift cursor-pointer">
+                            <p class="font-medium text-gray-900 text-sm line-clamp-2">Schedule 3 more visits</p>
+                            <p class="text-gray-500 text-xs mt-1">For comparison</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="mt-8 fade-in stagger-1">
+            <h3 class="text-xl font-bold text-gray-900 mb-6">Recent Activity</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Recent Views -->
+                <div class="dashboard-card p-6 hover-lift scale-in">
+                    <h4 class="font-bold text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-eye text-purple-500 mr-2"></i>
+                        Recently Viewed
+                    </h4>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-purple-50 transition">
+                            <img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=100&h=100&fit=crop" alt="Property" class="w-12 h-12 rounded-lg object-cover flex-shrink-0">
+                            <div class="min-w-0">
+                                <p class="text-sm font-medium text-gray-900 truncate">Luxury Apartment</p>
+                                <p class="text-xs text-gray-500 truncate">2 hours ago</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-purple-50 transition">
+                            <img src="https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=100&h=100&fit=crop" alt="Property" class="w-12 h-12 rounded-lg object-cover flex-shrink-0">
+                            <div class="min-w-0">
+                                <p class="text-sm font-medium text-gray-900 truncate">Modern Villa</p>
+                                <p class="text-xs text-gray-500 truncate">1 day ago</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price Alerts -->
+                <div class="dashboard-card p-6 hover-lift scale-in">
+                    <h4 class="font-bold text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-bell text-red-500 mr-2"></i>
+                        Price Alerts
+                    </h4>
+                    <div class="space-y-3">
+                        <div class="p-3 bg-gradient-to-r from-red-50 to-transparent rounded-lg border-l-4 border-red-500">
+                            <p class="text-sm font-medium text-gray-900 truncate">Sea View Apartment</p>
+                            <p class="text-xs text-red-500 mt-1 truncate">Price reduced by ₹5 L</p>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <p class="text-sm font-medium text-gray-900 truncate">Garden Villa</p>
+                            <p class="text-xs text-green-500 mt-1 truncate">New offer received</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agent Updates -->
+                <div class="dashboard-card p-6 hover-lift scale-in">
+                    <h4 class="font-bold text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-user-tie text-blue-500 mr-2"></i>
+                        Agent Updates
+                    </h4>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition">
+                            <img src="https://i.pravatar.cc/40?img=2" alt="Agent" class="w-10 h-10 rounded-full flex-shrink-0">
+                            <div class="min-w-0">
+                                <p class="text-sm font-medium text-gray-900 truncate">Sarah Johnson</p>
+                                <p class="text-xs text-gray-500 truncate">New property match</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition">
+                            <img src="https://i.pravatar.cc/40?img=3" alt="Agent" class="w-10 h-10 rounded-full flex-shrink-0">
+                            <div class="min-w-0">
+                                <p class="text-sm font-medium text-gray-900 truncate">Mike Chen</p>
+                                <p class="text-xs text-gray-500 truncate">Visit scheduled</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="mt-12 p-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl text-white text-center fade-in hover-scale" id="cta-section">
+            <h2 class="text-3xl font-bold mb-4">Ready to Make a Decision?</h2>
+            <p class="text-lg text-orange-100 mb-6 max-w-2xl mx-auto">Our expert advisors at BHOOSPARSH are ready to help you find your dream property.</p>
+            <div class="flex flex-col md:flex-row gap-4 justify-center">
+                <button class="px-10 py-3 bg-white text-orange-600 rounded-xl font-bold hover:shadow-xl transition transform hover:scale-105 hover-lift">
+                    <i class="fas fa-phone-alt mr-2"></i>Talk to Advisor
+                </button>
+                <button class="px-10 py-3 border-2 border-white text-white rounded-xl font-bold hover:bg-white hover:text-orange-600 transition hover-lift">
+                    <i class="fas fa-calendar-check mr-2"></i>Schedule Tour
+                </button>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="bg-gray-900 text-gray-300 py-8 border-t border-gray-800 mt-8">
+    <div class="max-w-full px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            <div>
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center text-white font-bold">BP</div>
+                    <span class="text-white font-bold text-lg">BHOOSPARSH Pro</span>
+                </div>
+                <p class="text-sm leading-relaxed">Premium real estate platform with AI-powered recommendations and expert guidance.</p>
+            </div>
+            <div>
+                <h4 class="text-white font-bold mb-4">Quick Links</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#cta-section" class="hover:text-white transition hover-lift smooth-scroll">Contact Us</a></li>
+                    <li><a href="#" class="hover:text-white transition hover-lift">Market Analysis</a></li>
+                    <li><a href="#" class="hover:text-white transition hover-lift">Agent Network</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white font-bold mb-4">Resources</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#" class="hover:text-white transition hover-lift">Buyer's Guide</a></li>
+                    <li><a href="#" class="hover:text-white transition hover-lift">Market Reports</a></li>
+                    <li><a href="#" class="hover:text-white transition hover-lift">FAQ</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white font-bold mb-4">Connect</h4>
+                <div class="flex space-x-4">
+                    <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-orange-600 transition hover-lift">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-orange-600 transition hover-lift">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-orange-600 transition hover-lift">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-orange-600 transition hover-lift">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="border-t border-gray-800 pt-6 text-center text-sm">
+            <p>© 2024 BHOOSPARSH Pro. All rights reserved. | <a href="#" class="text-orange-400 hover:text-orange-300 transition">Privacy Policy</a> | <a href="#" class="text-orange-400 hover:text-orange-300 transition">Terms of Service</a></p>
+        </div>
+    </div>
+</footer>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize motion effects specifically for dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+        // Trigger progress bar animations
+        setTimeout(() => {
+            document.querySelectorAll('.progress-fill').forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 300);
+            });
+        }, 500);
+
+        // Filter chips functionality
+        document.querySelectorAll('.filter-chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // View details button functionality
+        document.querySelectorAll('.btn-primary').forEach(btn => {
+            if (btn.textContent.includes('View Details')) {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    // Simulate navigation to property details
+                    console.log('Navigating to property details...');
+                    // In real app: window.location.href = '/property-details';
+                });
+            }
+        });
+
+        // Property card click (except buttons)
+        document.querySelectorAll('.property-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                if (!e.target.closest('.heart-btn') && !e.target.closest('.btn-primary')) {
+                    // Navigate to property details
+                    console.log('Viewing property details...');
+                    // In real app: window.location.href = '/property-details';
+                }
+            });
+        });
+    });
+
+    // Smooth scroll function for footer links
+    document.querySelectorAll('.smooth-scroll').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 80,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

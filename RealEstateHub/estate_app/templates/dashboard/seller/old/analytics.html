@@ -1,0 +1,768 @@
+{% extends 'dashboard/seller/base.html' %}
+
+{% block title %}Performance Analytics - Seller Dashboard{% endblock %}
+
+{% block header_title %}
+<h1 class="text-xl font-bold text-gray-900 dark:text-white">Performance Analytics</h1>
+<p class="text-sm text-gray-600 dark:text-gray-400">Track your performance metrics and insights</p>
+{% endblock %}
+
+{% block content %}
+<!-- Analytics Filters -->
+<div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 mb-6 hover-grow card-animate stagger-1">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Time Period</label>
+            <select class="filter-select" id="timePeriod" onchange="toggleCustomDates()">
+                <option value="last_7d">Last 7 Days</option>
+                <option value="last_30d" selected>Last 30 Days</option>
+                <option value="last_90d">Last 90 Days</option>
+                <option value="this_month">This Month</option>
+                <option value="last_month">Last Month</option>
+                <option value="custom">Custom Range</option>
+            </select>
+        </div>
+        <div class="hidden" id="startDateContainer">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Start Date</label>
+            <input type="date" class="filter-select" id="startDate">
+        </div>
+        <div class="hidden" id="endDateContainer">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">End Date</label>
+            <input type="date" class="filter-select" id="endDate">
+        </div>
+        <div class="flex items-end">
+            <button class="px-6 py-3 bg-gradient-to-r from-orange-500 to-yellow-500 text-white rounded-lg hover:from-orange-600 hover:to-yellow-600 transition w-full btn-hover ripple" onclick="applyFilters()">
+                <i class="fas fa-filter mr-2"></i>Apply Filters
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Performance Overview -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="metric-card card-animate stagger-1">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm h-full">
+            <div class="flex items-center">
+                <div class="rounded-full bg-blue-100 dark:bg-blue-900 p-3 mr-4 hover-lift">
+                    <i class="fas fa-eye text-blue-600 dark:text-blue-400 text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">1,240</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Views</p>
+                    <small class="text-green-600 flex items-center text-xs">
+                        <i class="fas fa-arrow-up mr-1"></i>12% from last period
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="metric-card card-animate stagger-2">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm h-full">
+            <div class="flex items-center">
+                <div class="rounded-full bg-green-100 dark:bg-green-900 p-3 mr-4 hover-lift">
+                    <i class="fas fa-inbox text-green-600 dark:text-green-400 text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">48</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Leads</p>
+                    <small class="text-green-600 flex items-center text-xs">
+                        <i class="fas fa-arrow-up mr-1"></i>8% from last period
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="metric-card card-animate stagger-3">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm h-full">
+            <div class="flex items-center">
+                <div class="rounded-full bg-yellow-100 dark:bg-yellow-900 p-3 mr-4 hover-lift">
+                    <i class="fas fa-percentage text-yellow-600 dark:text-yellow-400 text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">3.9%</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Conversion Rate</p>
+                    <small class="text-green-600 flex items-center text-xs">
+                        <i class="fas fa-arrow-up mr-1"></i>0.5% improvement
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="metric-card card-animate stagger-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm h-full">
+            <div class="flex items-center">
+                <div class="rounded-full bg-purple-100 dark:bg-purple-900 p-3 mr-4 hover-lift">
+                    <i class="fas fa-clock text-purple-600 dark:text-purple-400 text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">2.4h</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Avg Response Time</p>
+                    <small class="text-green-600 flex items-center text-xs">
+                        <i class="fas fa-arrow-down mr-1"></i>1.2h faster
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Performance Trends -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <div class="lg:col-span-2 card-animate stagger-1">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 h-full card-hover">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+                <h3 class="font-bold text-lg text-gray-900 dark:text-white">Performance Trends</h3>
+                <div class="flex gap-2">
+                    <button type="button" class="chart-type-btn px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition active" onclick="changeChartType('line')">
+                        Line
+                    </button>
+                    <button type="button" class="chart-type-btn px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition" onclick="changeChartType('bar')">
+                        Bar
+                    </button>
+                    <button type="button" class="chart-type-btn px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition" onclick="changeChartType('area')">
+                        Area
+                    </button>
+                </div>
+            </div>
+            <div class="chart-container" style="height: 300px;">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card-animate stagger-2">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 h-full card-hover">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+                <h3 class="font-bold text-lg text-gray-900 dark:text-white">Trend Comparison</h3>
+                <select class="filter-select w-auto" id="compareWith" onchange="updateComparison()">
+                    <option value="market_average">Market Average</option>
+                    <option value="top_performers">Top Performers</option>
+                    <option value="previous_period">Previous Period</option>
+                </select>
+            </div>
+            <div class="space-y-4">
+                <div class="p-4 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 comparison-positive">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium">Conversion Rate</span>
+                        <span class="badge-animate bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100 text-xs px-2 py-1 rounded-full">
+                            +15.2%
+                        </span>
+                    </div>
+                    <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                        <span>You: 3.9%</span>
+                        <span>Market: 3.4%</span>
+                    </div>
+                </div>
+                <div class="p-4 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 comparison-positive">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium">Response Time</span>
+                        <span class="badge-animate bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100 text-xs px-2 py-1 rounded-full">
+                            +22.5%
+                        </span>
+                    </div>
+                    <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                        <span>You: 2.4h</span>
+                        <span>Market: 3.1h</span>
+                    </div>
+                </div>
+                <div class="p-4 rounded-xl bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 comparison-negative">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium">Lead Quality</span>
+                        <span class="badge-animate bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100 text-xs px-2 py-1 rounded-full">
+                            -5.8%
+                        </span>
+                    </div>
+                    <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                        <span>You: 68%</span>
+                        <span>Top: 72%</span>
+                    </div>
+                </div>
+                <div class="p-4 rounded-xl bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-900/20 dark:to-slate-900/20 comparison-neutral">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium">Engagement</span>
+                        <span class="badge-animate bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100 text-xs px-2 py-1 rounded-full">
+                            ±0.0%
+                        </span>
+                    </div>
+                    <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                        <span>You: 42%</span>
+                        <span>Market: 42%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Property Performance -->
+<div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 mb-6 card-animate stagger-3 card-hover">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+        <h3 class="font-bold text-lg text-gray-900 dark:text-white">Property Performance Ranking</h3>
+        <button class="px-4 py-2 border border-orange-500 text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition btn-hover ripple" onclick="downloadPropertyReport()">
+            <i class="fas fa-download mr-2"></i>Download Report
+        </button>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="chart-container" style="height: 250px;">
+            <canvas id="propertyChart"></canvas>
+        </div>
+        <div class="overflow-hidden">
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead>
+                        <tr class="bg-gray-50 dark:bg-gray-700">
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Property</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Views</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Leads</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Score</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <tr class="table-row-hover hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <td class="px-4 py-3">
+                                <a href="#" class="text-blue-600 dark:text-blue-400 hover:underline">
+                                    Luxury Villa Miami
+                                </a>
+                            </td>
+                            <td class="px-4 py-3">342</td>
+                            <td class="px-4 py-3">8</td>
+                            <td class="px-4 py-3">
+                                <span class="badge-animate bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100 text-xs px-2 py-1 rounded-full">
+                                    92
+                                </span>
+                            </td>
+                        </tr>
+                        <tr class="table-row-hover hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <td class="px-4 py-3">
+                                <a href="#" class="text-blue-600 dark:text-blue-400 hover:underline">
+                                    Downtown Penthouse
+                                </a>
+                            </td>
+                            <td class="px-4 py-3">287</td>
+                            <td class="px-4 py-3">6</td>
+                            <td class="px-4 py-3">
+                                <span class="badge-animate bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100 text-xs px-2 py-1 rounded-full">
+                                    85
+                                </span>
+                            </td>
+                        </tr>
+                        <tr class="table-row-hover hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <td class="px-4 py-3">
+                                <a href="#" class="text-blue-600 dark:text-blue-400 hover:underline">
+                                    Beachfront Condo
+                                </a>
+                            </td>
+                            <td class="px-4 py-3">198</td>
+                            <td class="px-4 py-3">4</td>
+                            <td class="px-4 py-3">
+                                <span class="badge-animate bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100 text-xs px-2 py-1 rounded-full">
+                                    78
+                                </span>
+                            </td>
+                        </tr>
+                        <tr class="table-row-hover hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <td class="px-4 py-3">
+                                <a href="#" class="text-blue-600 dark:text-blue-400 hover:underline">
+                                    Garden Family Home
+                                </a>
+                            </td>
+                            <td class="px-4 py-3">156</td>
+                            <td class="px-4 py-3">3</td>
+                            <td class="px-4 py-3">
+                                <span class="badge-animate bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100 text-xs px-2 py-1 rounded-full">
+                                    72
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lead Quality Analysis -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div class="card-animate stagger-1">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 h-full card-hover">
+            <h3 class="font-bold text-lg text-gray-900 dark:text-white mb-6">Lead Quality Analysis</h3>
+            <div class="text-center mb-6">
+                <div class="text-5xl font-bold text-blue-600 dark:text-blue-400 hover-grow mb-2">
+                    68%
+                </div>
+                <p class="text-gray-600 dark:text-gray-400">High Quality Leads</p>
+                <small class="text-green-600 flex items-center justify-center text-sm">
+                    <i class="fas fa-arrow-up mr-1"></i>3% improvement from last month
+                </small>
+            </div>
+            
+            <div class="progress mb-4" style="height: 24px;">
+                <div class="progress-bar bg-gradient-to-r from-green-500 to-emerald-500 rounded-l-lg" style="width: 0%" id="highQualityBar">
+                    <span class="px-2 text-white text-sm font-medium">High (24)</span>
+                </div>
+                <div class="progress-bar bg-gradient-to-r from-yellow-500 to-orange-500" style="width: 0%" id="mediumQualityBar">
+                    <span class="px-2 text-white text-sm font-medium">Medium (15)</span>
+                </div>
+                <div class="progress-bar bg-gradient-to-r from-red-500 to-pink-500 rounded-r-lg" style="width: 0%" id="lowQualityBar">
+                    <span class="px-2 text-white text-sm font-medium">Low (9)</span>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-4 text-center">
+                <div>
+                    <div class="text-2xl font-bold text-green-600 hover-grow">24</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">High</div>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold text-yellow-600 hover-grow">15</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Medium</div>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold text-red-600 hover-grow">9</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Low</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card-animate stagger-2">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 h-full card-hover">
+            <h3 class="font-bold text-lg text-gray-900 dark:text-white mb-6">Market Comparison</h3>
+            <div class="overflow-hidden">
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead>
+                            <tr class="bg-gray-50 dark:bg-gray-700">
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Metric</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">You</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Market</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Difference</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            <tr class="table-row-hover hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td class="px-4 py-3">Conversion Rate</td>
+                                <td class="px-4 py-3 font-bold">3.9%</td>
+                                <td class="px-4 py-3">3.4%</td>
+                                <td class="px-4 py-3">
+                                    <span class="badge-animate bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100 text-xs px-2 py-1 rounded-full">
+                                        +15.2%
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr class="table-row-hover hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td class="px-4 py-3">Response Time</td>
+                                <td class="px-4 py-3 font-bold">2.4h</td>
+                                <td class="px-4 py-3">3.1h</td>
+                                <td class="px-4 py-3">
+                                    <span class="badge-animate bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100 text-xs px-2 py-1 rounded-full">
+                                        +22.5%
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr class="table-row-hover hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td class="px-4 py-3">Lead Quality</td>
+                                <td class="px-4 py-3 font-bold">68%</td>
+                                <td class="px-4 py-3">65%</td>
+                                <td class="px-4 py-3">
+                                    <span class="badge-animate bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100 text-xs px-2 py-1 rounded-full">
+                                        +4.6%
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr class="table-row-hover hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td class="px-4 py-3">Engagement</td>
+                                <td class="px-4 py-3 font-bold">42%</td>
+                                <td class="px-4 py-3">42%</td>
+                                <td class="px-4 py-3">
+                                    <span class="badge-animate bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100 text-xs px-2 py-1 rounded-full">
+                                        ±0.0%
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recommendations -->
+<div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 card-animate stagger-3 card-hover">
+    <div class="border-l-4 border-orange-500 pl-4 mb-6">
+        <h3 class="font-bold text-lg text-gray-900 dark:text-white flex items-center">
+            <i class="fas fa-lightbulb text-orange-500 mr-3"></i>
+            Performance Recommendations
+        </h3>
+        <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">Actionable insights to improve your performance</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="border border-yellow-200 dark:border-yellow-800 rounded-xl p-4 hover:border-yellow-300 dark:hover:border-yellow-700 transition cursor-pointer ripple">
+            <div class="flex items-start gap-3">
+                <div class="rounded-full bg-yellow-100 dark:bg-yellow-900 p-2 hover-lift">
+                    <i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="font-medium text-gray-900 dark:text-white mb-2">Improve Property Photos</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Properties with professional photos get 47% more views.</p>
+                    <button class="px-3 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 rounded-lg text-sm hover:bg-yellow-200 dark:hover:bg-yellow-800 transition btn-hover" onclick="showPhotoRecommendations()">
+                        <i class="fas fa-camera mr-1"></i>View Properties
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="border border-blue-200 dark:border-blue-800 rounded-xl p-4 hover:border-blue-300 dark:hover:border-blue-700 transition cursor-pointer ripple">
+            <div class="flex items-start gap-3">
+                <div class="rounded-full bg-blue-100 dark:bg-blue-900 p-2 hover-lift">
+                    <i class="fas fa-info-circle text-blue-600 dark:text-blue-400"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="font-medium text-gray-900 dark:text-white mb-2">Increase Response Speed</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Faster responses increase lead conversion by 400%.</p>
+                    <button class="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-lg text-sm hover:bg-blue-200 dark:hover:bg-blue-800 transition btn-hover" onclick="showResponseTips()">
+                        <i class="fas fa-bolt mr-1"></i>View Tips
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="border border-green-200 dark:border-green-800 rounded-xl p-4 hover:border-green-300 dark:hover:border-green-700 transition cursor-pointer ripple">
+            <div class="flex items-start gap-3">
+                <div class="rounded-full bg-green-100 dark:bg-green-900 p-2 hover-lift">
+                    <i class="fas fa-chart-line text-green-600 dark:text-green-400"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="font-medium text-gray-900 dark:text-white mb-2">Boost High Performing Listings</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Your top 2 properties are performing exceptionally well.</p>
+                    <button class="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-lg text-sm hover:bg-green-200 dark:hover:bg-green-800 transition btn-hover" onclick="showBoostOptions()">
+                        <i class="fas fa-rocket mr-1"></i>Boost Now
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="border border-purple-200 dark:border-purple-800 rounded-xl p-4 hover:border-purple-300 dark:hover:border-purple-700 transition cursor-pointer ripple">
+            <div class="flex items-start gap-3">
+                <div class="rounded-full bg-purple-100 dark:bg-purple-900 p-2 hover-lift">
+                    <i class="fas fa-users text-purple-600 dark:text-purple-400"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="font-medium text-gray-900 dark:text-white mb-2">Engage with Leads</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">3 leads haven't been contacted in over 48 hours.</p>
+                    <button class="px-3 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded-lg text-sm hover:bg-purple-200 dark:hover:bg-purple-800 transition btn-hover" onclick="showPendingLeads()">
+                        <i class="fas fa-inbox mr-1"></i>View Leads
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Chart instances
+    let trendChart, propertyChart;
+    let currentChartType = 'line';
+
+    // Initialize charts
+    function initCharts() {
+        // Performance Trends Chart
+        const trendCtx = document.getElementById('trendChart').getContext('2d');
+        trendChart = new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Views',
+                    data: [120, 190, 300, 250, 420, 350, 280],
+                    borderColor: '#10B981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    borderWidth: 3
+                }, {
+                    label: 'Leads',
+                    data: [8, 12, 15, 10, 18, 14, 11],
+                    borderColor: '#3B82F6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        titleColor: '#1F2937',
+                        bodyColor: '#374151',
+                        borderColor: '#E5E7EB',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            color: '#6B7280'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            color: '#6B7280'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Property Performance Chart
+        const propertyCtx = document.getElementById('propertyChart').getContext('2d');
+        propertyChart = new Chart(propertyCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Luxury Villa', 'Downtown Penthouse', 'Beachfront Condo', 'Garden Home'],
+                datasets: [{
+                    label: 'Views',
+                    data: [342, 287, 198, 156],
+                    backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                    borderColor: '#2563EB',
+                    borderWidth: 2,
+                    borderRadius: 6
+                }, {
+                    label: 'Leads',
+                    data: [8, 6, 4, 3],
+                    backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                    borderColor: '#059669',
+                    borderWidth: 2,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            color: '#6B7280'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            color: '#6B7280'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Animate progress bars
+        setTimeout(() => {
+            document.getElementById('highQualityBar').style.width = '50%';
+            document.getElementById('mediumQualityBar').style.width = '31%';
+            document.getElementById('lowQualityBar').style.width = '19%';
+        }, 500);
+    }
+
+    function toggleCustomDates() {
+        const timePeriod = document.getElementById('timePeriod');
+        const startDateContainer = document.getElementById('startDateContainer');
+        const endDateContainer = document.getElementById('endDateContainer');
+        
+        if (timePeriod.value === 'custom') {
+            startDateContainer.classList.remove('hidden');
+            endDateContainer.classList.remove('hidden');
+            
+            // Set default dates
+            const today = new Date();
+            const lastWeek = new Date(today);
+            lastWeek.setDate(today.getDate() - 7);
+            
+            document.getElementById('startDate').value = lastWeek.toISOString().split('T')[0];
+            document.getElementById('endDate').value = today.toISOString().split('T')[0];
+        } else {
+            startDateContainer.classList.add('hidden');
+            endDateContainer.classList.add('hidden');
+        }
+    }
+
+    function applyFilters() {
+        const timePeriod = document.getElementById('timePeriod').value;
+        let message = 'Applying filters';
+        
+        if (timePeriod === 'custom') {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            message = `Filtering from ${startDate} to ${endDate}`;
+        } else {
+            message = `Filtering for ${timePeriod.replace('_', ' ')}`;
+        }
+        
+        showToast(message, 'info');
+        
+        // Simulate loading
+        const charts = document.querySelectorAll('.chart-container');
+        charts.forEach(chart => {
+            chart.style.opacity = '0.5';
+        });
+        
+        setTimeout(() => {
+            charts.forEach(chart => {
+                chart.style.opacity = '1';
+            });
+            updateChartsWithNewData();
+            showToast('Filters applied successfully', 'success');
+        }, 1000);
+    }
+
+    function changeChartType(type) {
+        if (currentChartType === type) return;
+        
+        currentChartType = type;
+        
+        // Update button states
+        document.querySelectorAll('.chart-type-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        
+        // Update chart type
+        trendChart.config.type = type;
+        
+        // Update visual styling
+        if (type === 'area') {
+            trendChart.data.datasets.forEach(dataset => {
+                dataset.fill = true;
+            });
+        } else {
+            trendChart.data.datasets.forEach(dataset => {
+                dataset.fill = type === 'line';
+            });
+        }
+        
+        trendChart.update();
+        showToast(`Switched to ${type} chart view`, 'info');
+    }
+
+    function updateChartsWithNewData() {
+        // Simulate new data
+        const newViewData = [150, 220, 350, 300, 480, 380, 320];
+        const newLeadData = [10, 14, 18, 13, 22, 17, 15];
+        
+        // Animate data update
+        trendChart.data.datasets[0].data = newViewData;
+        trendChart.data.datasets[1].data = newLeadData;
+        
+        // Add animation
+        trendChart.update('none');
+        
+        showToast('Charts updated with new data', 'success');
+    }
+
+    function updateComparison() {
+        const compareWith = document.getElementById('compareWith').value;
+        let comparisonText = '';
+        
+        switch(compareWith) {
+            case 'market_average':
+                comparisonText = 'market average';
+                break;
+            case 'top_performers':
+                comparisonText = 'top performers';
+                break;
+            case 'previous_period':
+                comparisonText = 'previous period';
+                break;
+        }
+        
+        showToast(`Comparison updated to ${comparisonText}`, 'info');
+        
+        // Update comparison data (simulated)
+        setTimeout(() => {
+            showToast('Comparison data refreshed', 'success');
+        }, 500);
+    }
+
+    function downloadPropertyReport() {
+        showToast('Generating property performance report...', 'info');
+        
+        setTimeout(() => {
+            showToast('Report downloaded successfully', 'success');
+        }, 1500);
+    }
+
+    function showPhotoRecommendations() {
+        showToast('Loading property photo recommendations...', 'info');
+    }
+
+    function showResponseTips() {
+        showToast('Loading response time tips...', 'info');
+    }
+
+    function showBoostOptions() {
+        showToast('Loading boost options...', 'info');
+    }
+
+    function showPendingLeads() {
+        showToast('Loading pending leads...', 'info');
+    }
+
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set analytics page as active
+        const analyticsLink = document.querySelector('.nav-link[data-page="analytics"]');
+        if (analyticsLink) {
+            analyticsLink.setAttribute('data-active', 'true');
+            analyticsLink.classList.add('active');
+        }
+        
+        // Initialize charts
+        initCharts();
+        
+        // Animate cards
+        const cards = document.querySelectorAll('.card-animate');
+        cards.forEach((card, index) => {
+            setTimeout(() => {
+                card.style.animationDelay = `${index * 0.1}s`;
+                card.style.opacity = '1';
+            }, 100);
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,978 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - Bhoosparsh Real Estate</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+         nav a:hover{
+            transform: translateY(-2px);
+            }
+    
+        
+        .content-container {
+            width: 95%;
+            margin: 0 auto;
+        }
+        
+        @media (min-width: 640px) {
+            .content-container {
+                width: 95%;
+            }
+        }
+        
+        @media (min-width: 768px) {
+            .content-container {
+                width: 95%;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .content-container {
+                width: 95%;
+            }
+        }
+        
+        /* Custom Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        /* Sticky Header Enhancement */
+        .sticky-header {
+            transition: all 0.3s ease;
+            background: transparent;
+            width: 95%;
+            margin: 0 auto;
+        }
+        
+        .sticky-header.scrolled {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: none !important;
+            border-radius: 9999px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 95% !important;
+            margin: 0.5rem auto !important;
+        }
+        
+        .sticky-header.scrolled .nav-container {
+            background: transparent !important;
+            backdrop-filter: none !important;
+        }
+        
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.error { border-left: 4px solid #ef4444; }
+        .toast.info { border-left: 4px solid #3b82f6; }
+        
+        /* Contact Form Styles */
+        .contact-form-input {
+            border: 1.5px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 0.875rem 1rem;
+            width: 100%;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+        
+        .contact-form-input:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+        
+        .contact-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+        
+        .contact-submit-btn {
+            background: #065f46;
+            color: white;
+            padding: 0.875rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .contact-submit-btn:hover {
+            background: #064e3b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(6, 95, 70, 0.2);
+        }
+        
+        .contact-info-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .contact-info-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            border-color: #10b981;
+        }
+        
+        .contact-icon {
+            background: #d1fae5;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        
+        .contact-icon svg {
+            color: #059669;
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+        
+        /* Loading Spinner */
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #15803d;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-white">
+    <!-- Toast Notification Container -->
+    <div id="toast-container"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Hero Section with Navigation -->
+    <section class="relative min-h-[400px] md:min-h-[500px] w-full flex flex-col">
+        <!-- Background Image -->
+        <div class="absolute inset-0 z-0">
+            <img 
+                src="{% static 'images/contacts.jpg' %}" 
+                alt="Modern office interior" 
+                class="w-full h-full object-cover"
+            />
+            <!-- Dark Overlay -->
+            <div class="absolute inset-0 bg-black/50"></div>
+        </div>
+        
+        <!-- Navigation Container -->
+        <div class="relative z-20 w-full">
+            <!-- Header with sticky navigation -->
+            <header id="main-header" class="sticky-header sticky top-2 z-50 px-2 md:px-4 lg:px-8 py-2">
+                <!-- Container for nav with responsive width -->
+                <div class="relative mx-auto w-[95%] md:w-[92%] lg:w-[90%]">
+                    <!-- Background blur effect for entire nav -->
+                    <div class="absolute inset-0 bg-white/20 backdrop-blur-sm rounded-full transition-all duration-300"></div>
+                    
+                    <!-- Navigation content -->
+                    <div class="relative z-10 flex items-center justify-between px-4 md:px-5 lg:px-6 py-2">
+                        <!-- Logo inside the blur effect -->
+                        <div class="flex items-center">
+                            <!-- Logo Image -->
+                            <a href="{% url 'home' %}" class="flex items-center">
+                                <img 
+                                    src="{% static 'images/logo.png' %}" 
+                                    alt="Bhoosparsh Logo" 
+                                    class="h-12 w-auto md:h-10 lg:h-12 transform scale-125 md:scale-150"
+                                >
+                            </a>
+                        </div>
+                        
+                        <!-- Desktop Navigation inside blur effect -->
+                        <nav class="hidden lg:flex items-center gap-3 xl:gap-4">
+                            <a href="{% url 'home' %}" class="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm text-white hover:text-gray-200 transition-colors">Home</a>
+                            <a href="{% url 'about' %}" class="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm text-white hover:text-gray-200 transition-colors">About Us</a>
+                            <a href="{% url 'properties_list' %}" class="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm text-white hover:text-gray-200 transition-colors">Property List</a>
+                            <a href="{% url 'contact' %}" class="px-3 md:px-4 py-1.5 md:py-2 bg-white/80 backdrop-blur-sm rounded-full text-xs md:text-sm font-medium shadow-sm hover:bg-white transition-all text-gray-800">Contact Us</a>
+                        </nav>
+                        
+                        <!-- Sign Up button inside blur effect -->
+                        <a href="{% url 'login' %}" return false;" class="hidden lg:block bg-green-900 text-white px-4 md:px-6 py-1.5 md:py-2.5 rounded-full text-xs md:text-sm font-medium hover:bg-green-800 transition-colors shadow-lg hover:shadow-xl">
+                            Sign In 
+                        </a>
+                        
+                        <!-- Mobile Menu Button -->
+                        <button id="mobile-menu-btn" class="lg:hidden p-2">
+                            <svg class="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Mobile Navigation -->
+            <div id="mobile-menu" class="lg:hidden px-3 md:px-4 relative z-10 mt-3 md:mt-4 hidden">
+                <div class="bg-white/20 backdrop-blur-sm rounded-xl p-3 md:p-4 animate-fade-in">
+                    <div class="flex flex-col md:flex-row flex-wrap gap-2 md:gap-3">
+                        <a href="{% url 'home' %}" class="text-xs md:text-sm font-medium text-white">Home</a>
+                        <a href="{% url 'about' %}" class="text-xs md:text-sm text-white/90">About Us</a>
+                        <a href="{% url 'properties_list' %}" class="text-xs md:text-sm text-white/90">Property List</a>
+                        <a href="{% url 'contact' %}" class="text-xs md:text-sm text-white/90">Contact Us</a>
+                        <a href="{% url 'login' %}" class="bg-green-900 text-white px-3 md:px-4 py-1 md:py-1.5 rounded-full text-xs md:text-sm font-medium mt-1 md:mt-0">
+                            Sign In
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Hero Content -->
+        <div class="relative z-10 flex-grow flex items-center justify-center">
+            <div class="text-center px-6 md:px-12 max-w-4xl mx-auto">
+                <h1 class="text-white text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-6 text-balance">
+                    Get in Touch with Bhoosparsh
+                </h1>
+                <p class="text-white/85 text-sm md:text-base leading-relaxed max-w-2xl mx-auto">
+                    Have questions about properties, need assistance with buying/selling, or want to learn more about our services? Our team is here to help you every step of the way.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Information & Form Section -->
+    <section class="py-12 sm:py-16 bg-white" id="contact-form">
+        <div class="content-container">
+            <div class="max-w-6xl mx-auto">
+                
+                <!-- Section Header -->
+                <div class="text-center mb-10 sm:mb-12">
+                    <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+                        We'd Love to Hear From You
+                    </h2>
+                    <p class="text-gray-600 text-sm sm:text-base max-w-2xl mx-auto">
+                        Whether you're looking to buy, sell, or rent property, our expert team is ready to assist you with personalized solutions.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
+                    
+                    <!-- Contact Information -->
+                    <div class="space-y-8">
+                        <!-- Contact Card 1 -->
+                        <div class="contact-info-card">
+                            <div class="contact-icon">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                </svg>
+                            </div>
+                            <h3 class="font-semibold text-gray-900 text-lg mb-2">Call Us</h3>
+                            <p class="text-gray-700">+91 800 123 4567</p>
+                            <p class="text-gray-500 text-sm mt-1">Mon-Sat: 9:00 AM - 8:00 PM</p>
+                        </div>
+
+                        <!-- Contact Card 2 -->
+                        <div class="contact-info-card">
+                            <div class="contact-icon">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <h3 class="font-semibold text-gray-900 text-lg mb-2">Email Us</h3>
+                            <p class="text-gray-700">info@bhoosparsh.com</p>
+                            <p class="text-gray-700">support@bhoosparsh.com</p>
+                            <p class="text-gray-500 text-sm mt-1">For general inquiries</p>
+                        </div>
+
+                        <!-- Contact Card 3 -->
+                        <div class="contact-info-card">
+                            <div class="contact-icon">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                            </div>
+                            <h3 class="font-semibold text-gray-900 text-lg mb-2">Visit Office</h3>
+                            <p class="text-gray-700">123 Business Park, 5th Floor</p>
+                            <p class="text-gray-700">Mumbai, Maharashtra 400001</p>
+                            <p class="text-gray-500 text-sm mt-1">By appointment only</p>
+                        </div>
+                    </div>
+
+                    <!-- Contact Form -->
+                    <div>
+                        <div class="bg-gray-50 rounded-xl sm:rounded-2xl p-6 sm:p-8">
+                            <h3 class="font-semibold text-gray-900 text-xl mb-6">Send us a message</h3>
+                            
+                            <form id="contact-form" class="space-y-5">
+                                <!-- Name Row -->
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="contact-label">First Name</label>
+                                        <input type="text" placeholder="Your first name" class="contact-form-input" required>
+                                    </div>
+                                    <div>
+                                        <label class="contact-label">Last Name</label>
+                                        <input type="text" placeholder="Your last name" class="contact-form-input">
+                                    </div>
+                                </div>
+
+                                <!-- Contact Info -->
+                                <div>
+                                    <label class="contact-label">Email Address</label>
+                                    <input type="email" placeholder="your.email@example.com" class="contact-form-input" required>
+                                </div>
+
+                                <div>
+                                    <label class="contact-label">Phone Number</label>
+                                    <input type="tel" placeholder="+91 123 456 7890" class="contact-form-input" required>
+                                </div>
+
+                                <!-- Inquiry Type -->
+                                <div>
+                                    <label class="contact-label">Inquiry Type</label>
+                                    <select class="contact-form-input" required>
+                                        <option value="">Select inquiry type</option>
+                                        <option>Property Buying</option>
+                                        <option>Property Selling</option>
+                                        <option>Property Renting</option>
+                                        <option>Property Management</option>
+                                        <option>Investment Advice</option>
+                                        <option>General Inquiry</option>
+                                    </select>
+                                </div>
+
+                                <!-- Property Interest (Conditional) -->
+                                <div id="property-interest-field" class="hidden">
+                                    <label class="contact-label">Property ID / Location</label>
+                                    <input type="text" placeholder="Enter property ID or location of interest" class="contact-form-input">
+                                </div>
+
+                                <!-- Message -->
+                                <div>
+                                    <label class="contact-label">Your Message</label>
+                                    <textarea rows="4" placeholder="Tell us how we can help you..." class="contact-form-input" required></textarea>
+                                </div>
+
+                                <!-- Submit Button -->
+                                <button type="submit" class="contact-submit-btn">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                    </svg>
+                                    Send Message
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Contact Links -->
+                <div class="mt-10 pt-8 border-t border-gray-200">
+                    <h4 class="text-gray-900 font-semibold text-center mb-6">Quick Contact Options</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <a href="tel:+918001234567" 
+                           class="text-center p-4 rounded-xl border border-gray-200 hover:border-green-500 hover:bg-green-50 transition-all duration-300">
+                            <div class="text-green-600 text-2xl mb-2">
+                                <i class="fas fa-phone-alt"></i>
+                            </div>
+                            <div class="font-medium text-gray-900">Call Now</div>
+                            <div class="text-sm text-gray-600 mt-1">+91 800 123 4567</div>
+                        </a>
+                        
+                        <a href="https://wa.me/918001234567" target="_blank"
+                           class="text-center p-4 rounded-xl border border-gray-200 hover:border-green-500 hover:bg-green-50 transition-all duration-300">
+                            <div class="text-green-600 text-2xl mb-2">
+                                <i class="fab fa-whatsapp"></i>
+                            </div>
+                            <div class="font-medium text-gray-900">WhatsApp</div>
+                            <div class="text-sm text-gray-600 mt-1">Instant messaging</div>
+                        </a>
+                        
+                        <a href="mailto:info@bhoosparsh.com" 
+                           class="text-center p-4 rounded-xl border border-gray-200 hover:border-green-500 hover:bg-green-50 transition-all duration-300">
+                            <div class="text-green-600 text-2xl mb-2">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="font-medium text-gray-900">Email</div>
+                            <div class="text-sm text-gray-600 mt-1">info@bhoosparsh.com</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Map & Office Location Section -->
+    <section class="py-12 sm:py-16 bg-gray-50">
+        <div class="content-container">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-10">
+                    <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+                        Our Office Location
+                    </h2>
+                    <p class="text-gray-600 text-sm sm:text-base max-w-2xl mx-auto">
+                        Visit our headquarters or schedule a meeting with our real estate experts
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Map -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-white rounded-xl shadow-sm overflow-hidden h-[400px]">
+                            <!-- Google Maps Embed -->
+                            <iframe 
+                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3771.263307389408!2d72.82667931584706!3d19.07507758709944!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7c9a7aef8f8b9%3A0x7c7f8c8c8c8c8c8c!2sMumbai%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1621234567890!5m2!1sen!2sin" 
+                                width="100%" 
+                                height="100%" 
+                                style="border:0;" 
+                                allowfullscreen="" 
+                                loading="lazy"
+                                class="w-full h-full"
+                            ></iframe>
+                        </div>
+                    </div>
+
+                    <!-- Office Details -->
+                    <div class="space-y-6">
+                        <div class="bg-white rounded-xl shadow-sm p-6">
+                            <h3 class="font-semibold text-gray-900 text-lg mb-4">Head Office</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-start gap-3">
+                                    <i class="fas fa-map-marker-alt text-green-600 mt-1"></i>
+                                    <div>
+                                        <p class="font-medium text-gray-900">Address</p>
+                                        <p class="text-gray-600 text-sm">123 Business Park, 5th Floor<br>Mumbai, Maharashtra 400001</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start gap-3">
+                                    <i class="fas fa-clock text-green-600 mt-1"></i>
+                                    <div>
+                                        <p class="font-medium text-gray-900">Business Hours</p>
+                                        <p class="text-gray-600 text-sm">Monday - Saturday: 9:00 AM - 8:00 PM<br>Sunday: 10:00 AM - 6:00 PM</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start gap-3">
+                                    <i class="fas fa-user-friends text-green-600 mt-1"></i>
+                                    <div>
+                                        <p class="font-medium text-gray-900">Meeting Policy</p>
+                                        <p class="text-gray-600 text-sm">Appointments recommended<br>Walk-ins welcome during business hours</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl shadow-sm p-6">
+                            <h3 class="font-semibold text-gray-900 text-lg mb-4">Branch Offices</h3>
+                            <div class="space-y-3">
+                                <div>
+                                    <p class="font-medium text-gray-900">Delhi Branch</p>
+                                    <p class="text-gray-600 text-sm">456 Connaught Place, New Delhi 110001</p>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900">Bangalore Branch</p>
+                                    <p class="text-gray-600 text-sm">789 MG Road, Bangalore 560001</p>
+                                </div>
+                                <button class="w-full text-green-600 hover:text-green-700 text-sm font-medium text-center mt-2">
+                                    View All Branches →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-12 sm:py-16 bg-white">
+        <div class="content-container">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-10">
+                    <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+                        Frequently Asked Questions
+                    </h2>
+                    <p class="text-gray-600 text-sm sm:text-base max-w-2xl mx-auto">
+                        Find quick answers to common questions about our services
+                    </p>
+                </div>
+
+                <div class="space-y-4">
+                    <!-- FAQ Item 1 -->
+                    <div class="border border-gray-200 rounded-xl overflow-hidden">
+                        <button class="faq-question w-full text-left p-5 bg-gray-50 hover:bg-gray-100 transition-colors flex justify-between items-center">
+                            <span class="font-medium text-gray-900">How do I schedule a property viewing?</span>
+                            <i class="fas fa-chevron-down text-gray-500 transition-transform"></i>
+                        </button>
+                        <div class="faq-answer p-5 border-t border-gray-200 hidden">
+                            <p class="text-gray-600">You can schedule a property viewing by calling our office, using the contact form above, or directly through our property listings. Our agents will coordinate a convenient time for you to visit the property.</p>
+                        </div>
+                    </div>
+
+                    <!-- FAQ Item 2 -->
+                    <div class="border border-gray-200 rounded-xl overflow-hidden">
+                        <button class="faq-question w-full text-left p-5 bg-gray-50 hover:bg-gray-100 transition-colors flex justify-between items-center">
+                            <span class="font-medium text-gray-900">What documents do I need for property purchase?</span>
+                            <i class="fas fa-chevron-down text-gray-500 transition-transform"></i>
+                        </button>
+                        <div class="faq-answer p-5 border-t border-gray-200 hidden">
+                            <p class="text-gray-600">Required documents include proof of identity (Aadhar, PAN), proof of address, income documents, and property-related documents. Our legal team will guide you through the complete documentation process.</p>
+                        </div>
+                    </div>
+
+                    <!-- FAQ Item 3 -->
+                    <div class="border border-gray-200 rounded-xl overflow-hidden">
+                        <button class="faq-question w-full text-left p-5 bg-gray-50 hover:bg-gray-100 transition-colors flex justify-between items-center">
+                            <span class="font-medium text-gray-900">Do you provide property valuation services?</span>
+                            <i class="fas fa-chevron-down text-gray-500 transition-transform"></i>
+                        </button>
+                        <div class="faq-answer p-5 border-t border-gray-200 hidden">
+                            <p class="text-gray-600">Yes, we offer professional property valuation services. Our certified valuers assess market trends, location, property condition, and other factors to provide accurate valuation reports for buying, selling, or legal purposes.</p>
+                        </div>
+                    </div>
+
+                    <!-- FAQ Item 4 -->
+                    <div class="border border-gray-200 rounded-xl overflow-hidden">
+                        <button class="faq-question w-full text-left p-5 bg-gray-50 hover:bg-gray-100 transition-colors flex justify-between items-center">
+                            <span class="font-medium text-gray-900">What areas do you serve?</span>
+                            <i class="fas fa-chevron-down text-gray-500 transition-transform"></i>
+                        </button>
+                        <div class="faq-answer p-5 border-t border-gray-200 hidden">
+                            <p class="text-gray-600">We serve major cities across India including Mumbai, Delhi, Bangalore, Hyderabad, Chennai, and Pune. We also handle international property transactions through our global network of partners.</p>
+                        </div>
+                    </div>
+
+                    <!-- FAQ Item 5 -->
+                    <div class="border border-gray-200 rounded-xl overflow-hidden">
+                        <button class="faq-question w-full text-left p-5 bg-gray-50 hover:bg-gray-100 transition-colors flex justify-between items-center">
+                            <span class="font-medium text-gray-900">What are your brokerage fees?</span>
+                            <i class="fas fa-chevron-down text-gray-500 transition-transform"></i>
+                        </button>
+                        <div class="faq-answer p-5 border-t border-gray-200 hidden">
+                            <p class="text-gray-600">Our brokerage fees are competitive and transparent, typically ranging from 1-2% of the property value depending on the transaction type and property value. We provide detailed fee breakdowns before starting any service.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-10">
+                    <p class="text-gray-600 text-sm">
+                        Still have questions? <a href="#contact-form" class="text-green-600 hover:text-green-700 font-medium">Contact us directly</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Contact Section -->
+    <section class="py-12 sm:py-16 bg-gray-50">
+        <div class="content-container">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-10">
+                    <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+                        Meet Our Contact Team
+                    </h2>
+                    <p class="text-gray-600 text-sm sm:text-base max-w-2xl mx-auto">
+                        Our dedicated team members are ready to assist you with your real estate needs
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Team Member 1 -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 text-center">
+                        <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&w=100&h=100&fit=crop&crop=face&auto=format" 
+                             alt="Sales Consultant" 
+                             class="w-24 h-24 rounded-full mx-auto mb-4 object-cover">
+                        <h3 class="font-semibold text-gray-900">Rajesh Kumar</h3>
+                        <p class="text-green-600 text-sm mb-2">Senior Sales Consultant</p>
+                        <p class="text-gray-500 text-xs mb-3">Specializes in luxury properties</p>
+                        <a href="tel:+919876543210" class="text-green-600 hover:text-green-700 text-sm font-medium">
+                            +91 98765 43210
+                        </a>
+                    </div>
+
+                    <!-- Team Member 2 -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 text-center">
+                        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&w=100&h=100&fit=crop&crop=face&auto=format" 
+                             alt="Property Manager" 
+                             class="w-24 h-24 rounded-full mx-auto mb-4 object-cover">
+                        <h3 class="font-semibold text-gray-900">Priya Sharma</h3>
+                        <p class="text-green-600 text-sm mb-2">Property Management Head</p>
+                        <p class="text-gray-500 text-xs mb-3">Expert in rental properties</p>
+                        <a href="tel:+919876543211" class="text-green-600 hover:text-green-700 text-sm font-medium">
+                            +91 98765 43211
+                        </a>
+                    </div>
+
+                    <!-- Team Member 3 -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 text-center">
+                        <img src="https://images.unsplash.com/photo-1582750433449-648ed127bb54?ixlib=rb-4.0.3&w=100&h=100&fit=crop&crop=face&auto=format" 
+                             alt="Legal Advisor" 
+                             class="w-24 h-24 rounded-full mx-auto mb-4 object-cover">
+                        <h3 class="font-semibold text-gray-900">Amit Patel</h3>
+                        <p class="text-green-600 text-sm mb-2">Legal Advisor</p>
+                        <p class="text-gray-500 text-xs mb-3">Property documentation expert</p>
+                        <a href="tel:+919876543212" class="text-green-600 hover:text-green-700 text-sm font-medium">
+                            +91 98765 43212
+                        </a>
+                    </div>
+
+                    <!-- Team Member 4 -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 text-center">
+                        <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&w=100&h=100&fit=crop&crop=face&auto=format" 
+                             alt="Customer Support" 
+                             class="w-24 h-24 rounded-full mx-auto mb-4 object-cover">
+                        <h3 class="font-semibold text-gray-900">Ananya Mehta</h3>
+                        <p class="text-green-600 text-sm mb-2">Customer Support Head</p>
+                        <p class="text-gray-500 text-xs mb-3">Available 24/7 for urgent queries</p>
+                        <a href="tel:+919876543213" class="text-green-600 hover:text-green-700 text-sm font-medium">
+                            +91 98765 43213
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="bg-neutral-900 text-gray-300 py-12 sm:py-16 px-4 md:px-8" id="footer">
+        <div class="max-w-7xl mx-auto">
+            <!-- Top Section - Logo & Description -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-12 pb-12 border-gray-800">
+                <!-- Company Info -->
+                <div class="lg:col-span-2">
+                    <div class="flex items-center gap-3 mb-4">
+                        <!-- Logo Image -->
+                        <a href="{% url 'home' %}" class="flex items-center">
+                            <img 
+                                src="{% static 'images/logo.png' %}" 
+                                alt="Bhoosparsh Logo" 
+                                class="h-[4.5rem] w-auto md:h-[5rem] lg:h-[5.5rem]"
+                            >
+                        </a>
+                        <span class="text-white text-xl font-bold">BHOOSPARSH</span>
+                    </div>
+                    <p class="text-gray-400 text-sm leading-relaxed mb-6 max-w-md">
+                        We are dedicated to providing the best property buying and renting experience, offering a wide range of
+                        high-quality properties with excellent customer service.
+                    </p>
+                    <!-- Social Icons -->
+                    <div class="flex gap-4">
+                        <a href="#" class="w-10 h-10 bg-gray-800 hover:bg-emerald-600 rounded-full flex items-center justify-center transition-colors">
+                            <i class="fab fa-facebook-f text-sm"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-800 hover:bg-emerald-600 rounded-full flex items-center justify-center transition-colors">
+                            <i class="fab fa-twitter text-sm"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-800 hover:bg-emerald-600 rounded-full flex items-center justify-center transition-colors">
+                            <i class="fab fa-instagram text-sm"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-800 hover:bg-emerald-600 rounded-full flex items-center justify-center transition-colors">
+                            <i class="fab fa-linkedin-in text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="text-white font-semibold mb-4 text-lg">Quick Links</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="{% url 'home' %}" class="text-gray-400 hover:text-emerald-500 transition-colors flex items-center gap-2">
+                            <i class="fas fa-chevron-right text-xs text-emerald-500"></i> Home
+                        </a></li>
+                        <li><a href="{% url 'about' %}" class="text-gray-400 hover:text-emerald-500 transition-colors flex items-center gap-2">
+                            <i class="fas fa-chevron-right text-xs text-emerald-500"></i> About Us
+                        </a></li>
+                        <li><a href="{% url 'properties_list' %}" class="text-gray-400 hover:text-emerald-500 transition-colors flex items-center gap-2">
+                            <i class="fas fa-chevron-right text-xs text-emerald-500"></i> Properties
+                        </a></li>
+                        <li><a href="#contact-form" class="text-gray-400 hover:text-emerald-500 transition-colors flex items-center gap-2">
+                            <i class="fas fa-chevron-right text-xs text-emerald-500"></i> Contact Us
+                        </a></li>
+                        <li><a href="{% url 'login' %}" class="text-gray-400 hover:text-emerald-500 transition-colors flex items-center gap-2">
+                            <i class="fas fa-chevron-right text-xs text-emerald-500"></i> Sign In
+                        </a></li>
+                    </ul>
+                </div>
+
+                <!-- Contact Info -->
+                <div>
+                    <h4 class="text-white font-semibold mb-4 text-lg">Contact Info</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li class="flex items-start gap-3">
+                            <i class="fas fa-map-marker-alt text-emerald-500 mt-1"></i>
+                            <span class="text-gray-400">123 Business Park, 5th Floor<br>Mumbai, Maharashtra 400001</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <i class="fas fa-phone text-emerald-500"></i>
+                            <span class="text-gray-400">+91-800-123-4567</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <i class="fas fa-envelope text-emerald-500"></i>
+                            <span class="text-gray-400">info@bhoosparsh.com</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <i class="fas fa-clock text-emerald-500"></i>
+                            <span class="text-gray-400">Mon - Sat: 9:00 AM - 7:00 PM</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Bottom Section - Copyright & Links -->
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 pt-8 border-t border-gray-800">
+                <div class="text-gray-500 text-sm text-center md:text-left">
+                    © 2025 BHOOSPARSH Real Estate. All Rights Reserved.
+                </div>
+                <div class="flex flex-wrap gap-6 justify-center md:justify-end">
+                    <a href="#" class="text-gray-400 hover:text-emerald-500 transition-colors text-sm">Privacy Policy</a>
+                    <a href="#" class="text-gray-400 hover:text-emerald-500 transition-colors text-sm">Terms of Service</a>
+                    <a href="#" class="text-gray-400 hover:text-emerald-500 transition-colors text-sm">Cookie Policy</a>
+                    <a href="#" class="text-gray-400 hover:text-emerald-500 transition-colors text-sm">Sitemap</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="fixed bottom-8 right-8 w-12 h-12 bg-emerald-600 text-white rounded-full shadow-lg hover:bg-emerald-700 transition-all duration-300 hidden z-40">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+
+    <!-- JavaScript -->
+    <script>
+        // DOM Elements
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const contactForm = document.getElementById('contact-form');
+        const backToTopBtn = document.getElementById('back-to-top');
+        const mainHeader = document.getElementById('main-header');
+        const inquiryTypeSelect = document.querySelector('select.contact-form-input');
+        const propertyInterestField = document.getElementById('property-interest-field');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initEventListeners();
+            initFAQ();
+            checkScroll();
+        });
+
+        // Event Listeners
+        function initEventListeners() {
+            // Mobile Menu Toggle
+            mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+
+            // Contact Form Submission
+            contactForm.addEventListener('submit', handleContactSubmit);
+
+            // Inquiry Type Change
+            if (inquiryTypeSelect) {
+                inquiryTypeSelect.addEventListener('change', togglePropertyInterestField);
+            }
+
+            // Back to Top Button
+            backToTopBtn.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            // Scroll Event
+            window.addEventListener('scroll', checkScroll);
+        }
+
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            mobileMenu.classList.toggle('hidden');
+            mobileMenu.classList.toggle('animate-fade-in');
+        }
+
+        // Toggle Property Interest Field
+        function togglePropertyInterestField() {
+            const selectedValue = inquiryTypeSelect.value;
+            const propertyRelatedOptions = ['Property Buying', 'Property Selling', 'Property Renting'];
+            
+            if (propertyRelatedOptions.includes(selectedValue)) {
+                propertyInterestField.classList.remove('hidden');
+                propertyInterestField.querySelector('input').required = true;
+            } else {
+                propertyInterestField.classList.add('hidden');
+                propertyInterestField.querySelector('input').required = false;
+            }
+        }
+
+        // Contact Form Submission
+        function handleContactSubmit(e) {
+            e.preventDefault();
+            
+            // Show loading state
+            const submitBtn = contactForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = `
+                <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Sending...</span>
+            `;
+            submitBtn.disabled = true;
+            
+            // Simulate API call
+            setTimeout(() => {
+                // Show success message
+                showToast('Message sent successfully! We will contact you within 24 hours.', 'success');
+                
+                // Reset form
+                contactForm.reset();
+                
+                // Reset button
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                
+                // Hide property interest field if shown
+                propertyInterestField.classList.add('hidden');
+            }, 2000);
+        }
+
+        // FAQ Functionality
+        function initFAQ() {
+            const faqQuestions = document.querySelectorAll('.faq-question');
+            
+            faqQuestions.forEach(question => {
+                question.addEventListener('click', () => {
+                    const answer = question.nextElementSibling;
+                    const icon = question.querySelector('i');
+                    
+                    // Toggle answer visibility
+                    answer.classList.toggle('hidden');
+                    
+                    // Rotate icon
+                    icon.classList.toggle('rotate-180');
+                    
+                    // Close other FAQ answers
+                    faqQuestions.forEach(otherQuestion => {
+                        if (otherQuestion !== question) {
+                            const otherAnswer = otherQuestion.nextElementSibling;
+                            const otherIcon = otherQuestion.querySelector('i');
+                            otherAnswer.classList.add('hidden');
+                            otherIcon.classList.remove('rotate-180');
+                        }
+                    });
+                });
+            });
+        }
+
+        // Scroll Effects
+        function checkScroll() {
+            // Header scroll effect
+            if (window.scrollY > 100) {
+                mainHeader.classList.add('scrolled');
+            } else {
+                mainHeader.classList.remove('scrolled');
+            }
+
+            // Back to top button
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.remove('hidden');
+            } else {
+                backToTopBtn.classList.add('hidden');
+            }
+        }
+
+        // Utility Functions
+        function showToast(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} 
+                   ${type === 'success' ? 'text-green-500' : type === 'error' ? 'text-red-500' : 'text-blue-500'}"></i>
+                <div>${message}</div>
+            `;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Close mobile menu if open
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        toggleMobileMenu();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

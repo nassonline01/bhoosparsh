@@ -1,0 +1,1962 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help & Support - Seller Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(255, 87, 34, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 0 10px rgba(255, 87, 34, 0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes dropdownSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+                max-height: 0;
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+                max-height: 200px;
+            }
+        }
+
+        .card-animate {
+            animation: slideIn 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .sidebar-animate {
+            animation: slideInLeft 0.5s ease-out;
+        }
+
+        .pulse-button {
+            animation: pulse-glow 2s infinite;
+        }
+
+        .stats-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-item {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .nav-item:hover {
+            padding-left: 1.2rem;
+            background-color: rgba(255, 87, 34, 0.08);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(90deg, rgba(255, 87, 34, 0.15) 0%, rgba(255, 87, 34, 0.08) 100%);
+            border-left: 4px solid #FF5722;
+        }
+
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, #FF5722 0%, #ff8c42 100%);
+            border-radius: 0 2px 2px 0;
+        }
+
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        .stagger-4 { animation-delay: 0.4s; }
+        .stagger-5 { animation-delay: 0.5s; }
+        .stagger-6 { animation-delay: 0.6s; }
+
+        .progress-bar {
+            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .dark .bg-dark-sidebar {
+            background: linear-gradient(180deg, #1a202c 0%, #111827 100%);
+        }
+
+        .dark .text-dark-primary {
+            color: #f7fafc;
+        }
+
+        .dark .border-dark {
+            border-color: #2d3748;
+        }
+
+        .theme-toggle {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(15deg) scale(1.05);
+        }
+
+        /* Enhanced Dropdown */
+        .dropdown-menu {
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: top;
+            opacity: 0;
+        }
+
+        .dropdown-menu.open {
+            max-height: 200px;
+            opacity: 1;
+            animation: dropdownSlide 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .dropdown-toggle {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .dropdown-toggle::after {
+            content: '';
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 4px solid transparent;
+            border-top-color: currentColor;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .dropdown-toggle.open::after {
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        .dropdown-item {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0.8;
+        }
+
+        .dropdown-item:hover {
+            opacity: 1;
+            transform: translateX(5px);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -100%;
+                transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                z-index: 1000;
+                height: 100vh;
+                overflow-y: auto;
+                box-shadow: 5px 0 25px rgba(0, 0, 0, 0.2);
+            }
+
+            .sidebar.mobile-open {
+                left: 0;
+            }
+
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 999;
+                backdrop-filter: blur(3px);
+                animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .sidebar-overlay.active {
+                display: block;
+            }
+        }
+
+        /* Smooth transitions */
+        * {
+            scroll-behavior: smooth;
+            transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                        border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                        color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Scrollable sidebar and content */
+        .sidebar-scroll {
+            height: 100vh;
+            overflow-y: auto;
+            position: sticky;
+            top: 0;
+        }
+
+        .main-content-scroll {
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        /* Enhanced scrollbar */
+        .custom-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #FF5722 #f1f1f1;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+            margin: 4px 0;
+        }
+
+        .dark .custom-scrollbar::-webkit-scrollbar-track {
+            background: #2d3748;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #FF5722, #ff8c42);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to bottom, #e64a19, #ff7043);
+            transform: scale(1.1);
+        }
+
+        /* Hover effects */
+        .hover-lift {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-2px);
+        }
+
+        .hover-grow {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .hover-grow:hover {
+            transform: scale(1.02);
+        }
+
+        /* Help page specific styles */
+        .help-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(229, 231, 235, 0.5);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .help-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border-color: #FF5722;
+        }
+
+        .metric-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            color: white;
+            font-size: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .metric-icon:hover {
+            transform: scale(1.1) rotate(10deg);
+        }
+
+        .security-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .security-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .contact-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .contact-icon:hover {
+            transform: scale(1.1);
+        }
+
+        /* FAQ styles */
+        .faq-search:focus {
+            box-shadow: 0 0 0 0.25rem rgba(255, 87, 34, 0.25) !important;
+            border-color: #FF5722 !important;
+        }
+
+        /* Video container */
+        .ratio-16x9 {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .ratio-16x9:hover {
+            transform: scale(1.02);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+        }
+
+        /* Progress bar customization */
+        .progress {
+            height: 20px;
+            border-radius: 10px;
+            background-color: #f1f1f1;
+            overflow: hidden;
+        }
+
+        .dark .progress {
+            background-color: #374151;
+        }
+
+        .progress-bar {
+            border-radius: 10px;
+        }
+
+        /* Table styling */
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .dark .table th {
+            background-color: #374151;
+            color: #e5e7eb;
+        }
+
+        .table-hover tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(255, 87, 34, 0.05);
+            transform: translateX(5px);
+        }
+
+        /* Card styling */
+        .card {
+            border: 1px solid rgba(229, 231, 235, 0.5);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .dark .card {
+            border: 1px solid #374151;
+            background-color: #1f2937;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .card.border-primary {
+            border-color: #3b82f6 !important;
+            border-width: 2px !important;
+        }
+
+        .card.border-success {
+            border-color: #10b981 !important;
+            border-width: 2px !important;
+        }
+
+        .card.border-warning {
+            border-color: #f59e0b !important;
+            border-width: 2px !important;
+        }
+
+        .card.border-info {
+            border-color: #06b6d4 !important;
+            border-width: 2px !important;
+        }
+
+        .card.border-danger {
+            border-color: #ef4444 !important;
+            border-width: 2px !important;
+        }
+
+        /* Accordion styling */
+        .accordion-button {
+            background-color: #f9fafb;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .dark .accordion-button {
+            background-color: #374151;
+            color: #e5e7eb;
+        }
+
+        .accordion-button:not(.collapsed) {
+            background-color: #f1f5f9;
+            color: #1f2937;
+            transform: translateX(5px);
+        }
+
+        .dark .accordion-button:not(.collapsed) {
+            background-color: #4b5563;
+            color: #f3f4f6;
+        }
+
+        .accordion-button:hover {
+            background-color: #e5e7eb;
+            padding-left: 1.5rem;
+        }
+
+        .dark .accordion-button:hover {
+            background-color: #4b5563;
+        }
+
+        /* Button hover effects */
+        .btn-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-hover::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+
+        .btn-hover:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+
+        /* List group styling */
+        .list-group-item {
+            border-color: #e5e7eb;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .dark .list-group-item {
+            border-color: #374151;
+            background-color: #1f2937;
+            color: #e5e7eb;
+        }
+
+        .list-group-item:hover {
+            background-color: #f8fafc;
+            transform: translateX(5px);
+            border-left: 4px solid #FF5722;
+        }
+
+        .dark .list-group-item:hover {
+            background-color: #374151;
+        }
+
+        .list-group-item.active {
+            background: linear-gradient(90deg, #FF5722, #ff8c42);
+            border-color: #FF5722;
+            color: white;
+            transform: translateX(5px);
+            border-left: 4px solid #e64a19;
+        }
+
+        /* Alert styling */
+        .alert {
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .alert:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        /* Custom colors */
+        .bg-help-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .bg-help-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .bg-help-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .bg-help-info {
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        }
+
+        .bg-help-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        /* Form controls in dark mode */
+        .dark .form-control, .dark .form-select {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #e5e7eb;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .dark .form-control:focus, .dark .form-select:focus {
+            background-color: #374151;
+            border-color: #FF5722;
+            box-shadow: 0 0 0 0.25rem rgba(255, 87, 34, 0.25);
+            transform: scale(1.01);
+        }
+
+        /* Animation for accordion */
+        .accordion-collapse {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Custom scroll for FAQ */
+        .faq-scroll {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        /* Resource cards */
+        .resource-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .resource-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .resource-card:hover::before {
+            left: 100%;
+        }
+
+        /* Step indicators */
+        .step-indicator {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .step-indicator:hover {
+            transform: scale(1.1) rotate(15deg);
+        }
+
+        /* Gradient backgrounds for headers */
+        .gradient-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gradient-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Pulse animation for urgent items */
+        .pulse-urgent {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.7;
+                transform: scale(1.05);
+            }
+        }
+
+        /* Floating action button */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FF5722, #ff8c42);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(255, 87, 34, 0.3);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 40;
+        }
+
+        .fab:hover {
+            transform: scale(1.1) rotate(15deg);
+            box-shadow: 0 15px 40px rgba(255, 87, 34, 0.4);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .help-card {
+                margin-bottom: 1rem;
+            }
+            
+            .metric-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.25rem;
+            }
+            
+            .security-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            
+            .fab {
+                bottom: 20px;
+                right: 20px;
+                width: 50px;
+                height: 50px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <!-- Mobile Overlay -->
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+    
+    <div class="flex min-h-screen">
+        <!-- Enhanced Sidebar -->
+        <aside id="sidebar" class="sidebar sidebar-animate w-full md:w-64 bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white sidebar-scroll p-4 fixed md:relative md:block">
+            <!-- Close button for mobile -->
+            <button class="md:hidden absolute top-4 right-4 text-gray-400 hover:text-white transition-transform hover:scale-110" onclick="toggleSidebar()">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+
+            <!-- Profile Section -->
+            <div class="mb-8 mt-4 md:mt-0">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-14 h-14 rounded-full overflow-hidden border-2 border-orange-500 ring-2 ring-orange-200/20 hover-lift">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop" alt="Profile" class="w-full h-full object-cover">
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sm">John Smith</h3>
+                        <p class="text-xs text-gray-400">Premium Seller</p>
+                        <div class="flex items-center mt-1">
+                            <span class="text-xs bg-gradient-to-r from-green-600 to-emerald-500 text-white px-2 py-1 rounded-full hover-lift">Verified</span>
+                            <span class="text-xs bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-2 py-1 rounded-full ml-2 hover-lift">Premium</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-gray-800/50 rounded-xl border border-gray-700 hover-lift">
+                    <p class="text-xs text-gray-400">Member Since</p>
+                    <p class="text-sm">January 2023</p>
+                </div>
+            </div>
+
+            <!-- Main Navigation -->
+            <nav class="space-y-1">
+                <!-- Dashboard -->
+                <a href="{% url 'seller_dashboard' %}" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-400 hover:text-white transition-all group">
+                    <i class="fas fa-tachometer-alt w-5 h-5 transition-transform group-hover:scale-125"></i>
+                    <span>Dashboard</span>
+                </a>
+                
+                <!-- My Properties Dropdown -->
+                <div class="nav-item">
+                    <div onclick="toggleDropdown('properties-dropdown')" class="dropdown-toggle flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-400 hover:text-white transition-all group cursor-pointer">
+                        <i class="fas fa-home w-5 h-5 transition-transform group-hover:scale-125"></i>
+                        <span>My Properties</span>
+                        <span class="ml-auto bg-gradient-to-r from-orange-500 to-yellow-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">12</span>
+                    </div>
+                    
+                    <!-- Enhanced Dropdown Menu -->
+                    <div id="properties-dropdown" class="dropdown-menu ml-8 space-y-1 border-l border-gray-700 pl-2 mt-1">
+                        <a href="{% url 'seller_properties' %}?status=active" class="dropdown-item flex items-center gap-2 px-3 py-2 text-xs text-gray-400 hover:text-white rounded-lg transition-all hover:pl-4">
+                            <i class="fas fa-circle text-green-500 text-xs transition-transform hover:scale-125"></i>
+                            <span>Active (12)</span>
+                        </a>
+                        <a href="{% url 'seller_properties' %}?status=draft" class="dropdown-item flex items-center gap-2 px-3 py-2 text-xs text-gray-400 hover:text-white rounded-lg transition-all hover:pl-4">
+                            <i class="fas fa-circle text-gray-400 text-xs transition-transform hover:scale-125"></i>
+                            <span>Drafts (2)</span>
+                        </a>
+                        <a href="{% url 'seller_properties' %}?status=pending" class="dropdown-item flex items-center gap-2 px-3 py-2 text-xs text-gray-400 hover:text-white rounded-lg transition-all hover:pl-4">
+                            <i class="fas fa-circle text-yellow-500 text-xs transition-transform hover:scale-125"></i>
+                            <span>Pending (3)</span>
+                        </a>
+                        <a href="{% url 'seller_properties' %}?status=expired" class="dropdown-item flex items-center gap-2 px-3 py-2 text-xs text-gray-400 hover:text-white rounded-lg transition-all hover:pl-4">
+                            <i class="fas fa-circle text-red-500 text-xs transition-transform hover:scale-125"></i>
+                            <span>Expired (1)</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Leads & Inquiries -->
+                <a href="{% url 'seller_leads' %}" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-400 hover:text-white transition-all group relative">
+                    <i class="fas fa-inbox w-5 h-5 transition-transform group-hover:scale-125"></i>
+                    <span>Leads & Inquiries</span>
+                    <span class="absolute right-4 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center pulse-button">3</span>
+                </a>
+                
+                <!-- Performance -->
+                <a href="{% url 'seller_analytics' %}" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-400 hover:text-white transition-all group">
+                    <i class="fas fa-chart-line w-5 h-5 transition-transform group-hover:scale-125"></i>
+                    <span>Performance Analytics</span>
+                </a>
+                
+                <!-- Packages & Billing -->
+                <a href="{% url 'seller_packages' %}" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-400 hover:text-white transition-all group">
+                    <i class="fas fa-credit-card w-5 h-5 transition-transform group-hover:scale-125"></i>
+                    <span>Packages & Billing</span>
+                    <span class="ml-auto text-xs text-yellow-400">Premium</span>
+                </a>
+                
+                <!-- Settings -->
+                <a href="{% url 'seller_settings' %}" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-400 hover:text-white transition-all group">
+                    <i class="fas fa-cog w-5 h-5 transition-transform group-hover:scale-125"></i>
+                    <span>Settings</span>
+                </a>
+                
+                <!-- Help & Support -->
+                <a href="{% url 'seller_help' %}" class="nav-item active flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-400 hover:text-white transition-all group">
+                    <i class="fas fa-question-circle w-5 h-5 transition-transform group-hover:scale-125"></i>
+                    <span>Help & Support</span>
+                </a>
+                
+                <!-- View Public Site -->
+                <a href="{% url 'home' %}" target="_blank" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-400 hover:text-white transition-all group mt-4 border-t border-gray-700 pt-4">
+                    <i class="fas fa-external-link-alt w-5 h-5 transition-transform group-hover:scale-125"></i>
+                    <span>View Public Site</span>
+                </a>
+            </nav>
+
+            <!-- Quick Stats -->
+            <div class="border-t border-gray-700 mt-8 pt-8">
+                <h4 class="text-xs uppercase text-gray-400 mb-3 flex items-center">
+                    <i class="fas fa-chart-bar mr-2"></i>
+                    Quick Stats
+                </h4>
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="bg-gray-800/50 rounded-lg p-2 hover-lift">
+                        <p class="text-xs text-gray-400">Active</p>
+                        <p class="text-lg font-bold text-white">12</p>
+                    </div>
+                    <div class="bg-gray-800/50 rounded-lg p-2 hover-lift">
+                        <p class="text-xs text-gray-400">Views</p>
+                        <p class="text-lg font-bold text-white">1.2K</p>
+                    </div>
+                    <div class="bg-gray-800/50 rounded-lg p-2 hover-lift">
+                        <p class="text-xs text-gray-400">Leads</p>
+                        <p class="text-lg font-bold text-white">48</p>
+                    </div>
+                    <div class="bg-gray-800/50 rounded-lg p-2 hover-lift">
+                        <p class="text-xs text-gray-400">Response</p>
+                        <p class="text-lg font-bold text-green-400">92%</p>
+                    </div>
+                </div>
+                
+                <!-- Package Info -->
+                <div class="mt-4 p-3 bg-gradient-to-r from-blue-900/30 to-indigo-900/30 rounded-xl border border-blue-800/30 hover-lift">
+                    <p class="text-xs text-blue-300">Current Plan</p>
+                    <p class="text-sm font-medium">Premium Package</p>
+                    <div class="mt-2">
+                        <div class="flex justify-between text-xs text-blue-200">
+                            <span>Listings: 12/20</span>
+                            <span>15 days left</span>
+                        </div>
+                        <div class="w-full bg-blue-900/30 rounded-full h-1.5 mt-1">
+                            <div class="bg-gradient-to-r from-blue-500 to-cyan-500 h-1.5 rounded-full progress-bar" style="width: 60%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="border-t border-gray-700 mt-8 pt-8">
+                <button onclick="toggleTheme()" class="theme-toggle flex items-center gap-2 px-4 py-3 text-sm text-gray-400 hover:text-white transition w-full">
+                    <i class="fas fa-moon w-5 h-5"></i>
+                    Dark Mode
+                </button>
+                <button onclick="window.location.href='{% url 'create' %}'" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-400 hover:text-white transition w-full">
+                    <i class="fas fa-plus w-5 h-5"></i>
+                    Post Property
+                </button>
+                <a href="{% url 'seller_help' %}" class="flex items-center gap-2 px-4 py-3 text-sm text-gray-400 hover:text-white transition">
+                    <i class="fas fa-question-circle w-5 h-5"></i>
+                    Help & Support
+                </a>
+                <a href="{% url 'logout' %}" class="flex items-center gap-2 px-4 py-3 text-sm text-red-400 hover:text-red-300 transition font-medium">
+                    <i class="fas fa-sign-out-alt w-5 h-5"></i>
+                    Log Out
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 main-content-scroll">
+            <!-- Top Bar -->
+            <div class="bg-white dark:bg-gray-800 p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between sticky top-0 z-40">
+                <div class="flex items-center gap-4">
+                    <button class="md:hidden text-gray-600 dark:text-gray-400 hover:text-orange-500 dark:hover:text-orange-400 transition hover-lift" onclick="toggleSidebar()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900 dark:text-white">Help & Support</h1>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Get help, tutorials, and contact support</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <!-- User Dropdown -->
+                    <div class="relative">
+                        <button onclick="toggleUserDropdown()" class="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition hover-lift">
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-r from-orange-500 to-yellow-500 flex items-center justify-center text-white font-medium">
+                                JS
+                            </div>
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 hidden md:inline">John Smith</span>
+                            <i class="fas fa-chevron-down text-gray-500 text-xs transition-transform"></i>
+                        </button>
+                        
+                        <!-- User Dropdown Menu -->
+                        <div id="userDropdown" class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50 hidden dropdown-menu">
+                            <a href="{% url 'seller_settings' %}?tab=profile" class="dropdown-item flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class="fas fa-user w-4 h-4"></i>
+                                <span>My Profile</span>
+                            </a>
+                            <a href="{% url 'seller_packages' %}" class="dropdown-item flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class="fas fa-credit-card w-4 h-4"></i>
+                                <span>My Plan</span>
+                            </a>
+                            <a href="{% url 'seller_settings' %}" class="dropdown-item flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class="fas fa-cog w-4 h-4"></i>
+                                <span>Settings</span>
+                            </a>
+                            <a href="{% url 'seller_help' %}" class="dropdown-item flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class="fas fa-question-circle w-4 h-4"></i>
+                                <span>Help</span>
+                            </a>
+                            <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                            <a href="{% url 'logout' %}" class="dropdown-item flex items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
+                                <i class="fas fa-sign-out-alt w-4 h-4"></i>
+                                <span>Logout</span>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <button onclick="window.location.href='{% url 'create' %}'" class="px-4 py-2 bg-gradient-to-r from-orange-500 to-yellow-500 text-white rounded-lg hover:from-orange-600 hover:to-yellow-600 transition flex items-center gap-2 group hover-lift">
+                        <i class="fas fa-plus group-hover:rotate-90 transition-transform"></i>
+                        <span>Post Property</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="flex-1 overflow-y-auto p-4 md:p-6">
+                <!-- Welcome Banner -->
+                <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-6 mb-6 text-white card-animate stagger-1">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between">
+                        <div class="mb-4 md:mb-0">
+                            <h3 class="font-bold text-lg">Need Help? We're Here for You!</h3>
+                            <p class="text-blue-100 text-sm mt-1">Get instant support, browse tutorials, or contact our team 24/7</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button onclick="showSection('contact-support')" class="px-4 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-gray-100 transition flex items-center gap-2 hover-lift">
+                                <i class="fas fa-headset"></i>
+                                <span>Contact Support</span>
+                            </button>
+                            <button onclick="showSection('faq')" class="px-4 py-2 bg-blue-600/30 text-white border border-blue-400 rounded-lg hover:bg-blue-600/50 transition flex items-center gap-2 hover-lift">
+                                <i class="fas fa-question-circle"></i>
+                                <span>Browse FAQ</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Help Navigation & Content -->
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <!-- Help Navigation -->
+                    <div class="lg:col-span-1">
+                        <div class="card card-animate stagger-1">
+                            <div class="card-body p-4">
+                                <div class="space-y-1">
+                                    <button onclick="showSection('getting-started')" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition hover:pl-5">
+                                        <i class="fas fa-rocket text-blue-600 w-5 h-5"></i>
+                                        <span>Getting Started</span>
+                                        <span class="ml-auto bg-blue-100 text-blue-600 text-xs rounded-full w-5 h-5 flex items-center justify-center">4</span>
+                                    </button>
+                                    
+                                    <button onclick="showSection('listing-guide')" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition hover:pl-5">
+                                        <i class="fas fa-home text-green-600 w-5 h-5"></i>
+                                        <span>Listing Properties</span>
+                                        <span class="ml-auto bg-green-100 text-green-600 text-xs rounded-full w-5 h-5 flex items-center justify-center">6</span>
+                                    </button>
+                                    
+                                    <button onclick="showSection('lead-management')" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition hover:pl-5">
+                                        <i class="fas fa-inbox text-orange-600 w-5 h-5"></i>
+                                        <span>Lead Management</span>
+                                        <span class="ml-auto bg-orange-100 text-orange-600 text-xs rounded-full w-5 h-5 flex items-center justify-center">5</span>
+                                    </button>
+                                    
+                                    <button onclick="showSection('analytics-guide')" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition hover:pl-5">
+                                        <i class="fas fa-chart-line text-purple-600 w-5 h-5"></i>
+                                        <span>Analytics & Reports</span>
+                                        <span class="ml-auto bg-purple-100 text-purple-600 text-xs rounded-full w-5 h-5 flex items-center justify-center">8</span>
+                                    </button>
+                                    
+                                    <button onclick="showSection('billing-help')" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition hover:pl-5">
+                                        <i class="fas fa-credit-card text-red-600 w-5 h-5"></i>
+                                        <span>Billing & Payments</span>
+                                        <span class="ml-auto bg-red-100 text-red-600 text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+                                    </button>
+                                    
+                                    <button onclick="showSection('account-help')" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition hover:pl-5">
+                                        <i class="fas fa-user-circle text-teal-600 w-5 h-5"></i>
+                                        <span>Account & Security</span>
+                                        <span class="ml-auto bg-teal-100 text-teal-600 text-xs rounded-full w-5 h-5 flex items-center justify-center">4</span>
+                                    </button>
+                                    
+                                    <button onclick="showSection('faq')" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition hover:pl-5">
+                                        <i class="fas fa-question-circle text-indigo-600 w-5 h-5"></i>
+                                        <span>FAQ</span>
+                                        <span class="ml-auto bg-indigo-100 text-indigo-600 text-xs rounded-full w-5 h-5 flex items-center justify-center">12</span>
+                                    </button>
+                                    
+                                    <button onclick="showSection('contact-support')" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition hover:pl-5">
+                                        <i class="fas fa-headset text-amber-600 w-5 h-5"></i>
+                                        <span>Contact Support</span>
+                                        <span class="ml-auto bg-amber-100 text-amber-600 text-xs rounded-full w-5 h-5 flex items-center justify-center pulse-urgent">!</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Support -->
+                        <div class="card mt-4 card-animate stagger-2">
+                            <div class="card-body p-4">
+                                <h6 class="font-medium text-gray-900 dark:text-white mb-3">Quick Support</h6>
+                                <div class="space-y-2">
+                                    <button onclick="openChat()" class="w-full flex items-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition btn-hover">
+                                        <i class="fas fa-comments"></i>
+                                        <span>Live Chat</span>
+                                        <span class="ml-auto text-xs bg-blue-600 text-white px-2 py-1 rounded-full">Online</span>
+                                    </button>
+                                    
+                                    <a href="tel:+911800123456" class="w-full flex items-center gap-2 px-3 py-2 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40 transition btn-hover">
+                                        <i class="fas fa-phone"></i>
+                                        <span>Call Now</span>
+                                        <span class="ml-auto text-xs">1800-123-456</span>
+                                    </a>
+                                    
+                                    <a href="mailto:support@99acresclone.com" class="w-full flex items-center gap-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/40 transition btn-hover">
+                                        <i class="fas fa-envelope"></i>
+                                        <span>Email Support</span>
+                                        <span class="ml-auto text-xs">24/7</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- System Status -->
+                        <div class="card mt-4 card-animate stagger-3">
+                            <div class="card-body p-4">
+                                <h6 class="font-medium text-gray-900 dark:text-white mb-3">System Status</h6>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">Website</span>
+                                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full flex items-center gap-1">
+                                            <i class="fas fa-circle text-xs"></i>
+                                            Operational
+                                        </span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">Mobile App</span>
+                                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full flex items-center gap-1">
+                                            <i class="fas fa-circle text-xs"></i>
+                                            Operational
+                                        </span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">Payment System</span>
+                                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full flex items-center gap-1">
+                                            <i class="fas fa-circle text-xs"></i>
+                                            Operational
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Help Content -->
+                    <div class="lg:col-span-3">
+                        <!-- Getting Started -->
+                        <div class="card mb-6 card-animate stagger-1 show" id="getting-started">
+                            <div class="card-header bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center text-white">
+                                        <i class="fas fa-rocket text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="font-bold text-gray-900 dark:text-white">Getting Started Guide</h5>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">Quick setup guide for new sellers</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body p-6">
+                                <!-- Steps -->
+                                <div class="space-y-6">
+                                    <!-- Step 1 -->
+                                    <div class="flex items-start gap-4">
+                                        <div class="step-indicator bg-gradient-to-r from-blue-500 to-indigo-600 text-white">1</div>
+                                        <div class="flex-1">
+                                            <h6 class="font-medium text-gray-900 dark:text-white mb-2">Complete Your Profile</h6>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                                                A complete profile builds trust and helps you get more leads. Add your professional details, photo, and business information.
+                                            </p>
+                                            <div class="grid grid-cols-2 gap-3 mb-3">
+                                                <div class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                                    <i class="fas fa-check-circle text-green-500"></i>
+                                                    <span>Profile picture</span>
+                                                </div>
+                                                <div class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                                    <i class="fas fa-check-circle text-green-500"></i>
+                                                    <span>Phone verification</span>
+                                                </div>
+                                                <div class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                                    <i class="fas fa-check-circle text-green-500"></i>
+                                                    <span>Business details</span>
+                                                </div>
+                                                <div class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                                    <i class="fas fa-exclamation-circle text-yellow-500"></i>
+                                                    <span>Professional bio</span>
+                                                </div>
+                                            </div>
+                                            <button onclick="window.location.href='{% url 'seller_settings' %}?tab=profile'" class="btn btn-outline-blue btn-hover">
+                                                Complete Profile
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step 2 -->
+                                    <div class="flex items-start gap-4">
+                                        <div class="step-indicator bg-gradient-to-r from-green-500 to-emerald-600 text-white">2</div>
+                                        <div class="flex-1">
+                                            <h6 class="font-medium text-gray-900 dark:text-white mb-2">List Your First Property</h6>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                                                Create compelling property listings with high-quality photos and detailed descriptions to attract buyers.
+                                            </p>
+                                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                                                <div class="help-card p-4 text-center">
+                                                    <i class="fas fa-camera text-2xl text-blue-500 mb-2"></i>
+                                                    <p class="text-sm font-medium text-gray-900 dark:text-white">Add Photos</p>
+                                                    <p class="text-xs text-gray-600 dark:text-gray-400">8+ photos recommended</p>
+                                                </div>
+                                                <div class="help-card p-4 text-center">
+                                                    <i class="fas fa-edit text-2xl text-green-500 mb-2"></i>
+                                                    <p class="text-sm font-medium text-gray-900 dark:text-white">Write Description</p>
+                                                    <p class="text-xs text-gray-600 dark:text-gray-400">Detailed & engaging</p>
+                                                </div>
+                                                <div class="help-card p-4 text-center">
+                                                    <i class="fas fa-tag text-2xl text-purple-500 mb-2"></i>
+                                                    <p class="text-sm font-medium text-gray-900 dark:text-white">Set Price</p>
+                                                    <p class="text-xs text-gray-600 dark:text-gray-400">Competitive pricing</p>
+                                                </div>
+                                            </div>
+                                            <button onclick="window.location.href='{% url 'create' %}'" class="btn bg-gradient-to-r from-green-500 to-emerald-600 text-white btn-hover">
+                                                List Property
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step 3 -->
+                                    <div class="flex items-start gap-4">
+                                        <div class="step-indicator bg-gradient-to-r from-yellow-500 to-orange-600 text-white">3</div>
+                                        <div class="flex-1">
+                                            <h6 class="font-medium text-gray-900 dark:text-white mb-2">Set Up Notifications</h6>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                                                Stay updated with instant notifications for new leads and inquiries to respond quickly.
+                                            </p>
+                                            <div class="space-y-2 mb-3">
+                                                <div class="flex items-center gap-2">
+                                                    <i class="fas fa-bell text-yellow-500"></i>
+                                                    <span class="text-sm text-gray-700 dark:text-gray-300">Enable push notifications</span>
+                                                </div>
+                                                <div class="flex items-center gap-2">
+                                                    <i class="fab fa-whatsapp text-green-500"></i>
+                                                    <span class="text-sm text-gray-700 dark:text-gray-300">Set up WhatsApp alerts</span>
+                                                </div>
+                                                <div class="flex items-center gap-2">
+                                                    <i class="fas fa-envelope text-blue-500"></i>
+                                                    <span class="text-sm text-gray-700 dark:text-gray-300">Configure email notifications</span>
+                                                </div>
+                                            </div>
+                                            <button onclick="window.location.href='{% url 'seller_settings' %}?tab=notifications'" class="btn btn-outline-warning btn-hover">
+                                                Configure Notifications
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step 4 -->
+                                    <div class="flex items-start gap-4">
+                                        <div class="step-indicator bg-gradient-to-r from-purple-500 to-pink-600 text-white">4</div>
+                                        <div class="flex-1">
+                                            <h6 class="font-medium text-gray-900 dark:text-white mb-2">Track Your Performance</h6>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                                                Monitor your listings and improve performance with analytics and insights.
+                                            </p>
+                                            <div class="grid grid-cols-2 gap-4 mb-3">
+                                                <div>
+                                                    <p class="text-sm font-medium text-gray-900 dark:text-white">Daily Views</p>
+                                                    <div class="flex items-center gap-2">
+                                                        <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                                            <div class="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full" style="width: 85%"></div>
+                                                        </div>
+                                                        <span class="text-xs text-gray-600 dark:text-gray-400">85% ↑</span>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm font-medium text-gray-900 dark:text-white">Lead Conversion</p>
+                                                    <div class="flex items-center gap-2">
+                                                        <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                                            <div class="bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full" style="width: 65%"></div>
+                                                        </div>
+                                                        <span class="text-xs text-gray-600 dark:text-gray-400">65% ↑</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <button onclick="window.location.href='{% url 'seller_analytics' %}'" class="btn bg-gradient-to-r from-purple-500 to-pink-600 text-white btn-hover">
+                                                View Analytics
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Quick Start Video -->
+                                <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                                    <h6 class="font-medium text-gray-900 dark:text-white mb-3">Quick Start Video Guide</h6>
+                                    <div class="ratio-16x9 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-xl p-8 flex flex-col items-center justify-center">
+                                        <i class="fas fa-play-circle text-6xl text-blue-500 mb-4"></i>
+                                        <h6 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Getting Started Tutorial</h6>
+                                        <p class="text-gray-600 dark:text-gray-400 text-center mb-4">Watch this 5-minute video to learn how to maximize your success</p>
+                                        <button onclick="playVideo()" class="px-6 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 transition btn-hover">
+                                            <i class="fas fa-play mr-2"></i>Play Video Guide
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FAQ Section -->
+                        <div class="card mb-6 card-animate stagger-2" id="faq" style="display: none;">
+                            <div class="card-header bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-900/20 dark:to-violet-900/20 p-6">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 flex items-center justify-center text-white">
+                                        <i class="fas fa-question-circle text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="font-bold text-gray-900 dark:text-white">Frequently Asked Questions</h5>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">Find answers to common questions</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body p-6">
+                                <!-- Search Bar -->
+                                <div class="mb-6">
+                                    <div class="relative">
+                                        <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                        <input type="text" 
+                                               id="faqSearch"
+                                               class="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                               placeholder="Search for answers...">
+                                        <button onclick="searchFAQ()" class="absolute right-2 top-1/2 transform -translate-y-1/2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-violet-600 text-white rounded-lg hover:from-indigo-600 hover:to-violet-700 transition">
+                                            Search
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- FAQ Categories -->
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                    <button onclick="filterFAQ('general')" class="faq-category-btn p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border-2 border-blue-200 dark:border-blue-800 hover:border-blue-500 transition text-left">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center text-white">
+                                                <i class="fas fa-info-circle"></i>
+                                            </div>
+                                            <div>
+                                                <p class="font-medium text-gray-900 dark:text-white">General</p>
+                                                <p class="text-xs text-gray-600 dark:text-gray-400">8 questions</p>
+                                            </div>
+                                        </div>
+                                    </button>
+                                    
+                                    <button onclick="filterFAQ('listing')" class="faq-category-btn p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border-2 border-green-200 dark:border-green-800 hover:border-green-500 transition text-left">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center text-white">
+                                                <i class="fas fa-home"></i>
+                                            </div>
+                                            <div>
+                                                <p class="font-medium text-gray-900 dark:text-white">Listings</p>
+                                                <p class="text-xs text-gray-600 dark:text-gray-400">12 questions</p>
+                                            </div>
+                                        </div>
+                                    </button>
+                                    
+                                    <button onclick="filterFAQ('billing')" class="faq-category-btn p-4 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 rounded-xl border-2 border-red-200 dark:border-red-800 hover:border-red-500 transition text-left">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-red-500 to-pink-600 flex items-center justify-center text-white">
+                                                <i class="fas fa-credit-card"></i>
+                                            </div>
+                                            <div>
+                                                <p class="font-medium text-gray-900 dark:text-white">Billing</p>
+                                                <p class="text-xs text-gray-600 dark:text-gray-400">6 questions</p>
+                                            </div>
+                                        </div>
+                                    </button>
+                                </div>
+
+                                <!-- FAQ Accordion -->
+                                <div class="space-y-3 faq-scroll">
+                                    <div class="faq-item border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden" data-category="general">
+                                        <button class="w-full p-4 text-left flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-800 transition" onclick="toggleFAQ(this)">
+                                            <span class="font-medium text-gray-900 dark:text-white">How do I verify my account?</span>
+                                            <i class="fas fa-chevron-down transition-transform"></i>
+                                        </button>
+                                        <div class="px-4 pb-4 hidden">
+                                            <p class="text-gray-600 dark:text-gray-400 mb-3">Account verification is a simple 3-step process:</p>
+                                            <ol class="list-decimal pl-5 space-y-2 text-gray-700 dark:text-gray-300">
+                                                <li><strong>Email Verification:</strong> Click the verification link sent to your email</li>
+                                                <li><strong>Phone Verification:</strong> Enter the OTP sent to your mobile number</li>
+                                                <li><strong>Document Verification:</strong> Upload your PAN/Aadhar card for seller verification</li>
+                                            </ol>
+                                            <p class="mt-3 text-gray-600 dark:text-gray-400"><strong>Note:</strong> Verified accounts receive 3x more trust from buyers.</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="faq-item border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden" data-category="listing">
+                                        <button class="w-full p-4 text-left flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-800 transition" onclick="toggleFAQ(this)">
+                                            <span class="font-medium text-gray-900 dark:text-white">How many photos can I upload per listing?</span>
+                                            <i class="fas fa-chevron-down transition-transform"></i>
+                                        </button>
+                                        <div class="px-4 pb-4 hidden">
+                                            <p class="text-gray-600 dark:text-gray-400 mb-3">Photo limits depend on your subscription plan:</p>
+                                            <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                                                <li><strong>Basic Plan:</strong> 10 photos per listing</li>
+                                                <li><strong>Premium Plan:</strong> 20 photos per listing</li>
+                                                <li><strong>Pro Plan:</strong> 30 photos per listing</li>
+                                                <li><strong>Enterprise Plan:</strong> 50 photos per listing</li>
+                                            </ul>
+                                            <p class="mt-3 text-gray-600 dark:text-gray-400"><strong>Pro Tip:</strong> Properties with 8+ photos get 4x more views than those with fewer photos.</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="faq-item border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden" data-category="billing">
+                                        <button class="w-full p-4 text-left flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-800 transition" onclick="toggleFAQ(this)">
+                                            <span class="font-medium text-gray-900 dark:text-white">What payment methods do you accept?</span>
+                                            <i class="fas fa-chevron-down transition-transform"></i>
+                                        </button>
+                                        <div class="px-4 pb-4 hidden">
+                                            <p class="text-gray-600 dark:text-gray-400 mb-3">We accept all major payment methods:</p>
+                                            <div class="grid grid-cols-2 gap-3 text-gray-700 dark:text-gray-300">
+                                                <div class="flex items-center gap-2">
+                                                    <i class="fab fa-cc-visa text-blue-500"></i>
+                                                    <span>Credit/Debit Cards</span>
+                                                </div>
+                                                <div class="flex items-center gap-2">
+                                                    <i class="fas fa-university text-green-500"></i>
+                                                    <span>Net Banking</span>
+                                                </div>
+                                                <div class="flex items-center gap-2">
+                                                    <i class="fab fa-google-pay text-teal-500"></i>
+                                                    <span>UPI/G-Pay</span>
+                                                </div>
+                                                <div class="flex items-center gap-2">
+                                                    <i class="fas fa-wallet text-yellow-500"></i>
+                                                    <span>Digital Wallets</span>
+                                                </div>
+                                            </div>
+                                            <p class="mt-3 text-gray-600 dark:text-gray-400">All payments are secure and encrypted.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contact Support -->
+                        <div class="card mb-6 card-animate stagger-3" id="contact-support" style="display: none;">
+                            <div class="card-header bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 p-6">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-600 flex items-center justify-center text-white">
+                                        <i class="fas fa-headset text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="font-bold text-gray-900 dark:text-white">Contact Support</h5>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">Get in touch with our support team</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body p-6">
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <!-- Contact Options -->
+                                    <div>
+                                        <h6 class="font-medium text-gray-900 dark:text-white mb-4">Contact Options</h6>
+                                        <div class="space-y-3">
+                                            <a href="tel:+911800123456" class="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 rounded-xl border border-blue-200 dark:border-blue-800 hover:border-blue-500 transition">
+                                                <div class="contact-icon bg-gradient-to-r from-blue-500 to-indigo-600">
+                                                    <i class="fas fa-phone"></i>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <p class="font-medium text-gray-900 dark:text-white">Phone Support</p>
+                                                    <p class="text-sm text-gray-600 dark:text-gray-400">1800-123-456 (Toll Free)</p>
+                                                </div>
+                                                <i class="fas fa-arrow-right text-blue-500"></i>
+                                            </a>
+                                            
+                                            <a href="mailto:support@99acresclone.com" class="flex items-center gap-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 rounded-xl border border-green-200 dark:border-green-800 hover:border-green-500 transition">
+                                                <div class="contact-icon bg-gradient-to-r from-green-500 to-emerald-600">
+                                                    <i class="fas fa-envelope"></i>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <p class="font-medium text-gray-900 dark:text-white">Email Support</p>
+                                                    <p class="text-sm text-gray-600 dark:text-gray-400">support@99acresclone.com</p>
+                                                </div>
+                                                <i class="fas fa-arrow-right text-green-500"></i>
+                                            </a>
+                                            
+                                            <a href="https://wa.me/919876543210" target="_blank" class="flex items-center gap-3 p-4 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-900/10 dark:to-cyan-900/10 rounded-xl border border-teal-200 dark:border-teal-800 hover:border-teal-500 transition">
+                                                <div class="contact-icon bg-gradient-to-r from-teal-500 to-cyan-600">
+                                                    <i class="fab fa-whatsapp"></i>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <p class="font-medium text-gray-900 dark:text-white">WhatsApp Support</p>
+                                                    <p class="text-sm text-gray-600 dark:text-gray-400">+91 98765 43210</p>
+                                                </div>
+                                                <i class="fas fa-arrow-right text-teal-500"></i>
+                                            </a>
+                                        </div>
+
+                                        <!-- Business Hours -->
+                                        <div class="mt-6">
+                                            <h6 class="font-medium text-gray-900 dark:text-white mb-3">Business Hours</h6>
+                                            <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
+                                                <div class="space-y-2">
+                                                    <div class="flex justify-between">
+                                                        <span class="text-sm text-gray-600 dark:text-gray-400">Monday - Friday</span>
+                                                        <span class="text-sm font-medium text-gray-900 dark:text-white">9:00 AM - 9:00 PM</span>
+                                                    </div>
+                                                    <div class="flex justify-between">
+                                                        <span class="text-sm text-gray-600 dark:text-gray-400">Saturday - Sunday</span>
+                                                        <span class="text-sm font-medium text-gray-900 dark:text-white">10:00 AM - 6:00 PM</span>
+                                                    </div>
+                                                    <div class="flex justify-between">
+                                                        <span class="text-sm text-gray-600 dark:text-gray-400">Public Holidays</span>
+                                                        <span class="text-sm font-medium text-gray-900 dark:text-white">10:00 AM - 4:00 PM</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Contact Form -->
+                                    <div>
+                                        <h6 class="font-medium text-gray-900 dark:text-white mb-4">Send us a Message</h6>
+                                        <form id="supportForm" class="space-y-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subject *</label>
+                                                <select class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent" required>
+                                                    <option value="">Select issue type</option>
+                                                    <option value="technical">Technical Issue</option>
+                                                    <option value="billing">Billing & Payment</option>
+                                                    <option value="listing">Listing Management</option>
+                                                    <option value="account">Account Issues</option>
+                                                    <option value="feature">Feature Request</option>
+                                                    <option value="other">Other</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description *</label>
+                                                <textarea class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent" rows="4" placeholder="Please describe your issue in detail..." required></textarea>
+                                            </div>
+                                            
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Priority</label>
+                                                <div class="grid grid-cols-3 gap-2">
+                                                    <label class="flex items-center p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-amber-500 cursor-pointer">
+                                                        <input type="radio" name="priority" value="low" class="mr-2" checked>
+                                                        <span class="text-sm text-gray-700 dark:text-gray-300">Low</span>
+                                                    </label>
+                                                    <label class="flex items-center p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-amber-500 cursor-pointer">
+                                                        <input type="radio" name="priority" value="medium" class="mr-2">
+                                                        <span class="text-sm text-gray-700 dark:text-gray-300">Medium</span>
+                                                    </label>
+                                                    <label class="flex items-center p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-amber-500 cursor-pointer">
+                                                        <input type="radio" name="priority" value="high" class="mr-2">
+                                                        <span class="text-sm text-gray-700 dark:text-gray-300">High</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="flex items-center">
+                                                <input type="checkbox" id="ccEmail" class="mr-2 rounded" checked>
+                                                <label for="ccEmail" class="text-sm text-gray-700 dark:text-gray-300">Send copy to my email</label>
+                                            </div>
+                                            
+                                            <button type="submit" class="w-full px-6 py-3 bg-gradient-to-r from-amber-500 to-yellow-600 text-white rounded-xl hover:from-amber-600 hover:to-yellow-700 transition btn-hover">
+                                                <i class="fas fa-paper-plane mr-2"></i>Send Message
+                                            </button>
+                                        </form>
+
+                                        <!-- Response Time -->
+                                        <div class="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 rounded-xl border border-blue-200 dark:border-blue-800">
+                                            <h6 class="font-medium text-gray-900 dark:text-white mb-2">Expected Response Time</h6>
+                                            <ul class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                                                <li><strong>High Priority:</strong> Within 2 hours</li>
+                                                <li><strong>Medium Priority:</strong> Within 24 hours</li>
+                                                <li><strong>Low Priority:</strong> Within 48 hours</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Additional Resources -->
+                                <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                                    <h6 class="font-medium text-gray-900 dark:text-white mb-4">Additional Resources</h6>
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                        <a href="#" class="resource-card p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 rounded-xl border border-blue-200 dark:border-blue-800 hover:border-blue-500 transition text-center">
+                                            <i class="fas fa-book text-blue-500 text-2xl mb-2"></i>
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white">Knowledge Base</p>
+                                            <p class="text-xs text-gray-600 dark:text-gray-400">Detailed guides</p>
+                                        </a>
+                                        
+                                        <a href="#" class="resource-card p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 rounded-xl border border-green-200 dark:border-green-800 hover:border-green-500 transition text-center">
+                                            <i class="fas fa-video text-green-500 text-2xl mb-2"></i>
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white">Video Tutorials</p>
+                                            <p class="text-xs text-gray-600 dark:text-gray-400">Step-by-step guides</p>
+                                        </a>
+                                        
+                                        <a href="#" class="resource-card p-4 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/10 dark:to-amber-900/10 rounded-xl border border-yellow-200 dark:border-yellow-800 hover:border-yellow-500 transition text-center">
+                                            <i class="fas fa-users text-yellow-500 text-2xl mb-2"></i>
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white">Community Forum</p>
+                                            <p class="text-xs text-gray-600 dark:text-gray-400">Connect with sellers</p>
+                                        </a>
+                                        
+                                        <a href="#" class="resource-card p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/10 dark:to-pink-900/10 rounded-xl border border-purple-200 dark:border-purple-800 hover:border-purple-500 transition text-center">
+                                            <i class="fas fa-newspaper text-purple-500 text-2xl mb-2"></i>
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white">Blog & Updates</p>
+                                            <p class="text-xs text-gray-600 dark:text-gray-400">Latest news</p>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Floating Action Button -->
+    <div class="fab" onclick="openChat()">
+        <i class="fas fa-headset text-xl"></i>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+
+    <script>
+        // Initialize animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate cards with smooth stagger
+            const cards = document.querySelectorAll('.card-animate');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.animationDelay = `${index * 0.1}s`;
+                    card.style.opacity = '1';
+                }, 100);
+            });
+
+            // Load saved theme
+            loadTheme();
+            
+            // Initialize event listeners
+            setupEventListeners();
+            
+            // Initialize FAQ functionality
+            initFAQ();
+        });
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.toggle('mobile-open');
+            overlay.classList.toggle('active');
+            
+            if (window.innerWidth < 768) {
+                document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+            }
+        }
+
+        function toggleDropdown(dropdownId) {
+            const dropdown = document.getElementById(dropdownId);
+            const toggle = dropdown.previousElementSibling;
+            
+            dropdown.classList.toggle('open');
+            toggle.classList.toggle('open');
+        }
+
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.classList.contains('dark');
+            
+            html.classList.add('opacity-50');
+            
+            setTimeout(() => {
+                if (isDark) {
+                    html.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                    showToast('Switched to light mode', 'info');
+                } else {
+                    html.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                    showToast('Switched to dark mode', 'info');
+                }
+                
+                html.classList.remove('opacity-50');
+            }, 150);
+        }
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            }
+        }
+
+        function showSection(sectionId) {
+            // Hide all main content sections
+            const sections = ['getting-started', 'faq', 'contact-support', 'listing-guide', 'lead-management', 'analytics-guide', 'billing-help', 'account-help'];
+            sections.forEach(id => {
+                const section = document.getElementById(id);
+                if (section) {
+                    section.style.display = 'none';
+                }
+            });
+            
+            // Show selected section
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.style.display = 'block';
+                
+                // Add animation
+                section.style.animation = 'slideIn 0.6s ease-out';
+                
+                // Scroll to section
+                section.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+            
+            // Update active state in navigation
+            document.querySelectorAll('.nav-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            showToast(`Opened ${sectionId.replace('-', ' ')} section`, 'info');
+        }
+
+        function toggleFAQ(element) {
+            const content = element.nextElementSibling;
+            const icon = element.querySelector('i');
+            
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+                content.style.animation = 'slideDown 0.3s ease-out';
+            } else {
+                content.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function searchFAQ() {
+            const searchTerm = document.getElementById('faqSearch').value.toLowerCase();
+            const faqItems = document.querySelectorAll('.faq-item');
+            
+            faqItems.forEach(item => {
+                const question = item.querySelector('button span').textContent.toLowerCase();
+                const answer = item.querySelector('div').textContent.toLowerCase();
+                
+                if (question.includes(searchTerm) || answer.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            if (searchTerm) {
+                showToast(`Found results for "${searchTerm}"`, 'info');
+            }
+        }
+
+        function filterFAQ(category) {
+            const faqItems = document.querySelectorAll('.faq-item');
+            
+            faqItems.forEach(item => {
+                if (category === 'all' || item.dataset.category === category) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            // Update active category buttons
+            document.querySelectorAll('.faq-category-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            showToast(`Showing ${category} FAQs`, 'info');
+        }
+
+        function initFAQ() {
+            // Add animation for FAQ dropdown
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideDown {
+                    from {
+                        opacity: 0;
+                        max-height: 0;
+                    }
+                    to {
+                        opacity: 1;
+                        max-height: 500px;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        function openChat() {
+            showToast('Live chat is opening...', 'info');
+            // In a real application, this would open a chat widget
+            setTimeout(() => {
+                showToast('Welcome to live chat! How can we help you?', 'success');
+            }, 1000);
+        }
+
+        function playVideo() {
+            showToast('Starting tutorial video...', 'info');
+            // In a real application, this would play a video
+        }
+
+        function setupEventListeners() {
+            // Support form submission
+            const supportForm = document.getElementById('supportForm');
+            if (supportForm) {
+                supportForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    showToast('Your message has been sent to support! We\'ll get back to you soon.', 'success');
+                    this.reset();
+                });
+            }
+            
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(event) {
+                const sidebar = document.getElementById('sidebar');
+                const menuBtn = event.target.closest('button[onclick*="toggleSidebar"]');
+                
+                if (window.innerWidth < 768 && 
+                    !sidebar.contains(event.target) && 
+                    menuBtn === null) {
+                    toggleSidebar();
+                }
+            });
+            
+            // Close user dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                const userDropdown = document.getElementById('userDropdown');
+                const userButton = event.target.closest('button[onclick*="toggleUserDropdown"]');
+                
+                if (userDropdown && !userDropdown.contains(event.target) && !userButton) {
+                    userDropdown.classList.add('hidden');
+                }
+            });
+        }
+
+        // Toast notification system
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const toastId = 'toast-' + Date.now();
+            
+            const icons = {
+                info: 'fa-info-circle',
+                success: 'fa-check-circle',
+                warning: 'fa-exclamation-triangle',
+                error: 'fa-exclamation-circle'
+            };
+            
+            const colors = {
+                info: 'bg-gradient-to-r from-blue-500 to-indigo-600',
+                success: 'bg-gradient-to-r from-green-500 to-emerald-600',
+                warning: 'bg-gradient-to-r from-yellow-500 to-amber-600',
+                error: 'bg-gradient-to-r from-red-500 to-pink-600'
+            };
+            
+            toast.id = toastId;
+            toast.className = `p-4 rounded-xl shadow-xl text-white ${colors[type]} animate-slideInRight`;
+            toast.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <i class="fas ${icons[type]}"></i>
+                        <span class="text-sm font-medium">${message}</span>
+                    </div>
+                    <button onclick="removeToast('${toastId}')" class="ml-4 text-white/80 hover:text-white">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                removeToast(toastId);
+            }, 5000);
+        }
+
+        function removeToast(id) {
+            const toast = document.getElementById(id);
+            if (toast) {
+                toast.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }
+        }
+
+        // Add slide animations
+        const slideStyle = document.createElement('style');
+        slideStyle.textContent = `
+            @keyframes slideInRight {
+                from {
+                    opacity: 0;
+                    transform: translateX(100%);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+            
+            @keyframes slideOut {
+                from {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+                to {
+                    opacity: 0;
+                    transform: translateX(100%);
+                }
+            }
+            
+            .animate-slideInRight {
+                animation: slideInRight 0.3s ease-out;
+            }
+        `;
+        document.head.appendChild(slideStyle);
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 768) {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                sidebar.classList.remove('mobile-open');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Add ripple effect to buttons
+        document.querySelectorAll('.btn-hover').forEach(button => {
+            button.addEventListener('click', function(e) {
+                const ripple = document.createElement('span');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.cssText = `
+                    position: absolute;
+                    border-radius: 50%;
+                    background: rgba(255, 255, 255, 0.5);
+                    transform: scale(0);
+                    animation: ripple-animation 0.6s linear;
+                    width: ${size}px;
+                    height: ${size}px;
+                    top: ${y}px;
+                    left: ${x}px;
+                    pointer-events: none;
+                `;
+                
+                this.style.position = 'relative';
+                this.style.overflow = 'hidden';
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+
+        // Add ripple animation
+        const rippleStyle = document.createElement('style');
+        rippleStyle.textContent = `
+            @keyframes ripple-animation {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(rippleStyle);
+
+        // Handle FAQ category button clicks
+        document.querySelectorAll('.faq-category-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.faq-category-btn').forEach(b => {
+                    b.classList.remove('border-blue-500', 'border-green-500', 'border-red-500', 'border-purple-500');
+                });
+                
+                if (btn.textContent.includes('General')) {
+                    btn.classList.add('border-blue-500');
+                } else if (btn.textContent.includes('Listings')) {
+                    btn.classList.add('border-green-500');
+                } else if (btn.textContent.includes('Billing')) {
+                    btn.classList.add('border-red-500');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RealBuy - Advanced Buyer Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Custom animations */
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(255, 107, 53, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(255, 107, 53, 0.8);
+            }
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .animate-shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+
+        .animate-slide-right {
+            animation: slideInRight 0.6s ease-out;
+        }
+
+        .animate-slide-left {
+            animation: slideInLeft 0.6s ease-out;
+        }
+
+        .animate-fade-up {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .animate-pulse-glow {
+            animation: pulse-glow 2s infinite;
+        }
+
+        .animate-rotate {
+            animation: rotate 20s linear infinite;
+        }
+
+        .animate-bounce-slow {
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        .animate-scale-in {
+            animation: scaleIn 0.4s ease-out;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(-45deg, #FF6B35, #FF8B5A, #FFB347, #FFD166);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+
+        /* Glassmorphism */
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+        }
+
+        .glassmorphism-dark {
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Hover effects */
+        .hover-lift {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(255, 107, 53, 0.2);
+        }
+
+        .hover-glow:hover {
+            box-shadow: 0 0 30px rgba(255, 107, 53, 0.3);
+        }
+
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
+
+        .hover-rotate:hover {
+            transform: rotate(5deg) scale(1.05);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #e55a2e, #e87a4a);
+        }
+
+        /* Dashboard Cards */
+        .dashboard-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border-color: #FF6B35;
+        }
+
+        .dashboard-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #FF6B35, #FF8B5A);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+
+        .dashboard-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        /* Property Card */
+        .property-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .property-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(255, 107, 53, 0.2);
+            border-color: #FF6B35;
+        }
+
+        .property-card .property-image {
+            position: relative;
+            overflow: hidden;
+            height: 200px;
+        }
+
+        .property-card .property-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+
+        .property-card:hover .property-image img {
+            transform: scale(1.1) rotate(1deg);
+        }
+
+        .property-card .property-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.7) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .property-card:hover .property-overlay {
+            opacity: 1;
+        }
+
+        /* Stats Card */
+        .stats-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            padding: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(255, 107, 53, 0.15);
+            border-color: #FF6B35;
+        }
+
+        .stats-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #FF6B35, #FF8B5A);
+        }
+
+        /* Progress Ring */
+        .progress-ring {
+            position: relative;
+            width: 120px;
+            height: 120px;
+        }
+
+        .progress-ring-circle {
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        /* Badge Animations */
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            animation: scaleIn 0.3s ease-out;
+            transition: all 0.3s ease;
+        }
+
+        .badge:hover {
+            transform: scale(1.1);
+        }
+
+        .badge-premium {
+            background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+        }
+
+        .badge-new {
+            background: linear-gradient(135deg, #10B981, #34D399);
+            color: white;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .badge-featured {
+            background: linear-gradient(135deg, #3B82F6, #60A5FA);
+            color: white;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Button Styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #FF6B35 0%, #FF8B5A 100%);
+            color: white;
+            padding: 12px 28px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(255, 107, 53, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-primary:hover::after {
+            left: 100%;
+        }
+
+        /* Filter Chips */
+        .filter-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .filter-chip:hover {
+            border-color: #FF6B35;
+            color: #FF6B35;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
+        }
+
+        .filter-chip.active {
+            background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+            color: white;
+            border-color: #FF6B35;
+            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+        }
+
+        /* Notification Dot */
+        .notification-dot {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background: #EF4444;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            animation: pulse-glow 2s infinite;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+        }
+
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 100;
+            margin-bottom: 8px;
+            animation: fadeInUp 0.2s ease-out;
+        }
+
+        /* Loading Animation */
+        .loading-animation {
+            display: inline-block;
+            width: 80px;
+            height: 80px;
+        }
+
+        .loading-animation:after {
+            content: " ";
+            display: block;
+            width: 64px;
+            height: 64px;
+            margin: 8px;
+            border-radius: 50%;
+            border: 6px solid #FF6B35;
+            border-color: #FF6B35 transparent #FF6B35 transparent;
+            animation: rotate 1.2s linear infinite;
+        }
+
+        /* Wave Animation */
+        .wave-animation {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wave-animation::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: wave 2s infinite;
+        }
+
+        @keyframes wave {
+            from {
+                left: -100%;
+            }
+            to {
+                left: 100%;
+            }
+        }
+
+        /* Stagger Animation Classes */
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        .stagger-4 { animation-delay: 0.4s; }
+        .stagger-5 { animation-delay: 0.5s; }
+
+        /* Enhanced scrollbar for sidebar */
+        .sidebar-scroll {
+            scrollbar-width: thin;
+            scrollbar-color: #FF6B35 transparent;
+        }
+
+        .sidebar-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar-scroll::-webkit-scrollbar-thumb {
+            background: #FF6B35;
+            border-radius: 4px;
+        }
+
+        /* Smooth transitions */
+        .smooth-transition {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Fixed Layout Structure */
+        .main-container {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+            position: relative;
+        }
+
+        /* Fixed Navigation */
+        .main-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        /* Fixed Sidebar - Always Expanded */
+        .sidebar-container {
+            position: fixed;
+            top: 64px;
+            left: 0;
+            width: 256px; /* Fixed expanded width */
+            height: calc(100vh - 64px);
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 90;
+        }
+
+        /* Main Content Area */
+        .content-wrapper {
+            margin-top: 64px;
+            margin-left: 256px; /* Fixed margin for expanded sidebar */
+            flex: 1;
+            min-height: calc(100vh - 64px);
+            width: calc(100% - 256px); /* Fixed width calculation */
+        }
+
+        /* Main Content Padding */
+        .main-content {
+            padding: 24px;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .sidebar-container {
+                width: 280px;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar-container.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .content-wrapper {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+            
+            .main-content {
+                padding: 16px;
+            }
+            
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 64px;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 89;
+                backdrop-filter: blur(3px);
+            }
+            
+            .sidebar-overlay.active {
+                display: block;
+            }
+
+            /* Adjust stats grid for mobile */
+            .stats-card {
+                margin-bottom: 16px;
+            }
+
+            .property-card {
+                margin-bottom: 20px;
+            }
+        }
+
+        /* Desktop adjustments */
+        @media (min-width: 769px) {
+            .main-content {
+                max-width: calc(100% - 32px);
+                margin: 0 auto;
+            }
+            
+            .grid-cols-1.lg\\:grid-cols-3 {
+                gap: 24px;
+            }
+        }
+
+        /* Large screen adjustments */
+        @media (min-width: 1280px) {
+            .main-content {
+                max-width: 1400px;
+            }
+        }
+
+        /* Fix for scrollbar on Windows */
+        html {
+            overflow-y: scroll;
+            scrollbar-width: none; /* Firefox */
+        }
+
+        html::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Edge */
+        }
+
+        /* Gradient Text */
+        .gradient-text {
+            background: linear-gradient(135deg, #FF6B35, #FF8B5A, #FFB347);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Card hover fixes */
+        .property-card, .dashboard-card, .stats-card {
+            will-change: transform;
+            backface-visibility: hidden;
+        }
+
+        /* Ensure proper z-index stacking */
+        .main-nav {
+            z-index: 100;
+        }
+
+        .sidebar-container {
+            z-index: 90;
+        }
+
+        .content-wrapper {
+            z-index: 1;
+        }
+
+        /* Fix for images */
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Ensure proper spacing in sidebar */
+        .sidebar-container .py-6 {
+            padding-top: 1.5rem;
+            padding-bottom: 1.5rem;
+        }
+
+        .sidebar-container .px-3 {
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+        }
+
+        /* Adjust sidebar content spacing */
+        .sidebar-container nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .sidebar-container nav a {
+            display: flex;
+            align-items: center;
+            min-height: 44px;
+        }
+
+        /* Fix for progress ring in stats */
+        .progress-ring {
+            min-width: 120px;
+        }
+
+        /* Responsive text sizes */
+        @media (max-width: 640px) {
+            h2 {
+                font-size: 1.5rem;
+            }
+            
+            .text-3xl, .text-4xl {
+                font-size: 1.875rem;
+            }
+            
+            .btn-primary {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+        }
+
+        /* Ensure proper grid behavior */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+            gap: 1rem;
+        }
+
+        @media (min-width: 640px) {
+            .grid {
+                gap: 1.5rem;
+            }
+            
+            .sm\:grid-cols-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .lg\:grid-cols-4 {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+            
+            .lg\:grid-cols-3 {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+            
+            .lg\:grid-cols-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        /* Fix for property cards grid */
+        .grid-cols-1.md\:grid-cols-2 {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .grid-cols-1.md\:grid-cols-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        /* Prevent text overflow */
+        .truncate {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Fix for buttons in property cards */
+        .property-card .btn-primary {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        /* Ensure proper footer positioning */
+        footer {
+            margin-top: auto;
+        }
+
+        /* Loading states */
+        .loading {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+
+        /* Ripple effect animation */
+        @keyframes ripple {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        .ripple-effect {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Navigation -->
+        <nav class="main-nav">
+            <div class="h-full px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <!-- Logo and Mobile Menu -->
+                    <div class="flex items-center space-x-3">
+                        <!-- Mobile Menu Button -->
+                        <button id="mobileMenuButton" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-100 transition" onclick="toggleMobileSidebar()">
+                            <i class="fas fa-bars text-lg"></i>
+                        </button>
+                        <!-- Logo -->
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-lg hover-lift hover-rotate">
+                                <i class="fas fa-home text-lg"></i>
+                            </div>
+                            <div>
+                                <h1 class="text-xl font-bold text-gray-900">RealBuy <span class="text-orange-500">Pro</span></h1>
+                                <p class="text-xs text-gray-500 hidden sm:block">Advanced Property Dashboard</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Menu -->
+                    <div class="flex items-center space-x-3">
+                        <!-- Notifications -->
+                        <div class="relative">
+                            <button class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 transition flex items-center justify-center relative hover-lift">
+                                <i class="fas fa-bell text-gray-600"></i>
+                                <span class="notification-dot animate-pulse-glow">3</span>
+                            </button>
+                        </div>
+
+                        <!-- Messages -->
+                        <div class="relative">
+                            <button class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 transition flex items-center justify-center relative hover-lift">
+                                <i class="fas fa-envelope text-gray-600"></i>
+                                <span class="notification-dot animate-pulse-glow" style="background: #3B82F6;">5</span>
+                            </button>
+                        </div>
+
+                        <!-- User Profile -->
+                        <div class="flex items-center space-x-3 p-2 rounded-full bg-white border border-gray-200 hover:shadow-md transition cursor-pointer hover-lift">
+                            <img src="https://i.pravatar.cc/40?img=1" alt="User" class="w-8 h-8 rounded-full ring-2 ring-orange-200" />
+                            <div class="hidden md:block">
+                                <p class="text-sm font-semibold text-gray-900">Alex Johnson</p>
+                                <p class="text-xs text-gray-500">Premium Buyer</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Sidebar - Always Expanded -->
+        <aside id="sidebarContainer" class="sidebar-container sidebar-scroll">
+        <div class="h-full py-6 px-3 flex flex-col">
+
+            <!-- Navigation Menu -->
+            <nav class="flex-1 space-y-2 animate-fade-up stagger-2">
+
+            <a href="{% url 'buyer_dashboard' %}"
+                class="flex items-center space-x-4 p-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white hover-lift hover-glow">
+                <i class="fas fa-tachometer-alt w-5 text-center"></i>
+                <span class="font-medium truncate">Dashboard</span>
+            </a>
+
+            <a href="{% url 'buyer_search' %}"
+                class="flex items-center space-x-4 p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition hover-lift">
+                <i class="fas fa-search w-5 text-center"></i>
+                <span class="font-medium truncate">Search Properties</span>
+            </a>
+
+            <a href="{% url 'saved_properties' %}"
+                class="flex items-center space-x-4 p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition hover-lift">
+                <i class="fas fa-heart w-5 text-center"></i>
+                <span class="font-medium truncate">Saved Properties</span>
+                <span class="ml-auto bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded-full min-w-[24px] text-center">
+                12
+                </span>
+            </a>
+
+            <a href="{% url 'recent_views' %}"
+                class="flex items-center space-x-4 p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition hover-lift">
+                <i class="fas fa-eye w-5 text-center"></i>
+                <span class="font-medium truncate">Recently Viewed</span>
+            </a>
+
+            <a href="{% url 'price_trends' %}"
+                class="flex items-center space-x-4 p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition hover-lift">
+                <i class="fas fa-chart-line w-5 text-center"></i>
+                <span class="font-medium truncate">Market Trends</span>
+            </a>
+
+            <a href="{% url 'compare_properties' %}"
+                class="flex items-center space-x-4 p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition hover-lift">
+                <i class="fas fa-exchange-alt w-5 text-center"></i>
+                <span class="font-medium truncate">Compare Properties</span>
+            </a>
+
+            <a href="{% url 'buyer_settings' %}"
+                class="flex items-center space-x-4 p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition hover-lift">
+                <i class="fas fa-cog w-5 text-center"></i>
+                <span class="font-medium truncate">Settings</span>
+            </a>
+
+            </nav>
+
+            <!-- Upgrade Banner -->
+            <div class="mt-6 p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl text-white animate-fade-up stagger-3 hover-lift">
+            <p class="text-xs font-medium truncate">UPGRADE TO PRO</p>
+            <p class="text-sm mt-1 truncate">Get premium features</p>
+            <button
+                class="w-full mt-3 px-3 py-2 bg-white text-blue-600 rounded-lg text-sm font-semibold hover:bg-blue-50 transition">
+                Upgrade Now
+            </button>
+            </div>
+
+        </div>
+        </aside>
+
+        <!-- Main Content Wrapper -->
+        <div id="contentWrapper" class="content-wrapper">
+            <!-- Main Content -->
+            <main class="main-content pb-8">
+                <div class="max-w-full">
+                    <!-- Welcome Section -->
+                    <div class="mb-8 animate-fade-up">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-4">
+                            <div>
+                                <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Welcome back, Alex! 👋</h2>
+                                <p class="text-gray-600 mt-2">Here's what's happening with your property search</p>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <span class="text-sm text-gray-500 hidden lg:block">Last updated: Just now</span>
+                                <button class="btn-primary flex items-center space-x-2">
+                                    <i class="fas fa-sync-alt"></i>
+                                    <span>Refresh</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <!-- Stat Card 1 -->
+                        <div class="stats-card hover-lift animate-fade-up stagger-1">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-gray-600 text-sm font-medium truncate">Properties Viewed</p>
+                                    <p class="text-3xl sm:text-4xl font-bold text-gray-900 mt-2">384</p>
+                                    <p class="text-xs text-green-600 mt-1 flex items-center truncate">
+                                        <i class="fas fa-arrow-up mr-1"></i> 12% this week
+                                    </p>
+                                </div>
+                                <div class="w-12 h-12 bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl flex items-center justify-center text-orange-600 text-xl ml-4 flex-shrink-0">
+                                    <i class="fas fa-eye animate-bounce-slow"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stat Card 2 -->
+                        <div class="stats-card hover-lift animate-fade-up stagger-2">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-gray-600 text-sm font-medium truncate">Saved Properties</p>
+                                    <p class="text-3xl sm:text-4xl font-bold text-gray-900 mt-2">48</p>
+                                    <p class="text-xs text-blue-600 mt-1 flex items-center truncate">
+                                        <i class="fas fa-plus mr-1"></i> 5 new today
+                                    </p>
+                                </div>
+                                <div class="w-12 h-12 bg-gradient-to-br from-red-100 to-red-200 rounded-xl flex items-center justify-center text-red-600 text-xl ml-4 flex-shrink-0">
+                                    <i class="fas fa-heart animate-pulse-glow"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stat Card 3 -->
+                        <div class="stats-card hover-lift animate-fade-up stagger-3">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-gray-600 text-sm font-medium truncate">Agent Contacts</p>
+                                    <p class="text-3xl sm:text-4xl font-bold text-gray-900 mt-2">16</p>
+                                    <p class="text-xs text-purple-600 mt-1 flex items-center truncate">
+                                        <i class="fas fa-comment mr-1"></i> 3 new messages
+                                    </p>
+                                </div>
+                                <div class="w-12 h-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl flex items-center justify-center text-purple-600 text-xl ml-4 flex-shrink-0">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stat Card 4 -->
+                        <div class="stats-card hover-lift animate-fade-up stagger-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-gray-600 text-sm font-medium truncate">Search Score</p>
+                                    <p class="text-3xl sm:text-4xl font-bold text-gray-900 mt-2">92%</p>
+                                    <p class="text-xs text-green-600 mt-1 flex items-center truncate">
+                                        <i class="fas fa-star mr-1"></i> Excellent match
+                                    </p>
+                                </div>
+                                <div class="progress-ring ml-4 flex-shrink-0">
+                                    <svg class="w-full h-full" viewBox="0 0 100 100">
+                                        <circle class="text-gray-200" stroke-width="8" stroke="currentColor" fill="transparent" r="42" cx="50" cy="50"/>
+                                        <circle class="text-green-500 progress-ring-circle" stroke-width="8" stroke-linecap="round" stroke="currentColor" fill="transparent" r="42" cx="50" cy="50" stroke-dasharray="264" stroke-dashoffset="79.2"/>
+                                    </svg>
+                                    <div class="absolute inset-0 flex items-center justify-center text-lg font-bold text-gray-900">
+                                        92%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Content Grid -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <!-- Left Column - Property Listings -->
+                        <div class="lg:col-span-2">
+                            <!-- Quick Filters -->
+                            <div class="dashboard-card p-6 mb-6 animate-fade-up stagger-1">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
+                                    <h3 class="text-xl font-bold text-gray-900">Smart Property Filters</h3>
+                                    <button class="text-sm text-orange-500 font-semibold hover:text-orange-600 transition">
+                                        <i class="fas fa-sliders-h mr-2"></i>Advanced Filters
+                                    </button>
+                                </div>
+                                <div class="flex flex-wrap gap-3">
+                                    <button class="filter-chip active">
+                                        <i class="fas fa-home mr-2"></i> All Properties
+                                    </button>
+                                    <button class="filter-chip">
+                                        <i class="fas fa-building mr-2"></i> Apartments
+                                    </button>
+                                    <button class="filter-chip">
+                                        <i class="fas fa-city mr-2"></i> Villas
+                                    </button>
+                                    <button class="filter-chip">
+                                        <i class="fas fa-warehouse mr-2"></i> Commercial
+                                    </button>
+                                    <button class="filter-chip">
+                                        <i class="fas fa-rupee-sign mr-2"></i> Under 50L
+                                    </button>
+                                    <button class="filter-chip">
+                                        <i class="fas fa-bed mr-2"></i> 3+ BHK
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Recommended Properties -->
+                            <div class="mb-6">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 animate-fade-up stagger-1 gap-4">
+                                    <h3 class="text-xl font-bold text-gray-900">AI Recommended Properties</h3>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-sm text-gray-500">Based on your preferences</span>
+                                        <i class="fas fa-robot text-orange-500 animate-bounce-slow"></i>
+                                    </div>
+                                </div>
+
+                                <!-- Property Cards Grid -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <!-- Property Card 1 -->
+                                    <div class="property-card animate-fade-up stagger-1">
+                                        <div class="property-image">
+                                            <img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop" alt="Luxury Apartment" />
+                                            <div class="property-overlay"></div>
+                                            <span class="badge badge-premium absolute top-3 right-3">PREMIUM</span>
+                                            <button class="heart-btn absolute top-3 left-3 w-10 h-10 flex items-center justify-center rounded-full bg-white/80 hover:bg-white transition">
+                                                <i class="fas fa-heart text-red-500"></i>
+                                            </button>
+                                        </div>
+                                        <div class="p-4">
+                                            <h4 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2">Luxury Sea View Apartment</h4>
+                                            <p class="text-gray-600 text-sm mb-3 truncate">📍 Marine Drive, Mumbai</p>
+                                            <div class="flex items-center justify-between mb-4">
+                                                <span class="text-orange-500 font-bold text-xl">₹2.8 Cr</span>
+                                                <div class="text-sm text-gray-500">
+                                                    <i class="fas fa-bed mr-1"></i> 3 BHK
+                                                    <i class="fas fa-bath ml-3 mr-1"></i> 3
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-sm text-gray-500 truncate">
+                                                    <i class="fas fa-ruler-combined mr-1"></i> 1,850 sq.ft
+                                                </span>
+                                                <button class="btn-primary text-sm px-4 py-2">
+                                                    View Details
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Property Card 2 -->
+                                    <div class="property-card animate-fade-up stagger-2">
+                                        <div class="property-image">
+                                            <img src="https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&h=300&fit=crop" alt="Modern Villa" />
+                                            <div class="property-overlay"></div>
+                                            <span class="badge badge-new absolute top-3 right-3">NEW</span>
+                                            <button class="heart-btn absolute top-3 left-3 w-10 h-10 flex items-center justify-center rounded-full bg-white/80 hover:bg-white transition">
+                                                <i class="far fa-heart text-gray-600"></i>
+                                            </button>
+                                        </div>
+                                        <div class="p-4">
+                                            <h4 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2">Garden Villa with Pool</h4>
+                                            <p class="text-gray-600 text-sm mb-3 truncate">📍 Whitefield, Bangalore</p>
+                                            <div class="flex items-center justify-between mb-4">
+                                                <span class="text-orange-500 font-bold text-xl">₹4.2 Cr</span>
+                                                <div class="text-sm text-gray-500">
+                                                    <i class="fas fa-bed mr-1"></i> 4 BHK
+                                                    <i class="fas fa-bath ml-3 mr-1"></i> 4
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-sm text-gray-500 truncate">
+                                                    <i class="fas fa-ruler-combined mr-1"></i> 3,200 sq.ft
+                                                </span>
+                                                <button class="btn-primary text-sm px-4 py-2">
+                                                    View Details
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Property Card 3 -->
+                                    <div class="property-card animate-fade-up stagger-3">
+                                        <div class="property-image">
+                                            <img src="https://images.unsplash.com/photo-1545324418-cc1a9a6fded0?w=400&h=300&fit=crop" alt="Penthouse" />
+                                            <div class="property-overlay"></div>
+                                            <span class="badge badge-featured absolute top-3 right-3">FEATURED</span>
+                                            <button class="heart-btn absolute top-3 left-3 w-10 h-10 flex items-center justify-center rounded-full bg-white/80 hover:bg-white transition">
+                                                <i class="fas fa-heart text-red-500"></i>
+                                            </button>
+                                        </div>
+                                        <div class="p-4">
+                                            <h4 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2">Premium Penthouse Suite</h4>
+                                            <p class="text-gray-600 text-sm mb-3 truncate">📍 South Delhi</p>
+                                            <div class="flex items-center justify-between mb-4">
+                                                <span class="text-orange-500 font-bold text-xl">₹6.5 Cr</span>
+                                                <div class="text-sm text-gray-500">
+                                                    <i class="fas fa-bed mr-1"></i> 5 BHK
+                                                    <i class="fas fa-bath ml-3 mr-1"></i> 5
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-sm text-gray-500 truncate">
+                                                    <i class="fas fa-ruler-combined mr-1"></i> 4,500 sq.ft
+                                                </span>
+                                                <button class="btn-primary text-sm px-4 py-2">
+                                                    View Details
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Property Card 4 -->
+                                    <div class="property-card animate-fade-up stagger-4">
+                                        <div class="property-image">
+                                            <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&h=300&fit=crop" alt="Studio" />
+                                            <div class="property-overlay"></div>
+                                            <span class="badge badge-premium absolute top-3 right-3">PREMIUM</span>
+                                            <button class="heart-btn absolute top-3 left-3 w-10 h-10 flex items-center justify-center rounded-full bg-white/80 hover:bg-white transition">
+                                                <i class="far fa-heart text-gray-600"></i>
+                                            </button>
+                                        </div>
+                                        <div class="p-4">
+                                            <h4 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2">Luxury Studio Apartment</h4>
+                                            <p class="text-gray-600 text-sm mb-3 truncate">📍 Koramangala, Bangalore</p>
+                                            <div class="flex items-center justify-between mb-4">
+                                                <span class="text-orange-500 font-bold text-xl">₹75 L</span>
+                                                <div class="text-sm text-gray-500">
+                                                    <i class="fas fa-bed mr-1"></i> 1 BHK
+                                                    <i class="fas fa-bath ml-3 mr-1"></i> 1
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-sm text-gray-500 truncate">
+                                                    <i class="fas fa-ruler-combined mr-1"></i> 650 sq.ft
+                                                </span>
+                                                <button class="btn-primary text-sm px-4 py-2">
+                                                    View Details
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Load More -->
+                            <div class="text-center mt-8 animate-fade-up">
+                                <button class="px-8 py-3 border-2 border-orange-500 text-orange-500 rounded-xl font-bold hover:bg-orange-50 transition hover-lift">
+                                    <i class="fas fa-sync-alt mr-2 animate-rotate"></i>
+                                    Load More Properties
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Right Column - Sidebar Widgets -->
+                        <div class="space-y-6">
+                            <!-- Saved Properties -->
+                            <div class="dashboard-card p-6 animate-fade-up stagger-1">
+                                <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                                    <i class="fas fa-heart text-red-500 mr-2"></i>
+                                    <span>Saved Properties</span>
+                                    <span class="ml-auto bg-red-100 text-red-600 text-xs font-bold px-3 py-1 rounded-full animate-pulse-glow min-w-[24px] text-center">12</span>
+                                </h3>
+                                <div class="space-y-3">
+                                    <div class="p-3 bg-gradient-to-r from-orange-50 to-transparent rounded-lg border-l-4 border-orange-500 hover-lift cursor-pointer">
+                                        <div class="flex items-center justify-between">
+                                            <div class="min-w-0">
+                                                <p class="font-semibold text-gray-900 text-sm truncate">Sea View Apartment</p>
+                                                <p class="text-orange-500 font-bold text-sm mt-1 truncate">₹2.8 Cr</p>
+                                            </div>
+                                            <i class="fas fa-external-link-alt text-gray-400 ml-2 flex-shrink-0"></i>
+                                        </div>
+                                    </div>
+                                    <div class="p-3 bg-gray-50 rounded-lg hover:shadow-md transition hover-lift cursor-pointer">
+                                        <div class="flex items-center justify-between">
+                                            <div class="min-w-0">
+                                                <p class="font-semibold text-gray-900 text-sm truncate">Garden Villa</p>
+                                                <p class="text-orange-500 font-bold text-sm mt-1 truncate">₹4.2 Cr</p>
+                                            </div>
+                                            <i class="fas fa-external-link-alt text-gray-400 ml-2 flex-shrink-0"></i>
+                                        </div>
+                                    </div>
+                                    <div class="p-3 bg-gray-50 rounded-lg hover:shadow-md transition hover-lift cursor-pointer">
+                                        <div class="flex items-center justify-between">
+                                            <div class="min-w-0">
+                                                <p class="font-semibold text-gray-900 text-sm truncate">Penthouse Suite</p>
+                                                <p class="text-orange-500 font-bold text-sm mt-1 truncate">₹6.5 Cr</p>
+                                            </div>
+                                            <i class="fas fa-external-link-alt text-gray-400 ml-2 flex-shrink-0"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn-primary w-full mt-4">
+                                    <i class="fas fa-list mr-2"></i>View All Saved
+                                </button>
+                            </div>
+
+                            <!-- Market Trends -->
+                            <div class="dashboard-card p-6 animate-fade-up stagger-2">
+                                <h3 class="text-lg font-bold text-gray-900 mb-4">
+                                    <i class="fas fa-chart-line text-green-500 mr-2"></i>
+                                    Market Trends
+                                </h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <div class="flex justify-between text-sm mb-2">
+                                            <span class="font-medium text-gray-700 truncate">Bangalore Prices</span>
+                                            <span class="text-green-600 font-bold flex-shrink-0 ml-2">+8.5%</span>
+                                        </div>
+                                        <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                                            <div class="h-2 bg-gradient-to-r from-green-400 to-green-600 rounded-full animate-scale-in" style="width: 85%;"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-sm mb-2">
+                                            <span class="font-medium text-gray-700 truncate">Mumbai Demand</span>
+                                            <span class="text-blue-600 font-bold flex-shrink-0 ml-2">+12.3%</span>
+                                        </div>
+                                        <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                                            <div class="h-2 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full animate-scale-in" style="width: 92%;"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-sm mb-2">
+                                            <span class="font-medium text-gray-700 truncate">Delhi ROI</span>
+                                            <span class="text-purple-600 font-bold flex-shrink-0 ml-2">+6.8%</span>
+                                        </div>
+                                        <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                                            <div class="h-2 bg-gradient-to-r from-purple-400 to-purple-600 rounded-full animate-scale-in" style="width: 68%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Upcoming Site Visits -->
+                            <div class="dashboard-card p-6 animate-fade-up stagger-3">
+                                <h3 class="text-lg font-bold text-gray-900 mb-4">
+                                    <i class="fas fa-calendar-alt text-blue-500 mr-2"></i>
+                                    Upcoming Visits
+                                </h3>
+                                <div class="space-y-3">
+                                    <div class="p-3 bg-gradient-to-r from-blue-50 to-transparent rounded-lg border-l-4 border-blue-500 hover-lift">
+                                        <div class="flex items-center justify-between">
+                                            <div class="min-w-0">
+                                                <p class="font-semibold text-gray-900 text-sm truncate">Sea View Apartment</p>
+                                                <p class="text-gray-500 text-xs mt-1 truncate">Tomorrow, 3:00 PM</p>
+                                            </div>
+                                            <span class="bg-blue-100 text-blue-600 text-xs px-2 py-1 rounded-full flex-shrink-0 ml-2">Confirmed</span>
+                                        </div>
+                                    </div>
+                                    <div class="p-3 bg-gray-50 rounded-lg hover-lift">
+                                        <div class="flex items-center justify-between">
+                                            <div class="min-w-0">
+                                                <p class="font-semibold text-gray-900 text-sm truncate">Garden Villa</p>
+                                                <p class="text-gray-500 text-xs mt-1 truncate">Friday, 11:00 AM</p>
+                                            </div>
+                                            <span class="bg-yellow-100 text-yellow-600 text-xs px-2 py-1 rounded-full flex-shrink-0 ml-2">Pending</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="w-full mt-4 px-4 py-2 border-2 border-blue-500 text-blue-500 rounded-lg font-semibold hover:bg-blue-50 transition hover-lift">
+                                    <i class="fas fa-plus mr-2"></i>Schedule New Visit
+                                </button>
+                            </div>
+
+                            <!-- AI Recommendations -->
+                            <div class="dashboard-card p-6 animate-fade-up stagger-4">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-bold text-gray-900">
+                                        <i class="fas fa-robot text-orange-500 mr-2"></i>
+                                        AI Suggestions
+                                    </h3>
+                                    <i class="fas fa-bolt text-yellow-500 animate-bounce-slow"></i>
+                                </div>
+                                <div class="space-y-3">
+                                    <div class="p-3 bg-gradient-to-r from-orange-50 to-transparent rounded-lg hover-lift cursor-pointer">
+                                        <p class="font-medium text-gray-900 text-sm line-clamp-2">Consider properties in Whitefield</p>
+                                        <p class="text-gray-500 text-xs mt-1">Better ROI potential</p>
+                                    </div>
+                                    <div class="p-3 bg-gray-50 rounded-lg hover-lift cursor-pointer">
+                                        <p class="font-medium text-gray-900 text-sm line-clamp-2">Expand budget by 15%</p>
+                                        <p class="text-gray-500 text-xs mt-1">For better options</p>
+                                    </div>
+                                    <div class="p-3 bg-gray-50 rounded-lg hover-lift cursor-pointer">
+                                        <p class="font-medium text-gray-900 text-sm line-clamp-2">Schedule 3 more visits</p>
+                                        <p class="text-gray-500 text-xs mt-1">For comparison</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="mt-8 animate-fade-up stagger-1">
+                        <h3 class="text-xl font-bold text-gray-900 mb-6">Recent Activity</h3>
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <!-- Recent Views -->
+                            <div class="dashboard-card p-6 hover-lift">
+                                <h4 class="font-bold text-gray-900 mb-4 flex items-center">
+                                    <i class="fas fa-eye text-purple-500 mr-2"></i>
+                                    Recently Viewed
+                                </h4>
+                                <div class="space-y-3">
+                                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-purple-50 transition">
+                                        <img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=100&h=100&fit=crop" alt="Property" class="w-12 h-12 rounded-lg object-cover flex-shrink-0">
+                                        <div class="min-w-0">
+                                            <p class="text-sm font-medium text-gray-900 truncate">Luxury Apartment</p>
+                                            <p class="text-xs text-gray-500 truncate">2 hours ago</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-purple-50 transition">
+                                        <img src="https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=100&h=100&fit=crop" alt="Property" class="w-12 h-12 rounded-lg object-cover flex-shrink-0">
+                                        <div class="min-w-0">
+                                            <p class="text-sm font-medium text-gray-900 truncate">Modern Villa</p>
+                                            <p class="text-xs text-gray-500 truncate">1 day ago</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Price Alerts -->
+                            <div class="dashboard-card p-6 hover-lift">
+                                <h4 class="font-bold text-gray-900 mb-4 flex items-center">
+                                    <i class="fas fa-bell text-red-500 mr-2"></i>
+                                    Price Alerts
+                                </h4>
+                                <div class="space-y-3">
+                                    <div class="p-3 bg-gradient-to-r from-red-50 to-transparent rounded-lg border-l-4 border-red-500">
+                                        <p class="text-sm font-medium text-gray-900 truncate">Sea View Apartment</p>
+                                        <p class="text-xs text-red-500 mt-1 truncate">Price reduced by ₹5 L</p>
+                                    </div>
+                                    <div class="p-3 bg-gray-50 rounded-lg">
+                                        <p class="text-sm font-medium text-gray-900 truncate">Garden Villa</p>
+                                        <p class="text-xs text-green-500 mt-1 truncate">New offer received</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Agent Updates -->
+                            <div class="dashboard-card p-6 hover-lift">
+                                <h4 class="font-bold text-gray-900 mb-4 flex items-center">
+                                    <i class="fas fa-user-tie text-blue-500 mr-2"></i>
+                                    Agent Updates
+                                </h4>
+                                <div class="space-y-3">
+                                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition">
+                                        <img src="https://i.pravatar.cc/40?img=2" alt="Agent" class="w-10 h-10 rounded-full flex-shrink-0">
+                                        <div class="min-w-0">
+                                            <p class="text-sm font-medium text-gray-900 truncate">Sarah Johnson</p>
+                                            <p class="text-xs text-gray-500 truncate">New property match</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition">
+                                        <img src="https://i.pravatar.cc/40?img=3" alt="Agent" class="w-10 h-10 rounded-full flex-shrink-0">
+                                        <div class="min-w-0">
+                                            <p class="text-sm font-medium text-gray-900 truncate">Mike Chen</p>
+                                            <p class="text-xs text-gray-500 truncate">Visit scheduled</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CTA Section -->
+                    <div class="mt-12 p-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl text-white text-center animate-fade-up stagger-1 hover-scale">
+                        <h2 class="text-3xl font-bold mb-4">Ready to Make a Decision?</h2>
+                        <p class="text-lg text-orange-100 mb-6 max-w-2xl mx-auto">Our expert advisors are ready to help you find your dream property.</p>
+                        <div class="flex flex-col md:flex-row gap-4 justify-center">
+                            <button class="px-10 py-3 bg-white text-orange-600 rounded-xl font-bold hover:shadow-xl transition transform hover:scale-105 hover-lift">
+                                <i class="fas fa-phone-alt mr-2"></i>Talk to Advisor
+                            </button>
+                            <button class="px-10 py-3 border-2 border-white text-white rounded-xl font-bold hover:bg-white hover:text-orange-600 transition hover-lift">
+                                <i class="fas fa-calendar-check mr-2"></i>Schedule Tour
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Footer -->
+            <footer class="bg-gray-900 text-gray-300 py-8 border-t border-gray-800 mt-8">
+                <div class="max-w-full px-4 sm:px-6 lg:px-8">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                        <div>
+                            <div class="flex items-center space-x-3 mb-4">
+                                <div class="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center text-white font-bold">RB</div>
+                                <span class="text-white font-bold text-lg">RealBuy Pro</span>
+                            </div>
+                            <p class="text-sm leading-relaxed">Advanced property search platform with AI-powered recommendations and expert guidance.</p>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold mb-4">Quick Links</h4>
+                            <ul class="space-y-2 text-sm">
+                                <li><a href="#" class="hover:text-white transition hover-lift">Dashboard</a></li>
+                                <li><a href="#" class="hover:text-white transition hover-lift">My Properties</a></li>
+                                <li><a href="#" class="hover:text-white transition hover-lift">Market Analysis</a></li>
+                                <li><a href="#" class="hover:text-white transition hover-lift">Agent Network</a></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold mb-4">Resources</h4>
+                            <ul class="space-y-2 text-sm">
+                                <li><a href="#" class="hover:text-white transition hover-lift">Buyer's Guide</a></li>
+                                <li><a href="#" class="hover:text-white transition hover-lift">Market Reports</a></li>
+                                <li><a href="#" class="hover:text-white transition hover-lift">Investment Tips</a></li>
+                                <li><a href="#" class="hover:text-white transition hover-lift">FAQ</a></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold mb-4">Connect</h4>
+                            <div class="flex space-x-4">
+                                <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-orange-600 transition hover-lift">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-orange-600 transition hover-lift">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-orange-600 transition hover-lift">
+                                    <i class="fab fa-linkedin-in"></i>
+                                </a>
+                                <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-orange-600 transition hover-lift">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="border-t border-gray-800 pt-6 text-center text-sm">
+                        <p>© 2024 RealBuy Pro. All rights reserved. | <a href="#" class="text-orange-400 hover:text-orange-300 transition">Privacy Policy</a> | <a href="#" class="text-orange-400 hover:text-orange-300 transition">Terms of Service</a></p>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- JavaScript for Interactions -->
+    <script>
+        // Initialize animations on scroll
+        document.addEventListener('DOMContentLoaded', function() {
+            // Filter chips functionality
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.addEventListener('click', function(e) {
+                    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Add ripple effect
+                    createRipple(this, e);
+                });
+            });
+
+            // Heart button functionality
+            document.querySelectorAll('.heart-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const icon = this.querySelector('i');
+                    if (icon.classList.contains('far')) {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                        this.classList.add('text-red-500');
+                        // Add animation
+                        this.style.animation = 'scaleIn 0.3s ease-out';
+                        setTimeout(() => {
+                            this.style.animation = '';
+                        }, 300);
+                    } else {
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                        this.classList.remove('text-red-500');
+                        this.classList.add('text-gray-600');
+                    }
+                });
+            });
+
+            // Property card interactions
+            document.querySelectorAll('.property-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    if (!e.target.closest('.heart-btn') && !e.target.closest('.btn-primary')) {
+                        // Navigate to property details
+                        console.log('View property details');
+                        // In real app: window.location.href = '/property-details';
+                    }
+                });
+            });
+
+            // Create ripple effect
+            function createRipple(element, event) {
+                const ripple = document.createElement('span');
+                const rect = element.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = event.clientX - rect.left - size / 2;
+                const y = event.clientY - rect.top - size / 2;
+                
+                ripple.className = 'ripple-effect';
+                ripple.style.width = ripple.style.height = `${size}px`;
+                ripple.style.left = `${x}px`;
+                ripple.style.top = `${y}px`;
+                
+                element.style.position = 'relative';
+                element.style.overflow = 'hidden';
+                element.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            }
+
+            // Handle window resize
+            window.addEventListener('resize', handleResize);
+            handleResize();
+        });
+
+        // Mobile sidebar toggle
+        function toggleMobileSidebar() {
+            const sidebarContainer = document.getElementById('sidebarContainer');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebarContainer.classList.toggle('mobile-open');
+            overlay.classList.toggle('active');
+            
+            // Prevent body scroll when sidebar is open on mobile
+            if (window.innerWidth < 768) {
+                document.body.style.overflow = sidebarContainer.classList.contains('mobile-open') ? 'hidden' : '';
+            }
+        }
+
+        // Handle window resize
+        function handleResize() {
+            const sidebarContainer = document.getElementById('sidebarContainer');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            if (window.innerWidth >= 768) {
+                // Desktop: ensure sidebar is not in mobile mode
+                sidebarContainer.classList.remove('mobile-open');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Smooth scroll to top function
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // Add scroll to top button
+        const scrollToTopBtn = document.createElement('button');
+        scrollToTopBtn.innerHTML = '<i class="fas fa-arrow-up"></i>';
+        scrollToTopBtn.className = 'fixed bottom-4 right-4 w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition z-50 hover-lift hidden';
+        scrollToTopBtn.addEventListener('click', scrollToTop);
+        document.body.appendChild(scrollToTopBtn);
+
+        // Show/hide scroll to top button
+        window.addEventListener('scroll', function() {
+            if (window.pageYOffset > 300) {
+                scrollToTopBtn.classList.remove('hidden');
+            } else {
+                scrollToTopBtn.classList.add('hidden');
+            }
+        });
+
+        // Progress ring animation
+        const progressRings = document.querySelectorAll('.progress-ring-circle');
+        progressRings.forEach(ring => {
+            const radius = ring.r.baseVal.value;
+            const circumference = radius * 2 * Math.PI;
+            ring.style.strokeDasharray = `${circumference} ${circumference}`;
+            ring.style.strokeDashoffset = circumference;
+            
+            const offset = circumference - (92 / 100 * circumference);
+            setTimeout(() => {
+                ring.style.transition = 'stroke-dashoffset 1.5s ease-in-out';
+                ring.style.strokeDashoffset = offset;
+            }, 500);
+        });
+    </script>
+</body>
+</html>

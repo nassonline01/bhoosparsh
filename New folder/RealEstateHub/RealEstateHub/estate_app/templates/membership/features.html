@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Features - RealEstatePro{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12">
+    <!-- Hero Section -->
+    <div class="text-center mb-16">
+        <h1 class="text-4xl md:text-5xl font-bold mb-6">Powerful Features for Real Estate Success</h1>
+        <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+            Everything you need to buy, sell, or rent properties efficiently
+        </p>
+    </div>
+
+    <!-- For Sellers Section -->
+    <div class="mb-16">
+        <h2 class="text-3xl font-bold text-center mb-12">For Sellers & Agents</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Feature 1 -->
+            <div class="bg-white p-6 rounded-xl shadow-lg hover-scale">
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                    <i class="fas fa-home text-blue-600 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3">Property Listings</h3>
+                <p class="text-gray-600">Create beautiful property listings with multiple photos, virtual tours, and detailed descriptions.</p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="bg-white p-6 rounded-xl shadow-lg hover-scale">
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                    <i class="fas fa-chart-line text-purple-600 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3">Advanced Analytics</h3>
+                <p class="text-gray-600">Track views, inquiries, and performance metrics for all your listings.</p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="bg-white p-6 rounded-xl shadow-lg hover-scale">
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                    <i class="fas fa-bullhorn text-green-600 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3">Featured Listings</h3>
+                <p class="text-gray-600">Boost your properties to the top of search results for maximum visibility.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- For Buyers Section -->
+    <div class="mb-16">
+        <h2 class="text-3xl font-bold text-center mb-12">For Buyers & Tenants</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Feature 1 -->
+            <div class="bg-white p-6 rounded-xl shadow-lg hover-scale">
+                <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
+                    <i class="fas fa-search text-red-600 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3">Advanced Search</h3>
+                <p class="text-gray-600">Find your perfect property with powerful filters and location-based search.</p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="bg-white p-6 rounded-xl shadow-lg hover-scale">
+                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
+                    <i class="fas fa-heart text-yellow-600 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3">Save Favorites</h3>
+                <p class="text-gray-600">Save properties you love and compare them side by side.</p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="bg-white p-6 rounded-xl shadow-lg hover-scale">
+                <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
+                    <i class="fas fa-bell text-indigo-600 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3">Price Alerts</h3>
+                <p class="text-gray-600">Get notified when properties matching your criteria become available.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="gradient-bg text-white rounded-2xl p-12 text-center">
+        <h2 class="text-3xl font-bold mb-4">Ready to Get Started?</h2>
+        <p class="text-xl mb-8 opacity-90">Join thousands of successful real estate professionals</p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="{% url 'membership:pricing' %}" 
+               class="bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
+                View Plans & Pricing
+            </a>
+            <a href="{% url 'register' %}" 
+               class="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-purple-600 transition">
+                Sign Up Free
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

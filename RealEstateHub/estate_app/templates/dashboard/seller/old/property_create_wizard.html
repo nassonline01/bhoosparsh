@@ -1,0 +1,2127 @@
+<!-- templates/dashboard/seller/property_create_wizard.html -->
+{% extends 'dashboard/seller/base.html' %}
+{% load static %}
+
+{% block title %}Post New Property - BHOOSPARSH{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/property-wizard.css' %}">
+<style>
+    /* Progress Steps */
+    .step-progress {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+    
+    .step-progress:before {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #e5e7eb;
+        z-index: 1;
+    }
+    
+    .step-item {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        flex: 1;
+    }
+    
+    .step-number {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e5e7eb;
+        color: #6b7280;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 0.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .step-item.active .step-number {
+        background: #0E68B9;
+        color: white;
+        transform: scale(1.1);
+    }
+    
+    .step-item.completed .step-number {
+        background: #10B981;
+        color: white;
+    }
+    
+    .step-item.error .step-number {
+        background: #EF4444;
+        color: white;
+    }
+    
+    .step-title {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #6b7280;
+    }
+    
+    .step-item.active .step-title {
+        color: #0E68B9;
+        font-weight: 600;
+    }
+    
+    /* Toast Notifications */
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 99999;
+    }
+    
+    .toast {
+        min-width: 300px;
+        max-width: 400px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        margin-bottom: 10px;
+        overflow: hidden;
+        animation: slideIn 0.3s ease;
+        border-left: 4px solid #0E68B9;
+    }
+    
+    .toast-success {
+        border-left-color: #10B981;
+    }
+    
+    .toast-error {
+        border-left-color: #EF4444;
+    }
+    
+    .toast-warning {
+        border-left-color: #F59E0B;
+    }
+    
+    .toast-info {
+        border-left-color: #3B82F6;
+    }
+    
+    .toast-header {
+        padding: 10px 15px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        align-items: center;
+    }
+    
+    .toast-body {
+        padding: 15px;
+    }
+    
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    /* Validation Messages */
+    .validation-summary {
+        display: none;
+        background: #FEF2F2;
+        border: 2px solid #EF4444;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    .validation-summary.show {
+        display: block;
+    }
+    
+    .validation-summary.success {
+        background: #D1FAE5;
+        border-color: #10B981;
+    }
+    
+    .success-message {
+        background: #D1FAE5;
+        border: 2px solid #10B981;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        display: none;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    .success-message.show {
+        display: block;
+    }
+    
+    /* Field Error Styling */
+    .field-error-message {
+        color: #EF4444;
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        animation: fadeIn 0.3s ease;
+        display: none;
+    }
+    
+    .field-error-message.show {
+        display: flex;
+    }
+    
+    .form-input.error,
+    .form-select.error,
+    .form-textarea.error {
+        border-color: #EF4444 !important;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+    }
+    
+    .form-input.valid,
+    .form-select.valid,
+    .form-textarea.valid {
+        border-color: #10B981 !important;
+    }
+    
+    /* Required Field Indicator */
+    .required-indicator {
+        color: #EF4444;
+        font-weight: bold;
+    }
+    
+    /* Field Status Icons */
+    .field-status {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Property Type Cards */
+    .property-type-card {
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .property-type-card:hover {
+        border-color: #0E68B9;
+        transform: translateY(-2px);
+    }
+    
+    .property-type-card.selected {
+        border-color: #0E68B9;
+        background: #f0f9ff;
+    }
+    
+    /* Dynamic Fields */
+    .dynamic-fields-section {
+        animation: fadeIn 0.5s ease;
+    }
+    
+    /* Help Text */
+    .help-text {
+        font-size: 0.75rem;
+        color: #6B7280;
+        margin-top: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .help-text.error {
+        color: #EF4444;
+    }
+    
+    /* Badges */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .badge-required {
+        background-color: #FEF2F2;
+        color: #EF4444;
+    }
+    
+    .badge-recommended {
+        background-color: #F0F9FF;
+        color: #0E68B9;
+    }
+    
+    /* Loading Overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        flex-direction: column;
+    }
+    
+    .loading-overlay.active {
+        display: flex;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top: 3px solid #0E68B9;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 1rem;
+    }
+    
+    .loading-text {
+        color: white;
+        font-size: 1rem;
+        font-weight: 500;
+    }
+    
+    /* Info Box */
+    .info-box {
+        background: #F0F9FF;
+        border: 2px solid #0E68B9;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .warning-box {
+        background: #FFFBEB;
+        border: 2px solid #F59E0B;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    
+    /* Price Suggestion */
+    .price-suggestion {
+        background: #F0F9FF;
+        border: 2px solid #0E68B9;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .step-progress {
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+        
+        .step-item {
+            min-width: 80px;
+        }
+        
+        .toast-container {
+            left: 10px;
+            right: 10px;
+            top: 10px;
+        }
+        
+        .toast {
+            min-width: auto;
+            width: 100%;
+        }
+    }
+    
+    /* Form Controls */
+    .form-group {
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+    
+    .form-label {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+    
+    .form-input,
+    .form-select,
+    .form-textarea {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+        outline: none;
+        border-color: #0E68B9;
+        box-shadow: 0 0 0 3px rgba(14, 104, 185, 0.1);
+    }
+    
+    /* Buttons */
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        cursor: pointer;
+    }
+    
+    .btn-primary {
+        background-color: #0E68B9;
+        color: white;
+        border: none;
+    }
+    
+    .btn-primary:hover {
+        background-color: #0A56A3;
+        transform: translateY(-1px);
+    }
+    
+    .btn-secondary {
+        background-color: white;
+        color: #374151;
+        border: 2px solid #e5e7eb;
+    }
+    
+    .btn-secondary:hover {
+        background-color: #f9fafb;
+        border-color: #d1d5db;
+    }
+    
+    .btn-success {
+        background-color: #10B981;
+        color: white;
+        border: none;
+    }
+    
+    .btn-success:hover {
+        background-color: #0DA271;
+    }
+    
+    /* Character Counter */
+    .char-counter {
+        font-size: 0.75rem;
+        color: #6B7280;
+        text-align: right;
+        margin-top: 0.25rem;
+    }
+    
+    .char-counter.warning {
+        color: #F59E0B;
+    }
+    
+    .char-counter.error {
+        color: #EF4444;
+    }
+</style>
+{% endblock %}
+
+{% block header_title %}
+<h1 class="text-xl font-bold text-gray-900 dark:text-white">Post New Property</h1>
+<p class="text-sm text-gray-600 dark:text-gray-400">
+    Fill in the details to list your property on BHOOSPARSH
+</p>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Validation Summary -->
+    <div id="validationSummary" class="validation-summary">
+        <div class="flex items-start">
+            <i class="fas fa-exclamation-triangle text-red-500 text-lg mt-0.5 mr-3"></i>
+            <div class="flex-1">
+                <h4 class="font-medium text-gray-900 mb-1" id="validationTitle">Please fix the following errors:</h4>
+                <ul class="text-sm text-gray-600 space-y-1" id="validationErrors"></ul>
+            </div>
+            <button type="button" onclick="hideValidationSummary()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div id="successMessage" class="success-message">
+        <div class="flex items-start">
+            <i class="fas fa-check-circle text-green-500 text-lg mt-0.5 mr-3"></i>
+            <div class="flex-1">
+                <h4 class="font-medium text-gray-900 mb-1">Success!</h4>
+                <p class="text-sm text-green-600" id="successText"></p>
+            </div>
+            <button type="button" onclick="hideSuccessMessage()" class="text-green-400 hover:text-green-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Progress Steps -->
+    <div class="step-progress">
+        <div class="step-item {% if current_step == '1' %}active{% elif current_step|add:'0' > 1 %}completed{% endif %}" data-step="1">
+            <div class="step-number">1</div>
+            <div class="step-title">Basic Info</div>
+        </div>
+        <div class="step-item {% if current_step == '2' %}active{% elif current_step|add:'0' > 2 %}completed{% endif %}" data-step="2">
+            <div class="step-number">2</div>
+            <div class="step-title">Location</div>
+        </div>
+        <div class="step-item {% if current_step == '3' %}active{% elif current_step|add:'0' > 3 %}completed{% endif %}" data-step="3">
+            <div class="step-number">3</div>
+            <div class="step-title">Details</div>
+        </div>
+        <div class="step-item {% if current_step == '4' %}active{% elif current_step|add:'0' > 4 %}completed{% endif %}" data-step="4">
+            <div class="step-number">4</div>
+            <div class="step-title">Amenities</div>
+        </div>
+        <div class="step-item {% if current_step == '5' %}active{% elif current_step|add:'0' > 5 %}completed{% endif %}" data-step="5">
+            <div class="step-number">5</div>
+            <div class="step-title">Photos</div>
+        </div>
+        <div class="step-item {% if current_step == '6' %}active{% elif current_step|add:'0' > 6 %}completed{% endif %}" data-step="6">
+            <div class="step-number">6</div>
+            <div class="step-title">Contact & Legal</div>
+        </div>
+        <div class="step-item {% if current_step == '7' %}active{% endif %}" data-step="7">
+            <div class="step-number">7</div>
+            <div class="step-title">Preview & Publish</div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Saving your property...</div>
+    </div>
+
+    <!-- Step 1: Basic Information -->
+    {% if current_step == '1' %}
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+        <div class="mb-6">
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white">Basic Information</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Tell us about your property. Complete all required fields to proceed.</p>
+        </div>
+
+        <form method="post" id="basicForm" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="step" value="1">
+
+            <!-- Property Type Selection -->
+            <div class="form-group mb-8">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    What type of property do you want to list?
+                    <span class="badge badge-required ml-2">REQUIRED</span>
+                </label>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="property-type-card" data-type="sale">
+                        <i class="fas fa-home text-3xl text-blue-500 mb-3"></i>
+                        <h4 class="font-semibold text-gray-900 dark:text-white">For Sale</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Sell your property</p>
+                    </div>
+                    <div class="property-type-card" data-type="rent">
+                        <i class="fas fa-key text-3xl text-green-500 mb-3"></i>
+                        <h4 class="font-semibold text-gray-900 dark:text-white">For Rent</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Rent out your property</p>
+                    </div>
+                    <div class="property-type-card" data-type="pg">
+                        <i class="fas fa-users text-3xl text-purple-500 mb-3"></i>
+                        <h4 class="font-semibold text-gray-900 dark:text-white">PG/Co-Living</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">PG or Co-living space</p>
+                    </div>
+                </div>
+                <input type="hidden" id="listing_type" name="listing_type" value="sale">
+                <div class="help-text mt-2">
+                    <i class="fas fa-info-circle text-blue-500"></i>
+                    Select how you want to list your property
+                </div>
+            </div>
+
+            <!-- Property Category -->
+            <div class="form-group mb-6">
+                <label for="{{ form.category.id_for_label }}" class="form-label">
+                    Property Category 
+                    <span class="required-indicator ml-1">*</span>
+                    <span class="badge badge-required ml-2">REQUIRED</span>
+                </label>
+                <div class="relative">
+                    {{ form.category }}
+                    <div class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div class="field-status">
+                            <i class="fas fa-check-circle text-green-500" id="categoryValidIcon" style="display: none;"></i>
+                            <i class="fas fa-exclamation-circle text-red-500" id="categoryErrorIcon" style="display: none;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="help-text">
+                    <i class="fas fa-info-circle text-blue-500"></i>
+                    Select the main category of your property
+                </div>
+                <div class="field-error-message" id="category-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Please select a property category</span>
+                </div>
+                {% if form.category.errors %}
+                    <div class="field-error-message show">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{ form.category.errors.0 }}</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Subcategory (Dynamic) -->
+            <div id="subcategory-container" class="form-group mb-6" style="display: none;">
+                <label for="{{ form.subcategory.id_for_label }}" class="form-label">
+                    Property Type
+                    <span class="required-indicator ml-1">*</span>
+                    <span class="badge badge-required ml-2">REQUIRED</span>
+                </label>
+                <div class="relative">
+                    {{ form.subcategory }}
+                    <div class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div class="field-status">
+                            <i class="fas fa-check-circle text-green-500" id="subcategoryValidIcon" style="display: none;"></i>
+                            <i class="fas fa-exclamation-circle text-red-500" id="subcategoryErrorIcon" style="display: none;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="help-text">
+                    <i class="fas fa-info-circle text-blue-500"></i>
+                    Select the specific type of property
+                </div>
+                <div class="field-error-message" id="subcategory-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Please select a property type</span>
+                </div>
+                {% if form.subcategory.errors %}
+                    <div class="field-error-message show">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{ form.subcategory.errors.0 }}</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Property Title -->
+            <div class="form-group mb-6">
+                <label for="{{ form.title.id_for_label }}" class="form-label">
+                    Property Title
+                    <span class="required-indicator ml-1">*</span>
+                    <span class="badge badge-required ml-2">REQUIRED</span>
+                </label>
+                <input type="text" 
+                       id="{{ form.title.id_for_label }}"
+                       name="{{ form.title.name }}"
+                       class="form-input"
+                       value="{{ form.title.value|default:'' }}"
+                       placeholder="e.g., 3BHK Luxury Apartment in Bandra West"
+                       maxlength="255"
+                       required>
+                <div class="char-counter">
+                    <span id="titleCharCount">0</span>/255 characters
+                </div>
+                <div class="help-text">
+                    <i class="fas fa-lightbulb text-yellow-500"></i>
+                    Be specific and descriptive to attract more buyers
+                </div>
+                <div class="field-error-message" id="title-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Please enter a property title</span>
+                </div>
+                {% if form.title.errors %}
+                    <div class="field-error-message show">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{ form.title.errors.0 }}</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Description -->
+            <div class="form-group mb-6">
+                <label for="{{ form.description.id_for_label }}" class="form-label">
+                    Property Description
+                    <span class="required-indicator ml-1">*</span>
+                    <span class="badge badge-required ml-2">REQUIRED</span>
+                </label>
+                <textarea id="{{ form.description.id_for_label }}"
+                          name="{{ form.description.name }}"
+                          class="form-textarea"
+                          rows="6"
+                          placeholder="Describe your property in detail..."
+                          minlength="50"
+                          maxlength="5000"
+                          required>{{ form.description.value|default:'' }}</textarea>
+                <div class="char-counter">
+                    <span id="descriptionCharCount">0</span>/5000 characters (minimum 50)
+                </div>
+                <div class="help-text">
+                    <i class="fas fa-lightbulb text-yellow-500"></i>
+                    A detailed description increases engagement by 40%
+                </div>
+                <div class="field-error-message" id="description-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Please enter a description (minimum 50 characters)</span>
+                </div>
+                {% if form.description.errors %}
+                    <div class="field-error-message show">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{ form.description.errors.0 }}</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Price Information -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="form-group">
+                    <label for="{{ form.price.id_for_label }}" class="form-label">
+                        Price
+                        <span class="required-indicator ml-1">*</span>
+                        <span class="badge badge-required ml-2">REQUIRED</span>
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">₹</span>
+                        <input type="number" 
+                               id="{{ form.price.id_for_label }}"
+                               name="{{ form.price.name }}"
+                               class="form-input pl-10"
+                               value="{{ form.price.value|default:'' }}"
+                               placeholder="e.g., 7500000"
+                               min="0"
+                               step="0.01"
+                               required>
+                    </div>
+                    <div class="help-text">
+                        <i class="fas fa-rupee-sign text-green-500"></i>
+                        Enter the total price of your property
+                    </div>
+                    <div class="field-error-message" id="price-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>Please enter a valid price</span>
+                    </div>
+                    {% if form.price.errors %}
+                        <div class="field-error-message show">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>{{ form.price.errors.0 }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.super_area.id_for_label }}" class="form-label">
+                        Built-up Area
+                        <span class="required-indicator ml-1">*</span>
+                        <span class="badge badge-required ml-2">REQUIRED</span>
+                    </label>
+                    <div class="flex gap-2">
+                        <input type="number" 
+                               id="{{ form.super_area.id_for_label }}"
+                               name="{{ form.super_area.name }}"
+                               class="form-input flex-1"
+                               value="{{ form.super_area.value|default:'' }}"
+                               placeholder="e.g., 1500"
+                               min="0"
+                               step="0.01"
+                               required>
+                        <select id="{{ form.area_unit.id_for_label }}"
+                                name="{{ form.area_unit.name }}"
+                                class="form-select w-32">
+                            {% for value, label in form.area_unit.field.choices %}
+                                <option value="{{ value }}" {% if form.area_unit.value == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="help-text">
+                        <i class="fas fa-ruler-combined text-blue-500"></i>
+                        Total built-up area of the property
+                    </div>
+                    <div class="field-error-message" id="area-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>Please enter the built-up area</span>
+                    </div>
+                    {% if form.super_area.errors %}
+                        <div class="field-error-message show">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>{{ form.super_area.errors.0 }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Price Negotiable -->
+            <div class="form-group mb-6">
+                <label class="flex items-center">
+                    <input type="checkbox" 
+                           id="{{ form.price_negotiable.id_for_label }}"
+                           name="{{ form.price_negotiable.name }}"
+                           class="form-checkbox h-5 w-5 text-blue-600"
+                           {% if form.price_negotiable.value %}checked{% endif %}>
+                    <span class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Price is Negotiable
+                    </span>
+                </label>
+                <div class="help-text ml-7">
+                    <i class="fas fa-handshake text-green-500"></i>
+                    Check if you're open to price negotiations
+                </div>
+            </div>
+
+            <!-- Price Per Sqft Display -->
+            <div id="price_per_sqft_container" class="mb-6" style="display: none;">
+                <div class="price-suggestion">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-900 dark:text-white">Price per Sq Ft:
+                                <span id="price_per_sqft" class="text-blue-600 font-bold">₹ 0</span>
+                            </p>
+                            <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                Based on average prices in your area: <span id="avg_area_price" class="font-medium">₹ 0</span>
+                            </p>
+                        </div>
+                        <button type="button" onclick="getPriceSuggestions()" class="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                            <i class="fas fa-sync-alt"></i> Update Suggestions
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Fields (Dynamic) -->
+            <div id="dynamic_fields_container" class="dynamic-fields-section">
+                <!-- Fields will be loaded dynamically based on category -->
+            </div>
+
+            <!-- Form Help Section -->
+            <div class="info-box mb-6">
+                <div class="flex items-start">
+                    <i class="fas fa-info-circle text-blue-500 text-lg mt-0.5 mr-3"></i>
+                    <div>
+                        <h4 class="font-medium text-gray-900 dark:text-white mb-1">Need help?</h4>
+                        <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                            <li>• Fill all required fields marked with <span class="required-indicator">*</span></li>
+                            <li>• Be as detailed as possible for better responses</li>
+                            <li>• You can save as draft and complete later</li>
+                            <li>• Click "Next" to proceed to location details</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="flex justify-between pt-6 border-t border-gray-200 dark:border-gray-700">
+                <button type="button" onclick="cancelPropertyCreation()"
+                        class="btn btn-secondary">
+                    <i class="fas fa-times mr-2"></i> Cancel
+                </button>
+                <div class="flex items-center gap-3">
+                    <button type="button" onclick="saveAsDraft()" class="btn btn-secondary">
+                        <i class="fas fa-save mr-2"></i> Save as Draft
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="nextButton">
+                        Next: Location Details <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Step 2: Location Details -->
+    {% elif current_step == '2' and property %}
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+        <!-- Similar structure for step 2 -->
+        <!-- Add validation and error handling similar to step 1 -->
+    </div>
+
+    <!-- Other Steps... -->
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/property-wizard.js' %}"></script>
+<script>
+// Initialize variables
+let propertyId = '{{ property.id|default:"" }}';
+let currentStep = parseInt('{{ current_step }}');
+let categoryField = null;
+let subcategoryField = null;
+let titleField = null;
+let descriptionField = null;
+let priceField = null;
+let areaField = null;
+
+// Toast notification system
+class Toast {
+    static show(message, type = 'info', title = '', duration = 5000) {
+        const toastId = 'toast-' + Date.now();
+        const toastContainer = document.getElementById('toast-container');
+        
+        const toast = document.createElement('div');
+        toast.id = toastId;
+        toast.className = `toast toast-${type}`;
+        toast.innerHTML = `
+            <div class="toast-header">
+                <i class="fas fa-${this.getIcon(type)} mr-2"></i>
+                <strong class="mr-auto">${title || this.getTitle(type)}</strong>
+                <button type="button" class="close" onclick="document.getElementById('${toastId}').remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="toast-body">
+                ${message}
+            </div>
+        `;
+        
+        toastContainer.appendChild(toast);
+        
+        // Auto remove
+        setTimeout(() => {
+            if (document.getElementById(toastId)) {
+                document.getElementById(toastId).remove();
+            }
+        }, duration);
+    }
+    
+    static getIcon(type) {
+        const icons = {
+            'success': 'check-circle',
+            'error': 'exclamation-circle',
+            'warning': 'exclamation-triangle',
+            'info': 'info-circle'
+        };
+        return icons[type] || 'info-circle';
+    }
+    
+    static getTitle(type) {
+        const titles = {
+            'success': 'Success',
+            'error': 'Error',
+            'warning': 'Warning',
+            'info': 'Info'
+        };
+        return titles[type] || 'Info';
+    }
+}
+
+// Validation functions
+class Validator {
+    static validateField(field, value) {
+        if (!field) return { isValid: false, message: 'Field not found' };
+        
+        const rules = {
+            'required': (val) => val && val.toString().trim().length > 0,
+            'minLength': (val, min) => val && val.toString().length >= min,
+            'maxLength': (val, max) => val && val.toString().length <= max,
+            'numeric': (val) => !isNaN(parseFloat(val)) && isFinite(val),
+            'positive': (val) => parseFloat(val) > 0,
+            'email': (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val),
+            'phone': (val) => /^[+]?[\d\s\-()]{10,}$/.test(val)
+        };
+        
+        // Check required
+        if (field.required && !rules.required(value)) {
+            return { 
+                isValid: false, 
+                message: `${field.name} is required` 
+            };
+        }
+        
+        // Check specific validations
+        if (field.type === 'number' && value && !rules.numeric(value)) {
+            return { 
+                isValid: false, 
+                message: `${field.name} must be a number` 
+            };
+        }
+        
+        if (field.min && value && parseFloat(value) < parseFloat(field.min)) {
+            return { 
+                isValid: false, 
+                message: `${field.name} must be at least ${field.min}` 
+            };
+        }
+        
+        if (field.max && value && parseFloat(value) > parseFloat(field.max)) {
+            return { 
+                isValid: false, 
+                message: `${field.name} must not exceed ${field.max}` 
+            };
+        }
+        
+        return { isValid: true, message: '' };
+    }
+    
+    static showFieldError(fieldId, message) {
+        const field = document.getElementById(fieldId);
+        if (!field) return;
+        
+        // Add error class
+        field.classList.add('error');
+        field.classList.remove('valid');
+        
+        // Show error message
+        const errorId = `${fieldId}-error`;
+        let errorDiv = document.getElementById(errorId);
+        
+        if (!errorDiv) {
+            errorDiv = document.createElement('div');
+            errorDiv.id = errorId;
+            errorDiv.className = 'field-error-message';
+            field.parentNode.insertBefore(errorDiv, field.nextSibling);
+        }
+        
+        errorDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i><span>${message}</span>`;
+        errorDiv.classList.add('show');
+    }
+    
+    static hideFieldError(fieldId) {
+        const field = document.getElementById(fieldId);
+        if (!field) return;
+        
+        // Remove error class
+        field.classList.remove('error');
+        field.classList.add('valid');
+        
+        // Hide error message
+        const errorId = `${fieldId}-error`;
+        const errorDiv = document.getElementById(errorId);
+        if (errorDiv) {
+            errorDiv.classList.remove('show');
+        }
+    }
+    
+    static showFieldSuccess(fieldId) {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.classList.remove('error');
+            field.classList.add('valid');
+        }
+    }
+}
+
+// DOM Ready
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Property wizard loaded. Step:', currentStep);
+    
+    // Initialize step 1 if we're on that step
+    if (currentStep === 1) {
+        initStep1();
+    }
+    
+    // Initialize character counters
+    initCharacterCounters();
+});
+
+function initStep1() {
+    console.log('Initializing Step 1');
+    
+    // Get form elements
+    categoryField = document.getElementById('id_category');
+    subcategoryField = document.getElementById('id_subcategory');
+    titleField = document.getElementById('id_title');
+    descriptionField = document.getElementById('id_description');
+    priceField = document.getElementById('id_price');
+    areaField = document.getElementById('id_super_area');
+    
+    // Initialize property type cards
+    initPropertyTypeCards();
+    
+    // Initialize category handling
+    initCategoryHandling();
+    
+    // Initialize form validation
+    initFormValidation();
+    
+    // Initialize price calculation
+    initPriceCalculation();
+    
+    // Set up real-time validation
+    setupRealTimeValidation();
+}
+
+function initPropertyTypeCards() {
+    const propertyTypeCards = document.querySelectorAll('.property-type-card');
+    propertyTypeCards.forEach(card => {
+        card.addEventListener('click', function() {
+            // Remove selected class from all cards
+            propertyTypeCards.forEach(c => c.classList.remove('selected'));
+            
+            // Add selected class to clicked card
+            this.classList.add('selected');
+            
+            // Update hidden input
+            const listingType = this.dataset.type;
+            document.getElementById('listing_type').value = listingType;
+            
+            // Show toast notification
+            const typeNames = {
+                'sale': 'For Sale',
+                'rent': 'For Rent',
+                'pg': 'PG/Co-Living'
+            };
+            Toast.show(`Listing type set to: ${typeNames[listingType]}`, 'success', 'Listing Type');
+            
+            // Update form validation if needed
+            validateListingType();
+        });
+    });
+    
+    // Set default selection
+    if (propertyTypeCards.length > 0) {
+        propertyTypeCards[0].classList.add('selected');
+    }
+}
+
+function initCategoryHandling() {
+    if (!categoryField) return;
+
+    // Check if category is already selected from form data
+    const savedCategoryId = categoryField.value;
+    if (savedCategoryId && savedCategoryId !== '') {
+        loadSubcategories(savedCategoryId);
+        showSubcategoryContainer();
+    }
+
+    // Handle category change
+    categoryField.addEventListener('change', function() {
+        const categoryId = this.value;
+
+        if (categoryId && categoryId !== '') {
+            // Validate category
+            if (isNaN(parseInt(categoryId))) {
+                Toast.show('Invalid category selected', 'error', 'Validation Error');
+                return;
+            }
+
+            // Load subcategories
+            loadSubcategories(categoryId);
+            showSubcategoryContainer();
+
+            // Update field status
+            Validator.hideFieldError('id_category');
+            Validator.showFieldSuccess('id_category');
+
+            // Update icon
+            updateCategoryStatusIcon(true);
+
+        } else {
+            // Hide subcategory container
+            hideSubcategoryContainer();
+
+            // Clear dynamic fields
+            clearDynamicFields();
+
+            // Show error
+            Validator.showFieldError('id_category', 'Please select a category');
+            updateCategoryStatusIcon(false);
+        }
+    });
+
+    // Handle subcategory change to update dynamic fields
+    if (subcategoryField) {
+        subcategoryField.addEventListener('change', function() {
+            const currentCategoryId = categoryField.value;
+            if (currentCategoryId && currentCategoryId !== '' && currentCategoryId !== 'undefined') {
+                updateDynamicFields(currentCategoryId);
+            }
+        });
+    }
+
+    // Validate on blur
+    categoryField.addEventListener('blur', function() {
+        validateCategory();
+    });
+}
+
+function validateCategory() {
+    if (!categoryField) return false;
+    
+    const categoryId = categoryField.value;
+    const validation = Validator.validateField(
+        { name: 'Property Category', required: true },
+        categoryId
+    );
+    
+    if (!validation.isValid) {
+        Validator.showFieldError('id_category', validation.message);
+        updateCategoryStatusIcon(false);
+        return false;
+    } else {
+        Validator.hideFieldError('id_category');
+        Validator.showFieldSuccess('id_category');
+        updateCategoryStatusIcon(true);
+        return true;
+    }
+}
+
+function updateCategoryStatusIcon(isValid) {
+    const validIcon = document.getElementById('categoryValidIcon');
+    const errorIcon = document.getElementById('categoryErrorIcon');
+    
+    if (isValid) {
+        if (validIcon) validIcon.style.display = 'block';
+        if (errorIcon) errorIcon.style.display = 'none';
+    } else {
+        if (validIcon) validIcon.style.display = 'none';
+        if (errorIcon) errorIcon.style.display = 'block';
+    }
+}
+
+function showSubcategoryContainer() {
+    const subcategoryContainer = document.getElementById('subcategory-container');
+    if (subcategoryContainer) {
+        subcategoryContainer.style.display = 'block';
+    }
+}
+
+function hideSubcategoryContainer() {
+    const subcategoryContainer = document.getElementById('subcategory-container');
+    if (subcategoryContainer) {
+        subcategoryContainer.style.display = 'none';
+    }
+}
+
+async function loadSubcategories(categoryId) {
+    console.log('Loading subcategories for category:', categoryId);
+
+    const subcategorySelect = document.getElementById('id_subcategory');
+    if (!subcategorySelect) return;
+
+    // Validate categoryId before proceeding
+    if (!categoryId || categoryId === 'undefined' || categoryId === '') {
+        console.warn('Invalid categoryId for subcategories:', categoryId);
+        subcategorySelect.innerHTML = '<option value="">Please select a category first</option>';
+        subcategorySelect.disabled = true;
+        updateDynamicFields(null); // Clear dynamic fields
+        return;
+    }
+
+    // Show loading state
+    subcategorySelect.innerHTML = '<option value="">Loading property types...</option>';
+    subcategorySelect.disabled = true;
+    subcategorySelect.classList.add('loading');
+
+    try {
+        const response = await fetch(`/api/get-subcategories/?category_id=${categoryId}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.subcategories && data.subcategories.length > 0) {
+            // Clear and populate options
+            subcategorySelect.innerHTML = '<option value="">Select Property Type</option>';
+
+            data.subcategories.forEach(subcat => {
+                const option = document.createElement('option');
+                option.value = subcat.id;
+                option.textContent = subcat.name;
+                subcategorySelect.appendChild(option);
+            });
+
+            subcategorySelect.disabled = false;
+            subcategorySelect.classList.remove('loading');
+
+            // Show success message
+            Toast.show(`Loaded ${data.subcategories.length} property types for ${data.category_name}`, 'success', 'Types Loaded');
+
+            // Update dynamic fields
+            updateDynamicFields(categoryId);
+
+        } else {
+            subcategorySelect.innerHTML = '<option value="">No types available</option>';
+            Toast.show('No property types available for this category', 'info', 'No Types');
+            updateDynamicFields(categoryId);
+        }
+
+    } catch (error) {
+        console.error('Error loading subcategories:', error);
+        subcategorySelect.innerHTML = '<option value="">Error loading types</option>';
+        Toast.show('Failed to load property types. Please try again.', 'error', 'Error');
+        updateDynamicFields(null); // Clear dynamic fields on error
+    }
+}
+
+async function updateDynamicFields(categoryId) {
+    console.log('Updating dynamic fields for category:', categoryId);
+
+    const container = document.getElementById('dynamic_fields_container');
+    if (!container) return;
+
+    // If categoryId is not provided or invalid, get it from the category field
+    if (!categoryId || categoryId === 'undefined' || categoryId === '') {
+        categoryId = document.getElementById('id_category')?.value;
+        console.log('Got categoryId from field:', categoryId);
+    }
+
+    // Validate categoryId
+    if (!categoryId || categoryId === 'undefined' || categoryId === '') {
+        console.warn('Invalid categoryId:', categoryId);
+        container.innerHTML = `
+            <div class="info-box">
+                <div class="flex items-start">
+                    <i class="fas fa-info-circle text-blue-500 text-lg mt-0.5 mr-3"></i>
+                    <div>
+                        <p class="text-sm text-blue-700 dark:text-blue-300">
+                            Please select a category first to load additional fields.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        `;
+        return;
+    }
+
+    // Show loading state
+    container.innerHTML = `
+        <div class="text-center py-4">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+            <p class="text-sm text-gray-500 mt-2">Loading additional fields...</p>
+        </div>
+    `;
+
+    try {
+        const response = await fetch(`/api/get-category-fields/?category_id=${categoryId}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            renderDynamicFields(data);
+            Toast.show(`Loaded additional fields for ${data.category_name}`, 'success', 'Fields Loaded');
+        } else {
+            container.innerHTML = `
+                <div class="info-box">
+                    <div class="flex items-start">
+                        <i class="fas fa-info-circle text-blue-500 text-lg mt-0.5 mr-3"></i>
+                        <div>
+                            <p class="text-sm text-blue-700 dark:text-blue-300">
+                                No additional fields required for this category.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+    } catch (error) {
+        console.error('Error loading dynamic fields:', error);
+        container.innerHTML = `
+            <div class="warning-box">
+                <div class="flex items-start">
+                    <i class="fas fa-exclamation-triangle text-yellow-500 text-lg mt-0.5 mr-3"></i>
+                    <div>
+                        <p class="text-sm text-yellow-700 dark:text-yellow-300">
+                            Failed to load additional fields. You can continue without them.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        `;
+        Toast.show('Could not load additional fields', 'warning', 'Warning');
+    }
+}
+
+function renderDynamicFields(data) {
+    const container = document.getElementById('dynamic_fields_container');
+    if (!container) return;
+    
+    let html = '';
+    
+    if (data.property_type === 'residential') {
+        html = getResidentialFieldsHTML(data);
+    } else if (data.property_type === 'commercial') {
+        html = getCommercialFieldsHTML(data);
+    } else if (data.property_type === 'industrial') {
+        html = getIndustrialFieldsHTML(data);
+    } else if (data.property_type === 'land') {
+        html = getLandFieldsHTML(data);
+    } else if (data.property_type === 'agricultural') {
+        html = getAgriculturalFieldsHTML(data);
+    } else if (data.property_type === 'pg_co-living') {
+        html = getPGFieldsHTML(data);
+    } else {
+        html = `
+            <div class="info-box">
+                <div class="flex items-start">
+                    <i class="fas fa-info-circle text-blue-500 text-lg mt-0.5 mr-3"></i>
+                    <div>
+                        <p class="text-sm text-blue-700 dark:text-blue-300">
+                            No additional fields required for this category.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    container.innerHTML = html;
+    
+    // Initialize any dynamic field events
+    initDynamicFieldEvents();
+}
+
+function getResidentialFieldsHTML(data) {
+    return `
+        <div class="dynamic-fields-section">
+            <h5 class="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-300 flex items-center">
+                <i class="fas fa-home mr-2 text-blue-500"></i>Residential Details
+            </h5>
+            
+            ${data.fields.has_bedrooms ? `
+            <div class="form-group mb-4">
+                <label class="form-label">
+                    Bedrooms
+                    <span class="required-indicator ml-1">*</span>
+                    <span class="badge badge-required ml-2">REQUIRED</span>
+                </label>
+                <select name="bedrooms" class="form-select" required>
+                    <option value="">Select</option>
+                    <option value="1">1 BHK</option>
+                    <option value="2">2 BHK</option>
+                    <option value="3">3 BHK</option>
+                    <option value="4">4 BHK</option>
+                    <option value="5">5 BHK</option>
+                    <option value="6">6+ BHK</option>
+                </select>
+                <div class="help-text">
+                    <i class="fas fa-bed text-blue-500"></i>
+                    Number of bedrooms in the property
+                </div>
+            </div>
+            ` : ''}
+            
+            ${data.fields.has_bathrooms ? `
+            <div class="form-group mb-4">
+                <label class="form-label">
+                    Bathrooms
+                    <span class="required-indicator ml-1">*</span>
+                    <span class="badge badge-required ml-2">REQUIRED</span>
+                </label>
+                <select name="bathrooms" class="form-select" required>
+                    <option value="">Select</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5+</option>
+                </select>
+                <div class="help-text">
+                    <i class="fas fa-bath text-blue-500"></i>
+                    Number of bathrooms in the property
+                </div>
+            </div>
+            ` : ''}
+            
+            ${data.fields.has_balconies ? `
+            <div class="form-group mb-4">
+                <label class="form-label">
+                    Balconies
+                </label>
+                <select name="balconies" class="form-select">
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4+</option>
+                </select>
+                <div class="help-text">
+                    <i class="fas fa-door-open text-blue-500"></i>
+                    Number of balconies in the property
+                </div>
+            </div>
+            ` : ''}
+            
+            ${data.fields.has_floor ? `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div class="form-group">
+                    <label class="form-label">
+                        Floor Number
+                    </label>
+                    <input type="number" name="floor_number" class="form-input" 
+                           placeholder="e.g., 5" min="0" max="200">
+                    <div class="help-text">
+                        <i class="fas fa-building text-blue-500"></i>
+                        Floor number where the property is located
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        Total Floors
+                    </label>
+                    <input type="number" name="total_floors" class="form-input" 
+                           placeholder="e.g., 15" min="1" max="200">
+                    <div class="help-text">
+                        <i class="fas fa-layer-group text-blue-500"></i>
+                        Total floors in the building
+                    </div>
+                </div>
+            </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+function initDynamicFieldEvents() {
+    // Add event listeners to dynamic fields
+    const dynamicFields = document.querySelectorAll('#dynamic_fields_container input, #dynamic_fields_container select, #dynamic_fields_container textarea');
+    dynamicFields.forEach(field => {
+        field.addEventListener('blur', function() {
+            validateField(this);
+        });
+        
+        field.addEventListener('input', function() {
+            if (this.classList.contains('error')) {
+                validateField(this);
+            }
+        });
+    });
+}
+
+function initCharacterCounters() {
+    // Title character counter
+    const titleField = document.getElementById('id_title');
+    const titleCharCount = document.getElementById('titleCharCount');
+    
+    if (titleField && titleCharCount) {
+        titleField.addEventListener('input', function() {
+            const length = this.value.length;
+            titleCharCount.textContent = length;
+            
+            if (length > 200) {
+                titleCharCount.classList.add('warning');
+            } else {
+                titleCharCount.classList.remove('warning');
+            }
+            
+            if (length === 255) {
+                titleCharCount.classList.add('error');
+            } else {
+                titleCharCount.classList.remove('error');
+            }
+        });
+        
+        // Initial count
+        titleCharCount.textContent = titleField.value.length;
+    }
+    
+    // Description character counter
+    const descriptionField = document.getElementById('id_description');
+    const descriptionCharCount = document.getElementById('descriptionCharCount');
+    
+    if (descriptionField && descriptionCharCount) {
+        descriptionField.addEventListener('input', function() {
+            const length = this.value.length;
+            descriptionCharCount.textContent = length;
+            
+            if (length < 50) {
+                descriptionCharCount.classList.add('error');
+            } else if (length > 4000) {
+                descriptionCharCount.classList.add('warning');
+            } else {
+                descriptionCharCount.classList.remove('error', 'warning');
+            }
+        });
+        
+        // Initial count
+        descriptionCharCount.textContent = descriptionField.value.length;
+    }
+}
+
+function initFormValidation() {
+    const form = document.getElementById('basicForm');
+    if (!form) return;
+    
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        console.log('Form submission started');
+        
+        // Validate all fields
+        const isValid = validateStep1();
+        
+        if (!isValid) {
+            // Show validation summary
+            showValidationSummary('Please fix the errors below before proceeding.');
+            
+            // Scroll to first error
+            const firstError = document.querySelector('.error');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstError.focus();
+            }
+            
+            Toast.show('Please fix all errors before proceeding', 'error', 'Validation Failed');
+            return;
+        }
+        
+        // Show loading
+        showLoading('Saving property details...');
+        
+        try {
+            // Prepare form data
+            const formData = new FormData(form);
+            
+            // Add AJAX flag
+            formData.append('ajax', 'true');
+            
+            // Submit via AJAX
+            const response = await fetch(window.location.pathname, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            const data = await response.json();
+            
+            hideLoading();
+            
+            if (data.success) {
+                // Show success message
+                showSuccessMessage(data.message || 'Property saved successfully!');
+                
+                // Update step progress
+                updateStepProgress(1, true);
+                
+                Toast.show(data.message || 'Saved successfully!', 'success', 'Success');
+                
+                // Redirect to next step
+                setTimeout(() => {
+                    if (data.redirect_url) {
+                        window.location.href = data.redirect_url;
+                    } else {
+                        window.location.href = `/property/wizard/?step=2&property_id=${data.property_id}`;
+                    }
+                }, 1500);
+                
+            } else {
+                // Handle errors
+                if (data.errors && Array.isArray(data.errors)) {
+                    // Show validation errors
+                    const errorMessages = data.errors.map(err => 
+                        `<li>${err.field ? `<strong>${err.field}:</strong> ` : ''}${err.message}</li>`
+                    ).join('');
+                    
+                    showValidationSummary('Please fix the following errors:', errorMessages);
+                    
+                    // Highlight error fields
+                    data.errors.forEach(error => {
+                        if (error.field) {
+                            const field = document.querySelector(`[name="${error.field}"]`);
+                            if (field) {
+                                field.classList.add('error');
+                                Validator.showFieldError(field.id, error.message);
+                            }
+                        }
+                    });
+                    
+                    Toast.show('Please fix the errors in the form', 'error', 'Save Failed');
+                    
+                } else {
+                    showValidationSummary(data.error || 'Failed to save property. Please try again.');
+                    Toast.show(data.error || 'Failed to save property', 'error', 'Error');
+                }
+                
+                // Scroll to validation summary
+                document.getElementById('validationSummary').scrollIntoView({ behavior: 'smooth' });
+            }
+            
+        } catch (error) {
+            hideLoading();
+            console.error('Form submission error:', error);
+            
+            showValidationSummary('Network error. Please check your connection and try again.');
+            Toast.show('Network error. Please check your connection.', 'error', 'Network Error');
+        }
+    });
+}
+
+function validateStep1() {
+    console.log('Validating Step 1');
+    
+    let isValid = true;
+    const errors = [];
+    
+    // Validate listing type
+    const listingType = document.getElementById('listing_type');
+    if (!listingType || !listingType.value) {
+        isValid = false;
+        errors.push('Listing type');
+    }
+    
+    // Validate category
+    if (!validateCategory()) {
+        isValid = false;
+        errors.push('Property category');
+    }
+    
+    // Validate subcategory (if visible)
+    const subcategoryContainer = document.getElementById('subcategory-container');
+    if (subcategoryContainer && subcategoryContainer.style.display !== 'none') {
+        if (!validateSubcategory()) {
+            isValid = false;
+            errors.push('Property type');
+        }
+    }
+    
+    // Validate title
+    if (titleField && !validateRequiredField(titleField, 'Property title')) {
+        isValid = false;
+        errors.push('Property title');
+    }
+    
+    // Validate description
+    if (descriptionField) {
+        const description = descriptionField.value.trim();
+        if (!description) {
+            isValid = false;
+            errors.push('Description');
+            Validator.showFieldError('id_description', 'Description is required');
+        } else if (description.length < 50) {
+            isValid = false;
+            errors.push('Description (minimum 50 characters)');
+            Validator.showFieldError('id_description', 'Description must be at least 50 characters');
+        } else {
+            Validator.hideFieldError('id_description');
+        }
+    }
+    
+    // Validate price
+    if (priceField) {
+        const price = parseFloat(priceField.value);
+        if (!priceField.value || isNaN(price) || price <= 0) {
+            isValid = false;
+            errors.push('Price');
+            Validator.showFieldError('id_price', 'Please enter a valid price');
+        } else {
+            Validator.hideFieldError('id_price');
+        }
+    }
+    
+    // Validate area
+    if (areaField) {
+        const area = parseFloat(areaField.value);
+        if (!areaField.value || isNaN(area) || area <= 0) {
+            isValid = false;
+            errors.push('Built-up area');
+            Validator.showFieldError('id_super_area', 'Please enter a valid area');
+        } else {
+            Validator.hideFieldError('id_super_area');
+        }
+    }
+    
+    // Validate dynamic fields
+    const dynamicFields = document.querySelectorAll('#dynamic_fields_container input[required], #dynamic_fields_container select[required]');
+    dynamicFields.forEach(field => {
+        if (!field.value || field.value.trim() === '') {
+            isValid = false;
+            const fieldName = field.name.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+            errors.push(fieldName);
+            Validator.showFieldError(field.id, `${fieldName} is required`);
+        }
+    });
+    
+    return isValid;
+}
+
+function validateRequiredField(field, fieldName) {
+    if (!field) return false;
+    
+    const value = field.value ? field.value.trim() : '';
+    if (!value) {
+        Validator.showFieldError(field.id, `${fieldName} is required`);
+        return false;
+    }
+    
+    Validator.hideFieldError(field.id);
+    return true;
+}
+
+function validateSubcategory() {
+    const subcategoryField = document.getElementById('id_subcategory');
+    if (!subcategoryField) return true; // Not required if not visible
+    
+    const value = subcategoryField.value;
+    if (!value || value === '') {
+        Validator.showFieldError('id_subcategory', 'Property type is required');
+        
+        // Update icon
+        const validIcon = document.getElementById('subcategoryValidIcon');
+        const errorIcon = document.getElementById('subcategoryErrorIcon');
+        if (validIcon) validIcon.style.display = 'none';
+        if (errorIcon) errorIcon.style.display = 'block';
+        
+        return false;
+    }
+    
+    Validator.hideFieldError('id_subcategory');
+    
+    // Update icon
+    const validIcon = document.getElementById('subcategoryValidIcon');
+    const errorIcon = document.getElementById('subcategoryErrorIcon');
+    if (validIcon) validIcon.style.display = 'block';
+    if (errorIcon) errorIcon.style.display = 'none';
+    
+    return true;
+}
+
+function setupRealTimeValidation() {
+    // Add real-time validation to all required fields
+    const requiredFields = document.querySelectorAll('input[required], select[required], textarea[required]');
+    requiredFields.forEach(field => {
+        field.addEventListener('blur', function() {
+            validateField(this);
+        });
+        
+        field.addEventListener('input', function() {
+            if (this.classList.contains('error')) {
+                validateField(this);
+            }
+        });
+    });
+}
+
+function validateField(field) {
+    if (!field) return;
+    
+    const fieldName = field.name.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+    const value = field.value ? field.value.trim() : '';
+    
+    if (field.required && !value) {
+        Validator.showFieldError(field.id, `${fieldName} is required`);
+        return false;
+    }
+    
+    // Specific validations
+    if (field.type === 'number' && value) {
+        const numValue = parseFloat(value);
+        if (isNaN(numValue)) {
+            Validator.showFieldError(field.id, `${fieldName} must be a number`);
+            return false;
+        }
+        
+        if (field.min && numValue < parseFloat(field.min)) {
+            Validator.showFieldError(field.id, `${fieldName} must be at least ${field.min}`);
+            return false;
+        }
+        
+        if (field.max && numValue > parseFloat(field.max)) {
+            Validator.showFieldError(field.id, `${fieldName} must not exceed ${field.max}`);
+            return false;
+        }
+    }
+    
+    Validator.hideFieldError(field.id);
+    Validator.showFieldSuccess(field.id);
+    return true;
+}
+
+function initPriceCalculation() {
+    const priceInput = document.getElementById('id_price');
+    const areaInput = document.getElementById('id_super_area');
+    
+    if (priceInput && areaInput) {
+        const calculatePricePerSqft = () => {
+            const price = parseFloat(priceInput.value) || 0;
+            const area = parseFloat(areaInput.value) || 0;
+            
+            if (price > 0 && area > 0) {
+                const pricePerSqft = price / area;
+                document.getElementById('price_per_sqft').textContent = `₹ ${pricePerSqft.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                document.getElementById('price_per_sqft_container').style.display = 'block';
+            } else {
+                document.getElementById('price_per_sqft_container').style.display = 'none';
+            }
+        };
+        
+        priceInput.addEventListener('input', calculatePricePerSqft);
+        areaInput.addEventListener('input', calculatePricePerSqft);
+        
+        // Initial calculation
+        calculatePricePerSqft();
+    }
+}
+
+function showValidationSummary(message, details = '') {
+    const validationDiv = document.getElementById('validationSummary');
+    const titleElement = document.getElementById('validationTitle');
+    const errorsElement = document.getElementById('validationErrors');
+    
+    if (validationDiv && titleElement && errorsElement) {
+        titleElement.textContent = message;
+        errorsElement.innerHTML = details || '';
+        validationDiv.classList.add('show');
+        
+        // Scroll to validation summary
+        validationDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+function hideValidationSummary() {
+    const validationDiv = document.getElementById('validationSummary');
+    if (validationDiv) {
+        validationDiv.classList.remove('show');
+    }
+}
+
+function showSuccessMessage(message) {
+    const successDiv = document.getElementById('successMessage');
+    const successText = document.getElementById('successText');
+    
+    if (successDiv && successText) {
+        successText.textContent = message;
+        successDiv.classList.add('show');
+        
+        // Auto hide after 3 seconds
+        setTimeout(() => {
+            hideSuccessMessage();
+        }, 3000);
+    }
+}
+
+function hideSuccessMessage() {
+    const successDiv = document.getElementById('successMessage');
+    if (successDiv) {
+        successDiv.classList.remove('show');
+    }
+}
+
+function showLoading(message = 'Processing...') {
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const loadingText = loadingOverlay.querySelector('.loading-text');
+    
+    if (loadingOverlay) {
+        if (loadingText && message) {
+            loadingText.textContent = message;
+        }
+        loadingOverlay.classList.add('active');
+    }
+}
+
+function hideLoading() {
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    if (loadingOverlay) {
+        loadingOverlay.classList.remove('active');
+    }
+}
+
+function updateStepProgress(step, completed = true) {
+    const stepItem = document.querySelector(`.step-item[data-step="${step}"]`);
+    if (stepItem) {
+        if (completed) {
+            stepItem.classList.add('completed');
+            stepItem.classList.remove('error');
+        } else {
+            stepItem.classList.add('error');
+            stepItem.classList.remove('completed');
+        }
+    }
+}
+
+function clearDynamicFields() {
+    const container = document.getElementById('dynamic_fields_container');
+    if (container) {
+        container.innerHTML = '';
+    }
+}
+
+async function getPriceSuggestions() {
+    const city = document.getElementById('city')?.value;
+    const locality = document.getElementById('locality')?.value;
+    const categoryId = document.getElementById('id_category')?.value;
+    const area = document.getElementById('id_super_area')?.value;
+    const listingType = document.getElementById('listing_type')?.value;
+    
+    if (!city || !area) {
+        Toast.show('Please enter city and area to get price suggestions', 'warning', 'Info Required');
+        return;
+    }
+    
+    showLoading('Getting price suggestions...');
+    
+    try {
+        const params = new URLSearchParams({
+            city: city,
+            locality: locality || '',
+            category_id: categoryId || '',
+            area: area,
+            listing_type: listingType || 'sale'
+        });
+        
+        const response = await fetch(`/api/get-price-suggestions/?${params}`, {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        
+        const data = await response.json();
+        hideLoading();
+        
+        if (data.success) {
+            // Update display with suggestions
+            const suggestionDiv = document.getElementById('price_per_sqft_container');
+            if (suggestionDiv) {
+                suggestionDiv.innerHTML = `
+                    <div class="price-suggestion">
+                        <div class="flex items-center justify-between mb-2">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">Price per Sq Ft:</p>
+                                <p class="text-2xl font-bold text-blue-600">₹ ${data.price_per_sqft.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm text-gray-600">Based on</p>
+                                <p class="text-sm font-medium">${data.sample_size} similar properties</p>
+                            </div>
+                        </div>
+                        <div class="mt-3 p-3 bg-blue-50 rounded-lg">
+                            <p class="text-sm font-medium text-gray-900 mb-1">Suggested Price Range:</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-green-600 font-medium">₹ ${data.min_price.toLocaleString('en-IN')}</span>
+                                <i class="fas fa-arrow-right text-gray-400"></i>
+                                <span class="text-sm text-green-600 font-medium">₹ ${data.max_price.toLocaleString('en-IN')}</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">Your current price: ₹ ${document.getElementById('id_price').value}</p>
+                        </div>
+                    </div>
+                `;
+                suggestionDiv.style.display = 'block';
+            }
+            
+            Toast.show('Price suggestions updated successfully', 'success', 'Suggestions');
+        } else {
+            Toast.show(data.error || 'Failed to get price suggestions', 'error', 'Error');
+        }
+        
+    } catch (error) {
+        hideLoading();
+        console.error('Error getting price suggestions:', error);
+        Toast.show('Failed to get price suggestions. Please try again.', 'error', 'Network Error');
+    }
+}
+
+function cancelPropertyCreation() {
+    if (confirm('Are you sure you want to cancel? All unsaved changes will be lost.')) {
+        window.location.href = '{% url "seller_properties" %}';
+    }
+}
+
+async function saveAsDraft() {
+    showLoading('Saving as draft...');
+    
+    try {
+        const form = document.getElementById('basicForm');
+        const formData = new FormData(form);
+        formData.append('save_as_draft', 'true');
+        formData.append('ajax', 'true');
+        
+        const response = await fetch(window.location.pathname, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        
+        const data = await response.json();
+        hideLoading();
+        
+        if (data.success) {
+            Toast.show('Property saved as draft successfully!', 'success', 'Draft Saved');
+            showSuccessMessage('Your property has been saved as a draft. You can continue editing later.');
+            
+            // Update URL if property was created
+            if (data.property_id) {
+                const newUrl = `${window.location.pathname}?step=1&property_id=${data.property_id}`;
+                window.history.replaceState({}, '', newUrl);
+            }
+        } else {
+            Toast.show(data.error || 'Failed to save draft', 'error', 'Error');
+        }
+        
+    } catch (error) {
+        hideLoading();
+        console.error('Error saving draft:', error);
+        Toast.show('Failed to save draft. Please try again.', 'error', 'Network Error');
+    }
+}
+
+function validateListingType() {
+    const listingType = document.getElementById('listing_type');
+    if (!listingType || !listingType.value) {
+        Toast.show('Please select a listing type', 'error', 'Validation Error');
+        return false;
+    }
+    return true;
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

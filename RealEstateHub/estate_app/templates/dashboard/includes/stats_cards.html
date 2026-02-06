@@ -1,0 +1,165 @@
+{% load dashboard_filters %}
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <!-- Card 1: Properties -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card card-gradient-1 h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon bg-white text-primary">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h3 class="card-title mb-1">
+                            {{ stats.property_stats.active|default:0 }}
+                        </h3>
+                        <p class="card-text mb-1">Active Properties</p>
+                        <small class="text-white opacity-75">
+                            {{ stats.property_stats.total|default:0 }} total
+                        </small>
+                    </div>
+                </div>
+                <div class="progress mt-3" style="height: 4px;">
+                    <div class="progress-bar bg-white" 
+                         style="width: {% widthratio stats.property_stats.active|default:0 stats.property_stats.total|default:1 100 %}%">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 2: Views -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card card-gradient-2 h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon bg-white text-danger">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h3 class="card-title mb-1">
+                            {{ stats.engagement_stats.total_views|default:0|intcomma }}
+                        </h3>
+                        <p class="card-text mb-1">Total Views</p>
+                        <small class="text-white opacity-75">
+                            {{ stats.time_period }}
+                        </small>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <small class="text-white opacity-75">
+                        <i class="fas fa-user me-1"></i>
+                        {{ stats.engagement_stats.unique_visitors|default:0 }} unique visitors
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 3: Inquiries -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card card-gradient-3 h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon bg-white text-info">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h3 class="card-title mb-1">
+                            {{ stats.engagement_stats.total_inquiries|default:0 }}
+                        </h3>
+                        <p class="card-text mb-1">Total Inquiries</p>
+                        <small class="text-white opacity-75">
+                            {{ stats.engagement_stats.new_inquiries|default:0 }} new
+                        </small>
+                    </div>
+                </div>
+                <div class="progress mt-3" style="height: 4px;">
+                    <div class="progress-bar bg-white" 
+                         style="width: {% widthratio stats.engagement_stats.converted_inquiries|default:0 stats.engagement_stats.total_inquiries|default:1 100 %}%">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 4: Conversion Rate -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card card-gradient-4 h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon bg-white text-success">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h3 class="card-title mb-1">
+                            {{ stats.performance_stats.conversion_rate|default:0|floatformat:1 }}%
+                        </h3>
+                        <p class="card-text mb-1">Conversion Rate</p>
+                        <small class="text-white opacity-75">
+                            View to Inquiry
+                        </small>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <small class="text-white opacity-75">
+                        <i class="fas fa-clock me-1"></i>
+                        {{ stats.performance_stats.response_rate|default:0|floatformat:1 }}% response rate
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats Row -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row text-center">
+                    <!-- Stat 1 -->
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="p-3 rounded bg-light">
+                            <div class="display-6 text-primary">
+                                {{ subscription_stats.listings_remaining|default:"0" }}
+                            </div>
+                            <small class="text-muted">Listings Remaining</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Stat 2 -->
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="p-3 rounded bg-light">
+                            <div class="display-6 text-warning">
+                                {{ subscription_stats.featured_remaining|default:0 }}
+                            </div>
+                            <small class="text-muted">Featured Credits</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Stat 3 -->
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="p-3 rounded bg-light">
+                            <div class="display-6 text-info">
+                                {{ subscription_stats.days_remaining|default:0 }}
+                            </div>
+                            <small class="text-muted">Days Remaining</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Stat 4 -->
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="p-3 rounded bg-light">
+                            <div class="display-6 text-success">
+                                ₹{{ stats.revenue_stats.total_revenue|default:0|floatformat:0 }}
+                            </div>
+                            <small class="text-muted">Total Revenue</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

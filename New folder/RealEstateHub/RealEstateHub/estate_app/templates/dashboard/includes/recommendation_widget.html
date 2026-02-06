@@ -1,0 +1,161 @@
+<!-- Recommendation Widget -->
+<div class="card h-100">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-star me-2"></i> Recommended For You</h5>
+        <button class="btn btn-sm btn-outline-secondary" onclick="refreshRecommendations()">
+            <i class="fas fa-sync-alt"></i>
+        </button>
+    </div>
+    <div class="card-body">
+        {% if recommendations %}
+        <div class="row g-3">
+            {% for property in recommendations|slice:":4" %}
+            <div class="col-md-6">
+                <div class="card border h-100">
+                    {% if property.primary_image %}
+                    <img src="{{ property.primary_image.url }}" 
+                         class="card-img-top" 
+                         alt="{{ property.title }}"
+                         style="height: 120px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                         style="height: 120px;">
+                        <i class="fas fa-home fa-2x text-muted"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="card-body">
+                        <h6 class="card-title mb-1">{{ property.title|truncatechars:25 }}</h6>
+                        <p class="card-text text-muted small mb-2">
+                            <i class="fas fa-map-marker-alt me-1"></i>
+                            {{ property.city }}
+                        </p>
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge bg-light text-dark">
+                                <i class="fas fa-bed me-1"></i>{{ property.bedrooms }}
+                            </span>
+                            <span class="badge bg-light text-dark">
+                                <i class="fas fa-bath me-1"></i>{{ property.bathrooms }}
+                            </span>
+                            <span class="badge bg-light text-dark">
+                                {{ property.area }} {{ property.area_unit }}
+                            </span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="text-primary mb-0">₹{{ property.price|floatformat:0 }}</h5>
+                            <div class="btn-group">
+                                <a href="{% url 'properties:detail' property.slug %}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <button class="btn btn-sm btn-outline-danger"
+                                        onclick="toggleFavorite({{ property.id }}, this)">
+                                    <i class="far fa-heart"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <div class="text-muted">
+                <i class="fas fa-search fa-2x mb-3"></i><br>
+                No recommendations yet
+            </div>
+            <p class="small text-muted mb-3">
+                Save some properties or update your preferences to get personalized recommendations
+            </p>
+            <a href="{% url 'properties:list' %}" class="btn btn-sm btn-primary">
+                <i class="fas fa-search me-1"></i> Browse Properties
+            </a>
+        </div>
+        {% endif %}
+        
+        <!-- View More Link -->
+        {% if recommendations and recommendations|length > 4 %}
+        <div class="text-center mt-3">
+            <a href="{% url 'properties:list' %}" class="btn btn-sm btn-outline-primary">
+                View More Recommendations <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Recommendation Preferences -->
+    <div class="card-footer">
+        <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">Based on your preferences</small>
+            <a href="#" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#preferencesModal">
+                <i class="fas fa-sliders-h"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Preferences Modal -->
+<div class="modal fade" id="preferencesModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Recommendation Preferences</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="preferencesForm">
+                    <div class="mb-3">
+                        <label class="form-label">Property Types</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="property_type" value="residential" checked>
+                            <label class="form-check-label">Residential</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="property_type" value="commercial">
+                            <label class="form-check-label">Commercial</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="property_type" value="land">
+                            <label class="form-check-label">Land</label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Price Range (₹)</label>
+                        <div class="row">
+                            <div class="col-6">
+                                <input type="number" class="form-control" name="min_price" placeholder="Min">
+                            </div>
+                            <div class="col-6">
+                                <input type="number" class="form-control" name="max_price" placeholder="Max">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Preferred Locations</label>
+                        <input type="text" class="form-control" name="locations" placeholder="Enter cities (comma separated)">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Update Frequency</label>
+                        <select class="form-select" name="frequency">
+                            <option value="daily">Daily</option>
+                            <option value="weekly" selected>Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="savePreferences()">
+                    <i class="fas fa-save me-1"></i> Save Preferences
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

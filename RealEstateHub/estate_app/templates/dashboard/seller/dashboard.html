@@ -1,0 +1,538 @@
+<!-- templates/dashboard/seller/dashboard.html -->
+{% extends 'dashboard/seller/base.html' %}
+{% load static %}
+
+{% block title %}BHOOSPARSH - Seller Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-animate {
+        animation: slideIn 0.6s ease-out forwards;
+        opacity: 0;
+    }
+
+    .stats-card {
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stagger-1 { animation-delay: 0.1s; }
+    .stagger-2 { animation-delay: 0.2s; }
+    .stagger-3 { animation-delay: 0.3s; }
+    .stagger-4 { animation-delay: 0.4s; }
+    .stagger-5 { animation-delay: 0.5s; }
+</style>
+{% endblock %}
+
+{% block header_title %}
+<div class="relative">
+    <div class="flex items-center gap-4 mb-2">
+        <div class="text-2xl font-bold text-gray-900 dark:text-white">
+            Dashboard Overview
+        </div>
+    </div>
+    <p class="text-gray-600 dark:text-gray-300 text-sm pl-1">
+        Welcome back, {{ user.first_name|default:user.username }}! Here's your performance summary.
+    </p>
+</div>
+{% endblock %}
+
+{% block header_buttons %}
+
+<a href="{% url 'seller_property_create' %}" class="px-4 py-2 bg-gradient-to-r from-bhoosparsh-orange to-orange-600 text-white rounded-lg hover:opacity-90 transition flex items-center gap-2">
+    <i class="fas fa-plus"></i>
+    <span>Post Property</span>
+</a>
+{% endblock %}
+
+{% block content %}
+<!-- Plan Info -->
+<div class="bg-gradient-to-r from-bhoosparsh-blue to-blue-600 rounded-2xl p-6 mb-6 text-white card-animate stagger-1">
+    <div class="flex flex-col md:flex-row md:items-center justify-between">
+        <div class="mb-4 md:mb-0">
+            <h3 class="font-bold text-lg">{{ membership.plan.name|default:"Basic" }} Plan</h3>
+            <p class="text-blue-100 text-sm mt-1">
+                Listings: <strong>{{ stats.listings_used }}/{{ membership.plan.max_listings|default:1 }}</strong> • 
+                Featured: <strong>{{ stats.featured_used }}/{{ membership.plan.max_featured|default:0 }}</strong> • 
+                {% if plan_days_left > 0 %}
+                Renews in: <strong>{{ plan_days_left }} days</strong>
+                {% else %}
+                <strong>Active</strong>
+                {% endif %}
+            </p>
+        </div>
+        <a href="{% url 'seller_packages' %}" class="px-4 py-2 bg-white text-bhoosparsh-blue rounded-lg font-medium hover:bg-gray-100 transition inline-flex items-center gap-2">
+            <i class="fas fa-arrow-up"></i>
+            <span>Upgrade Plan</span>
+        </a>
+    </div>
+</div>
+
+<!-- Quick Stats Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="stats-card card-animate stagger-1">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm h-full">
+            <div class="flex items-center">
+                <div class="rounded-full bg-blue-100 dark:bg-blue-900 p-3 mr-4">
+                    <i class="fas fa-home text-bhoosparsh-blue text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.active_properties }}</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Active Properties</p>
+                </div>
+            </div>
+            <div class="mt-3">
+                <div class="flex justify-between text-xs text-gray-500">
+                    <span>{{ stats.listings_remaining }} slots available</span>
+                    <span>{{ membership.listings_remaining }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-card card-animate stagger-2">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm h-full">
+            <div class="flex items-center">
+                <div class="rounded-full bg-green-100 dark:bg-green-900 p-3 mr-4">
+                    <i class="fas fa-eye text-green-600 dark:text-green-400 text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.total_views|default:"0" }}</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Views (7 days)</p>
+                </div>
+            </div>
+            <div class="mt-3">
+                <div class="flex items-center text-xs text-green-600">
+                    <i class="fas fa-arrow-up mr-1"></i>
+                    <span>12% from last week</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-card card-animate stagger-3">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm h-full">
+            <div class="flex items-center">
+                <div class="rounded-full bg-yellow-100 dark:bg-yellow-900 p-3 mr-4">
+                    <i class="fas fa-inbox text-yellow-600 dark:text-yellow-400 text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.total_leads|default:"0" }}</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Leads (7 days)</p>
+                </div>
+            </div>
+            <div class="mt-3">
+                <div class="flex items-center text-xs text-bhoosparsh-orange">
+                    <i class="fas fa-circle mr-1"></i>
+                    <span>3 new today</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-card card-animate stagger-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm h-full">
+            <div class="flex items-center">
+                <div class="rounded-full bg-purple-100 dark:bg-purple-900 p-3 mr-4">
+                    <i class="fas fa-reply text-purple-600 dark:text-purple-400 text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.response_rate }}%</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Response Rate</p>
+                </div>
+            </div>
+            <div class="mt-3">
+                <div class="flex items-center text-xs text-purple-600">
+                    <i class="fas fa-trophy mr-1"></i>
+                    <span>Excellent</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <!-- Performance Chart -->
+    <div class="lg:col-span-2 card-animate stagger-1">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 h-full flex flex-col">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+                <h3 class="font-bold text-lg text-gray-900 dark:text-white">Performance Trends (Last 30 Days)</h3>
+                <select id="chartPeriod" class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-700 dark:text-gray-300 w-full sm:w-auto">
+                    <option value="7">Last 7 Days</option>
+                    <option value="30" selected>Last 30 Days</option>
+                    <option value="90">Last 90 Days</option>
+                </select>
+            </div>
+            <div class="flex-1">
+                <div class="chart-container">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lead Sources Chart -->
+    <div class="card-animate stagger-2">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 h-full flex flex-col">
+            <h3 class="font-bold text-lg text-gray-900 dark:text-white mb-6">Lead Sources</h3>
+            <div class="flex-1">
+                <div class="chart-container mb-6">
+                    <canvas id="leadSourcesChart"></canvas>
+                </div>
+            </div>
+            <div class="space-y-3 mt-auto">
+                {% for source in lead_sources %}
+                <div class="flex justify-between items-center text-sm">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full" style="background-color: {{ source.color }}"></div>
+                        <span class="text-gray-600 dark:text-gray-400">{{ source.name }}</span>
+                    </div>
+                    <span class="font-medium">{{ source.value }}%</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity Row -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <!-- Recent Leads -->
+    <div class="card-animate stagger-1">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm h-full flex flex-col">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <h3 class="font-bold text-lg text-gray-900 dark:text-white">Recent Enquiries (Need Follow-up)</h3>
+                    <a href="{% url 'seller_leads' %}" class="text-bhoosparsh-blue hover:text-blue-700 text-sm font-medium flex items-center gap-1">
+                        View All
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="flex-1 overflow-hidden">
+                <div class="p-4 max-h-[500px] overflow-y-auto">
+                    <div class="space-y-4">
+                        {% for lead in recent_leads %}
+                        <div class="message-item p-4 rounded-xl border border-gray-100 dark:border-gray-700 hover:border-bhoosparsh-blue transition cursor-pointer">
+                            <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                <div class="flex-1">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-bhoosparsh-blue flex items-center justify-center text-white font-medium">
+                                            {{ lead.user.first_name|first|upper }}
+                                        </div>
+                                        <div class="flex-1">
+                                            <h4 class="font-medium text-gray-900 dark:text-white">
+                                                {{ lead.user.get_full_name|default:lead.user.email }}
+                                            </h4>
+                                            <div class="flex flex-wrap items-center text-sm text-gray-600 dark:text-gray-400 mt-1 gap-2">
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-phone mr-2 text-xs"></i>
+                                                    <span class="text-xs">{{ lead.phone|default:"No phone" }}</span>
+                                                </div>
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-envelope ml-3 mr-2 text-xs"></i>
+                                                    <span class="text-xs truncate">{{ lead.user.email }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-3">
+                                        <strong class="text-gray-900 dark:text-white">Property:</strong> {{ lead.property.title|truncatechars:30 }}
+                                    </p>
+                                    <p class="text-sm text-gray-500 mt-2">
+                                        "{{ lead.message|truncatechars:50 }}"
+                                    </p>
+                                </div>
+                                <div class="sm:text-right">
+                                    <span class="text-xs text-gray-500">{{ lead.created_at|timesince }} ago</span>
+                                    <div class="mt-2">
+                                        <span class="inline-flex items-center bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                                            New
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-8">
+                            <i class="fas fa-inbox text-gray-400 text-3xl mb-3"></i>
+                            <p class="text-gray-600 dark:text-gray-400">No recent leads</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Properties -->
+    <div class="space-y-6">
+        <!-- Top Performing Properties -->
+        <div class="card-animate stagger-2">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6">
+                <h3 class="font-bold text-lg text-gray-900 dark:text-white mb-4">Top Performing Properties</h3>
+                <div class="space-y-4">
+                    {% for property in top_properties %}
+                    <div class="property-card p-4 rounded-xl border border-gray-100 dark:border-gray-700 hover:border-bhoosparsh-blue transition cursor-pointer">
+                        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                            <div class="flex-1">
+                                <h4 class="font-medium text-gray-900 dark:text-white">{{ property.title|truncatechars:30 }}</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">
+                                    {{ property.city|default:"N/A" }} • ₹{{ property.price|default:"0" }}
+                                </p>
+                                <div class="flex items-center gap-4 mt-2">
+                                    <div class="flex items-center gap-1">
+                                        <i class="fas fa-eye text-gray-400 text-xs"></i>
+                                        <!-- FIX: Use property.recent_views instead of property.view_count -->
+                                        <span class="text-xs text-gray-500">{{ property.recent_views|default:"0" }} views</span>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <i class="fas fa-inbox text-gray-400 text-xs"></i>
+                                        <!-- FIX: Use property.recent_leads instead of property.lead_count -->
+                                        <span class="text-xs text-gray-500">{{ property.recent_leads|default:"0" }} leads</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="sm:text-right">
+                                {% with performance=property.performance_score|default:85 %}
+                                <span class="text-lg font-bold {% if performance >= 80 %}text-green-600{% elif performance >= 60 %}text-yellow-500{% else %}text-red-500{% endif %}">
+                                    {{ performance }}%
+                                </span>
+                                {% endwith %}
+                                <div class="mt-1">
+                                    <span class="text-xs text-gray-500">Performance</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            {% with performance=property.performance_score|default:85 %}
+                            <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                <span>Performance Score</span>
+                                <span>{{ performance }}/100</span>
+                            </div>
+                            <div class="custom-progress">
+                                <div class="custom-progress-bar" style="width: {{ performance }}%"></div>
+                            </div>
+                            {% endwith %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-8">
+                        <i class="fas fa-home text-gray-400 text-3xl mb-3"></i>
+                        <p class="text-gray-600 dark:text-gray-400">No properties yet</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        
+    </div>
+</div>
+
+<!-- Device & Peak Hours -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Device Breakdown -->
+    <div class="card-animate stagger-1">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6">
+            <h3 class="font-bold text-lg text-gray-900 dark:text-white mb-6">Device Breakdown</h3>
+            <div class="grid grid-cols-3 gap-4">
+                <div class="text-center">
+                    <div class="bg-blue-100 dark:bg-blue-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-mobile-alt text-bhoosparsh-blue dark:text-blue-400 text-2xl"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-gray-900 dark:text-white">856</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Mobile</p>
+                    <p class="text-xs text-gray-500">69% of views</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-purple-100 dark:bg-purple-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-desktop text-purple-600 dark:text-purple-400 text-2xl"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-gray-900 dark:text-white">312</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Desktop</p>
+                    <p class="text-xs text-gray-500">25% of views</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-green-100 dark:bg-green-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-tablet-alt text-green-600 dark:text-green-400 text-2xl"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-gray-900 dark:text-white">72</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Tablet</p>
+                    <p class="text-xs text-gray-500">6% of views</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Best Time for Leads -->
+    <div class="card-animate stagger-2">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6">
+            <h3 class="font-bold text-lg text-gray-900 dark:text-white mb-6">Best Time for Leads</h3>
+            <div class="space-y-4">
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-600 dark:text-gray-400">Morning (9AM - 12PM)</span>
+                        <span class="font-medium">28 leads</span>
+                    </div>
+                    <div class="custom-progress">
+                        <div class="custom-progress-bar" style="width: 35%"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">35% of daily leads</p>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-600 dark:text-gray-400">Afternoon (1PM - 5PM)</span>
+                        <span class="font-medium">32 leads</span>
+                    </div>
+                    <div class="custom-progress">
+                        <div class="custom-progress-bar" style="width: 40%"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">40% of daily leads</p>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-600 dark:text-gray-400">Evening (6PM - 9PM)</span>
+                        <span class="font-medium">20 leads</span>
+                    </div>
+                    <div class="custom-progress">
+                        <div class="custom-progress-bar" style="width: 25%"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">25% of daily leads</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize animations
+        const cards = document.querySelectorAll('.card-animate');
+        cards.forEach((card, index) => {
+            setTimeout(() => {
+                card.style.animationDelay = `${index * 0.1}s`;
+                card.style.opacity = '1';
+            }, 100);
+        });
+
+        // Initialize charts
+        initCharts();
+        
+        // Setup event listeners
+        document.getElementById('chartPeriod').addEventListener('change', function() {
+            updateChart(this.value);
+        });
+    });
+
+    function initCharts() {
+        // Performance Chart
+        const perfCtx = document.getElementById('performanceChart').getContext('2d');
+        new Chart(perfCtx, {
+            type: 'line',
+            data: {
+                labels: {{ chart_data.labels|safe }},
+                datasets: [{
+                    label: 'Views',
+                    data: {{ chart_data.views|safe }},
+                    borderColor: '#10B981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    borderWidth: 2
+                }, {
+                    label: 'Leads',
+                    data: {{ chart_data.leads|safe }},
+                    borderColor: '#0E68B9',
+                    backgroundColor: 'rgba(14, 104, 185, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            color: '#6B7280'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            color: '#6B7280'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Lead Sources Chart
+        const sourcesCtx = document.getElementById('leadSourcesChart').getContext('2d');
+        new Chart(sourcesCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Website Form', 'Phone Calls', 'WhatsApp', 'Email'],
+                datasets: [{
+                    data: [45, 30, 15, 10],
+                    backgroundColor: [
+                        '#10B981',
+                        '#0E68B9',
+                        '#8B5CF6',
+                        '#F59E0B'
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 15
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+
+    function updateChart(period) {
+        // In real app, fetch new data based on period
+        showToast(`Loading data for last ${period} days...`, 'info');
+    }
+</script>
+{% endblock %}

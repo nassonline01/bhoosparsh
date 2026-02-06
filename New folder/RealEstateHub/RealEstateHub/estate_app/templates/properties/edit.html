@@ -1,0 +1,1235 @@
+{% extends 'properties/base.html' %}
+{% load static %}
+
+{% block title %}Edit {{ property.title }} - RealEstatePro{% endblock %}
+
+{% block extra_css %}
+<style>
+    .edit-form-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+    
+    .edit-form-card {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+    }
+    
+    .form-header {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        color: white;
+        padding: 2rem;
+    }
+    
+    .form-nav {
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 1rem 2rem;
+        display: flex;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+    
+    .form-nav::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .nav-item {
+        padding: 0.75rem 1.5rem;
+        white-space: nowrap;
+        color: #64748b;
+        font-weight: 500;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-right: 0.5rem;
+    }
+    
+    .nav-item:hover {
+        background: #e2e8f0;
+        color: #475569;
+    }
+    
+    .nav-item.active {
+        background: #3b82f6;
+        color: white;
+    }
+    
+    .form-section {
+        display: none;
+        padding: 2rem;
+        animation: slideIn 0.3s ease;
+    }
+    
+    .form-section.active {
+        display: block;
+    }
+    
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .image-manager {
+        background: #f8fafc;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        border: 2px dashed #cbd5e1;
+    }
+    
+    .existing-images {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .image-item {
+        position: relative;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s;
+    }
+    
+    .image-item:hover {
+        transform: translateY(-4px);
+    }
+    
+    .image-item img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+    }
+    
+    .image-actions {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 0.75rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .image-checkbox {
+        display: flex;
+        align-items: center;
+    }
+    
+    .image-order {
+        width: 60px;
+        padding: 0.25rem;
+        border-radius: 0.25rem;
+        border: 1px solid #cbd5e1;
+        background: white;
+    }
+    
+    .primary-badge {
+        position: absolute;
+        top: 0.5rem;
+        left: 0.5rem;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .drag-handle {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        color: white;
+        background: rgba(0, 0, 0, 0.5);
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: move;
+    }
+    
+    .stat-card {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .preview-card {
+        background: white;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s;
+    }
+    
+    .preview-card:hover {
+        transform: translateY(-4px);
+    }
+    
+    .danger-zone {
+        border: 2px solid #fca5a5;
+        background: #fef2f2;
+        border-radius: 1rem;
+        padding: 2rem;
+    }
+    
+    .delete-btn {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    
+    .delete-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="edit-form-container">
+    <div class="container mx-auto px-4">
+        <div class="max-w-7xl mx-auto">
+            <!-- Form Card -->
+            <div class="edit-form-card">
+                <!-- Header -->
+                <div class="form-header">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between">
+                        <div>
+                            <h1 class="text-3xl font-bold mb-2">Edit Property</h1>
+                            <p class="text-blue-100">{{ property.title }}</p>
+                            <div class="flex items-center space-x-4 mt-3">
+                                <span class="px-3 py-1 bg-white/20 rounded-full text-sm">
+                                    <i class="fas fa-eye mr-1"></i> {{ property.view_count }} views
+                                </span>
+                                <span class="px-3 py-1 bg-white/20 rounded-full text-sm">
+                                    <i class="fas fa-envelope mr-1"></i> {{ property.inquiry_count }} inquiries
+                                </span>
+                                <span class="px-3 py-1 bg-white/20 rounded-full text-sm">
+                                    <i class="fas fa-calendar mr-1"></i> {{ property.created_at|date:"M d, Y" }}
+                                </span>
+                            </div>
+                        </div>
+                        <a href="{% url 'properties:detail' property.slug %}" 
+                           target="_blank"
+                           class="mt-4 md:mt-0 inline-flex items-center px-4 py-2 bg-white text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition-all">
+                            <i class="fas fa-external-link-alt mr-2"></i>
+                            View Live
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <div class="form-nav">
+                    <div class="nav-item active" data-section="basic">Basic Info</div>
+                    <div class="nav-item" data-section="details">Property Details</div>
+                    <div class="nav-item" data-section="location">Location</div>
+                    <div class="nav-item" data-section="images">Photos & Media</div>
+                    <div class="nav-item" data-section="features">Features</div>
+                    <div class="nav-item" data-section="contact">Contact Info</div>
+                    <div class="nav-item" data-section="preview">Preview</div>
+                    <div class="nav-item" data-section="danger" style="color: #dc2626;">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>Danger Zone
+                    </div>
+                </div>
+
+                <!-- Form -->
+                <form method="POST" enctype="multipart/form-data" id="edit-form">
+                    {% csrf_token %}
+                    
+                    <!-- Basic Info Section -->
+                    <div class="form-section active" id="basic-section">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">Basic Information</h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Property Title *
+                                </label>
+                                <input type="text" name="title" value="{{ property.title }}"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       required>
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Description *
+                                </label>
+                                <textarea name="description" rows="6"
+                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                          required>{{ property.description }}</textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                                <select name="category" 
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    {% for category in categories %}
+                                        <option value="{{ category.id }}" 
+                                                {% if category.id == property.category.id %}selected{% endif %}>
+                                            {{ category.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Subcategory</label>
+                                <select name="subcategory"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">None</option>
+                                    {% for sub in property.category.subcategories.all %}
+                                        <option value="{{ sub.id }}"
+                                                {% if property.subcategory and sub.id == property.subcategory.id %}selected{% endif %}>
+                                            {{ sub.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between mt-8">
+                            <div></div>
+                            <button type="button" class="next-section px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                                Next: Details <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Property Details Section -->
+                    <div class="form-section" id="details-section">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">Property Details</h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Price *</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500">$</span>
+                                    </div>
+                                    <input type="number" name="price" value="{{ property.price }}" step="0.01"
+                                           class="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                           required>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Area *</label>
+                                <div class="flex">
+                                    <input type="number" name="area" value="{{ property.area }}" step="0.01"
+                                           class="flex-1 rounded-l-lg border border-r-0 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 px-4 py-3"
+                                           required>
+                                    <select name="area_unit"
+                                            class="rounded-r-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 px-4 py-3 bg-gray-50">
+                                        {% for unit in area_units %}
+                                            <option value="{{ unit.0 }}" {% if unit.0 == property.area_unit %}selected{% endif %}>
+                                                {{ unit.1 }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Bedrooms</label>
+                                <select name="bedrooms"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    {% for i in "12345678910" %}
+                                        <option value="{{ forloop.counter }}" {% if forloop.counter == property.bedrooms %}selected{% endif %}>
+                                            {{ forloop.counter }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Bathrooms</label>
+                                <select name="bathrooms"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    {% for i in "123456" %}
+                                        <option value="{{ forloop.counter }}" {% if forloop.counter == property.bathrooms %}selected{% endif %}>
+                                            {{ forloop.counter }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                                <select name="status"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    {% for status in status_choices %}
+                                        <option value="{{ status.0 }}" {% if status.0 == property.status %}selected{% endif %}>
+                                            {{ status.1 }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Furnishing</label>
+                                <select name="furnishing"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    {% for furn in furnishing_choices %}
+                                        <option value="{{ furn.0 }}" {% if furn.0 == property.furnishing %}selected{% endif %}>
+                                            {{ furn.1 }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Property Condition</label>
+                                <select name="condition"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    {% for cond in condition_choices %}
+                                        <option value="{{ cond.0 }}" {% if cond.0 == property.condition %}selected{% endif %}>
+                                            {{ cond.1 }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Year Built</label>
+                                <input type="number" name="year_built" value="{{ property.year_built|default:'' }}"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       min="1800" max="{% now 'Y' %}">
+                            </div>
+                        </div>
+
+                        <!-- Additional Details -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Parking Spaces</label>
+                                <input type="number" name="parking" value="{{ property.parking }}"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       min="0">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Balconies</label>
+                                <input type="number" name="balconies" value="{{ property.balconies }}"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       min="0">
+                            </div>
+                        </div>
+
+                        <!-- Checkboxes -->
+                        <div class="space-y-4 mt-6">
+                            <label class="flex items-center">
+                                <input type="checkbox" name="price_negotiable" 
+                                       class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                       {% if property.price_negotiable %}checked{% endif %}>
+                                <span class="ml-3 text-gray-700">Price is negotiable</span>
+                            </label>
+                            
+                            <label class="flex items-center">
+                                <input type="checkbox" name="rera_registered" 
+                                       class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                       {% if property.rera_registered %}checked{% endif %}>
+                                <span class="ml-3 text-gray-700">RERA Registered</span>
+                            </label>
+                        </div>
+
+                        <div class="flex justify-between mt-8">
+                            <button type="button" class="prev-section px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-arrow-left mr-2"></i> Previous
+                            </button>
+                            <button type="button" class="next-section px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                                Next: Location <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Location Section -->
+                    <div class="form-section" id="location-section">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">Location Details</h2>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Full Address *</label>
+                                <textarea name="address" rows="3"
+                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                          required>{{ property.address }}</textarea>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">City *</label>
+                                    <input type="text" name="city" value="{{ property.city }}"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                           required>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Locality *</label>
+                                    <input type="text" name="locality" value="{{ property.locality }}"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                           required>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Pincode</label>
+                                    <input type="text" name="pincode" value="{{ property.pincode }}"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Landmark</label>
+                                    <input type="text" name="landmark" value="{{ property.landmark|default:'' }}"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                            </div>
+
+                            <!-- Map -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Location on Map</label>
+                                <div id="location-map" class="h-96 rounded-xl border border-gray-300"></div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                    <input type="text" name="latitude" value="{{ property.latitude|default:'' }}" 
+                                           placeholder="Latitude" 
+                                           class="px-4 py-2 border border-gray-300 rounded-lg" 
+                                           id="latitude-input">
+                                    <input type="text" name="longitude" value="{{ property.longitude|default:'' }}" 
+                                           placeholder="Longitude"
+                                           class="px-4 py-2 border border-gray-300 rounded-lg" 
+                                           id="longitude-input">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between mt-8">
+                            <button type="button" class="prev-section px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-arrow-left mr-2"></i> Previous
+                            </button>
+                            <button type="button" class="next-section px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                                Next: Photos <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Images Section -->
+                    <div class="form-section" id="images-section">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">Photos & Media</h2>
+                        
+                        <!-- Existing Images -->
+                        <div class="image-manager mb-8">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Existing Images</h3>
+                            
+                            {% if existing_images %}
+                                <div class="existing-images" id="existing-images">
+                                    {% for image in existing_images %}
+                                        <div class="image-item" data-image-id="{{ image.id }}">
+                                            <img src="{{ image.image.url }}" alt="Property Image {{ forloop.counter }}">
+                                            {% if image.is_primary %}
+                                                <div class="primary-badge">Primary</div>
+                                            {% endif %}
+                                            <div class="drag-handle">
+                                                <i class="fas fa-grip-vertical"></i>
+                                            </div>
+                                            <div class="image-actions">
+                                                <div class="image-checkbox">
+                                                    <input type="checkbox" name="delete_images" value="{{ image.id }}"
+                                                           class="rounded border-gray-300 text-red-600 focus:ring-red-500"
+                                                           id="delete-{{ image.id }}">
+                                                    <label for="delete-{{ image.id }}" class="ml-2 text-white text-sm cursor-pointer">
+                                                        Delete
+                                                    </label>
+                                                </div>
+                                                <div>
+                                                    <input type="number" name="image_order_{{ image.id }}" 
+                                                           value="{{ image.order }}" 
+                                                           class="image-order" min="0" max="100">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <p class="text-sm text-gray-600 mt-2">
+                                    <i class="fas fa-info-circle mr-2"></i>
+                                    Drag to reorder images. First image will be primary. Check delete to remove images.
+                                </p>
+                            {% else %}
+                                <p class="text-gray-500 text-center py-8">No images uploaded yet.</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Add New Images -->
+                        <div class="image-manager">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Add New Images</h3>
+                            <div class="dropzone" id="new-images-dropzone">
+                                <div class="py-12 text-center">
+                                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                                    <p class="text-lg font-medium text-gray-700 mb-2">Drag & drop or click to upload new images</p>
+                                    <p class="text-sm text-gray-500 mb-4">PNG, JPG, WebP up to 5MB each</p>
+                                    <input type="file" name="new_images" id="new-images-input" multiple 
+                                           accept="image/*" class="hidden">
+                                    <label for="new-images-input" 
+                                           class="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer">
+                                        <i class="fas fa-plus mr-2"></i> Select Images
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="new-images-preview grid grid-cols-2 md:grid-cols-4 gap-4 mt-6" id="new-images-preview"></div>
+                        </div>
+
+                        <!-- Virtual Tour & Video -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Virtual Tour URL</label>
+                                <input type="url" name="virtual_tour" value="{{ property.virtual_tour|default:'' }}"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="https://...">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Property Video URL</label>
+                                <input type="url" name="video_url" value="{{ property.video_url|default:'' }}"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="https://...">
+                            </div>
+                        </div>
+
+                        <!-- Floor Plan -->
+                        <div class="mt-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Floor Plan</label>
+                            {% if property.floor_plan %}
+                                <div class="flex items-center space-x-4 mb-4">
+                                    <div class="w-32 h-32 border rounded-lg overflow-hidden">
+                                        <img src="{{ property.floor_plan.url }}" alt="Floor Plan" class="w-full h-full object-contain">
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">Current floor plan uploaded</p>
+                                        <label class="flex items-center mt-2">
+                                            <input type="checkbox" name="remove_floor_plan" 
+                                                   class="rounded border-gray-300 text-red-600 focus:ring-red-500">
+                                            <span class="ml-2 text-gray-700">Remove floor plan</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            <input type="file" name="floor_plan" accept="image/*"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                        </div>
+
+                        <div class="flex justify-between mt-8">
+                            <button type="button" class="prev-section px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-arrow-left mr-2"></i> Previous
+                            </button>
+                            <button type="button" class="next-section px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                                Next: Features <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Features Section -->
+                    <div class="form-section" id="features-section">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">Features & Amenities</h2>
+                        
+                        <div class="space-y-8">
+                            <!-- RERA Details -->
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">RERA Details</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Security Deposit</label>
+                                        <input type="number" name="security_deposit" value="{{ property.security_deposit|default:'' }}" step="0.01"
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                               placeholder="0.00">
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">RERA Number</label>
+                                        <input type="text" name="rera_number" value="{{ property.rera_number|default:'' }}"
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                               placeholder="RERA registration number">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Amenities -->
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Select Amenities</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {% for amenity in amenities %}
+                                        <label class="flex items-center p-3 border border-gray-300 rounded-lg hover:bg-blue-50 cursor-pointer">
+                                            <input type="checkbox" name="amenities" value="{{ amenity.id }}"
+                                                   class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3"
+                                                   {% if amenity in property.amenities.all %}checked{% endif %}>
+                                            {% if amenity.icon %}
+                                                <i class="{{ amenity.icon }} text-blue-600 mr-3"></i>
+                                            {% endif %}
+                                            <span class="text-gray-700">{{ amenity.name }}</span>
+                                        </label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Property Status -->
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Property Status</h3>
+                                <div class="space-y-4">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="is_active" 
+                                               class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                               {% if property.is_active %}checked{% endif %}>
+                                        <span class="ml-3 text-gray-700">List property as active (visible in search)</span>
+                                    </label>
+                                    
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="is_featured" 
+                                               class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                               {% if property.is_featured %}checked{% endif %}>
+                                        <span class="ml-3 text-gray-700">Mark as featured property</span>
+                                    </label>
+                                    
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="is_sold_rented" 
+                                               class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                               {% if property.is_sold_rented %}checked{% endif %}>
+                                        <span class="ml-3 text-gray-700">Mark as sold/rented</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between mt-8">
+                            <button type="button" class="prev-section px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-arrow-left mr-2"></i> Previous
+                            </button>
+                            <button type="button" class="next-section px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                                Next: Contact <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Contact Section -->
+                    <div class="form-section" id="contact-section">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">Contact Information</h2>
+                        
+                        <div class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Contact Person</label>
+                                    <input type="text" name="contact_person" value="{{ property.contact_person|default:'' }}"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Listing Type</label>
+                                    <select name="listing_type"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        {% for type in listing_types %}
+                                            <option value="{{ type.0 }}" {% if type.0 == property.listing_type %}selected{% endif %}>
+                                                {{ type.1 }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Contact Email *</label>
+                                    <input type="email" name="contact_email" value="{{ property.contact_email }}"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                           required>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Contact Phone</label>
+                                    <input type="tel" name="contact_phone" value="{{ property.contact_phone|default:'' }}"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                            </div>
+
+                            <!-- Additional Contact Fields -->
+                            <div class="bg-blue-50 p-6 rounded-lg">
+                                <h4 class="font-semibold text-blue-900 mb-3">Additional Information</h4>
+                                <p class="text-sm text-blue-700 mb-4">
+                                    By default, your profile contact information will be used if these fields are left empty.
+                                </p>
+                                <div class="space-y-3">
+                                    <div class="flex items-center text-blue-700">
+                                        <i class="fas fa-user-circle mr-3"></i>
+                                        <span>Profile Name: {{ user.full_name }}</span>
+                                    </div>
+                                    <div class="flex items-center text-blue-700">
+                                        <i class="fas fa-envelope mr-3"></i>
+                                        <span>Profile Email: {{ user.email }}</span>
+                                    </div>
+                                    {% if user.phone %}
+                                        <div class="flex items-center text-blue-700">
+                                            <i class="fas fa-phone mr-3"></i>
+                                            <span>Profile Phone: {{ user.phone }}</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between mt-8">
+                            <button type="button" class="prev-section px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-arrow-left mr-2"></i> Previous
+                            </button>
+                            <button type="button" class="next-section px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                                Next: Preview <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Preview Section -->
+                    <div class="form-section" id="preview-section">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">Preview Changes</h2>
+                        
+                        <div class="space-y-8">
+                            <!-- Statistics -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="stat-card">
+                                    <div class="text-sm text-gray-500 mb-2">Current Views</div>
+                                    <div class="stat-number">{{ property.view_count }}</div>
+                                </div>
+                                
+                                <div class="stat-card">
+                                    <div class="text-sm text-gray-500 mb-2">Inquiries</div>
+                                    <div class="stat-number">{{ property.inquiry_count }}</div>
+                                </div>
+                                
+                                <div class="stat-card">
+                                    <div class="text-sm text-gray-500 mb-2">Days Listed</div>
+                                    <div class="stat-number">{{ property.days_listed }}</div>
+                                </div>
+                            </div>
+
+                            <!-- Property Preview Card -->
+                            <div class="preview-card">
+                                <div class="relative h-64 bg-gradient-to-r from-blue-500 to-purple-600">
+                                    {% if property.images.all %}
+                                        <img src="{{ property.images.first.image.url }}" 
+                                             alt="{{ property.title }}"
+                                             class="w-full h-full object-cover">
+                                    {% endif %}
+                                    <div class="absolute top-4 left-4">
+                                        {% if property.is_featured %}
+                                            <span class="px-3 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-full text-sm font-semibold">
+                                                <i class="fas fa-star mr-1"></i> Featured
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="absolute bottom-4 left-4">
+                                        <div class="text-2xl font-bold text-white">${{ property.price|floatformat:0 }}</div>
+                                        {% if property.status == 'for_rent' %}
+                                            <div class="text-white opacity-90">/month</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="p-6">
+                                    <h3 class="text-xl font-bold text-gray-900 mb-2">{{ property.title }}</h3>
+                                    <div class="flex items-center text-gray-600 mb-4">
+                                        <i class="fas fa-map-marker-alt mr-2"></i>
+                                        {{ property.locality }}, {{ property.city }}
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-bed text-blue-600 mr-2"></i>
+                                            <span>{{ property.bedrooms }} Bed</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-bath text-blue-600 mr-2"></i>
+                                            <span>{{ property.bathrooms }} Bath</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-vector-square text-blue-600 mr-2"></i>
+                                            <span>{{ property.area }} {{ property.get_area_unit_display }}</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-car text-blue-600 mr-2"></i>
+                                            <span>{{ property.parking }} Parking</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Changes Summary -->
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+                                <h4 class="font-semibold text-yellow-800 mb-3">
+                                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                                    Changes to be Applied
+                                </h4>
+                                <ul class="space-y-2 text-yellow-700" id="changes-summary">
+                                    <!-- Will be populated by JavaScript -->
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between mt-8">
+                            <button type="button" class="prev-section px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-arrow-left mr-2"></i> Previous
+                            </button>
+                            <button type="submit" class="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg">
+                                <i class="fas fa-save mr-2"></i> Save Changes
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Danger Zone Section -->
+                    <div class="form-section" id="danger-section">
+                        <div class="danger-zone">
+                            <h3 class="text-2xl font-bold text-red-700 mb-4">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                Danger Zone
+                            </h3>
+                            
+                            <div class="space-y-6">
+                                <!-- Deactivate Property -->
+                                <div class="p-4 bg-white border border-gray-300 rounded-lg">
+                                    <h4 class="font-semibold text-gray-900 mb-2">Deactivate Property</h4>
+                                    <p class="text-gray-600 mb-4">
+                                        Temporarily hide this property from search results. You can reactivate it anytime.
+                                    </p>
+                                    <div class="flex items-center">
+                                        <label class="flex items-center">
+                                            <input type="checkbox" name="deactivate_property"
+                                                   class="rounded border-gray-300 text-red-600 focus:ring-red-500">
+                                            <span class="ml-3 text-gray-700">Deactivate this property</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Delete Property -->
+                                <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+                                    <h4 class="font-semibold text-red-700 mb-2">Delete Property</h4>
+                                    <p class="text-red-600 mb-4">
+                                        <strong>Warning:</strong> This action cannot be undone. All property data, images, and inquiries will be permanently deleted.
+                                    </p>
+                                    <div class="flex items-center space-x-4">
+                                        <a href="{% url 'properties:delete' property.slug %}"
+                                           onclick="return confirm('Are you sure you want to permanently delete this property? This action cannot be undone.');"
+                                           class="delete-btn">
+                                            <i class="fas fa-trash mr-2"></i> Delete Property
+                                        </a>
+                                        <span class="text-sm text-red-600">
+                                            This will reduce your listing count
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Duplicate Property -->
+                                <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                    <h4 class="font-semibold text-blue-700 mb-2">Duplicate Property</h4>
+                                    <p class="text-blue-600 mb-4">
+                                        Create a copy of this property with similar details. Useful for listing similar units.
+                                    </p>
+                                    <a href="#" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                        <i class="fas fa-copy mr-2"></i> Duplicate Property
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between mt-8">
+                            <button type="button" class="prev-section px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-arrow-left mr-2"></i> Back to Edit
+                            </button>
+                            <button type="submit" class="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-save mr-2"></i> Save All Changes
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+<script>
+    // Section Navigation
+    const navItems = document.querySelectorAll('.nav-item');
+    const sections = document.querySelectorAll('.form-section');
+    
+    function showSection(sectionId) {
+        // Update active nav item
+        navItems.forEach(item => {
+            item.classList.remove('active');
+            if (item.getAttribute('data-section') === sectionId) {
+                item.classList.add('active');
+            }
+        });
+        
+        // Show active section
+        sections.forEach(section => {
+            section.classList.remove('active');
+            if (section.id === `${sectionId}-section`) {
+                section.classList.add('active');
+            }
+        });
+        
+        // Save current section to localStorage
+        localStorage.setItem('currentEditSection', sectionId);
+    }
+    
+    // Navigation click handlers
+    navItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const sectionId = item.getAttribute('data-section');
+            showSection(sectionId);
+        });
+    });
+    
+    // Next/Previous buttons
+    document.querySelectorAll('.next-section').forEach(button => {
+        button.addEventListener('click', () => {
+            const currentSection = document.querySelector('.form-section.active').id;
+            const sectionsArray = Array.from(sections);
+            const currentIndex = sectionsArray.findIndex(s => s.id === currentSection);
+            
+            if (currentIndex < sectionsArray.length - 1) {
+                const nextSectionId = sectionsArray[currentIndex + 1].id.replace('-section', '');
+                showSection(nextSectionId);
+            }
+        });
+    });
+    
+    document.querySelectorAll('.prev-section').forEach(button => {
+        button.addEventListener('click', () => {
+            const currentSection = document.querySelector('.form-section.active').id;
+            const sectionsArray = Array.from(sections);
+            const currentIndex = sectionsArray.findIndex(s => s.id === currentSection);
+            
+            if (currentIndex > 0) {
+                const prevSectionId = sectionsArray[currentIndex - 1].id.replace('-section', '');
+                showSection(prevSectionId);
+            }
+        });
+    });
+    
+    // Restore last visited section
+    const lastSection = localStorage.getItem('currentEditSection') || 'basic';
+    showSection(lastSection);
+    
+    // Initialize map
+    let map, marker;
+    const latInput = document.getElementById('latitude-input');
+    const lngInput = document.getElementById('longitude-input');
+    
+    function initMap() {
+        const defaultLat = {{ property.latitude|default:"19.0760" }};
+        const defaultLng = {{ property.longitude|default:"72.8777" }};
+        
+        map = L.map('location-map').setView([defaultLat, defaultLng], 13);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        if (latInput.value && lngInput.value) {
+            marker = L.marker([latInput.value, lngInput.value]).addTo(map);
+        }
+        
+        map.on('click', function(e) {
+            if (marker) {
+                map.removeLayer(marker);
+            }
+            
+            marker = L.marker(e.latlng).addTo(map);
+            latInput.value = e.latlng.lat.toFixed(6);
+            lngInput.value = e.latlng.lng.toFixed(6);
+        });
+    }
+    
+    // Initialize map when location section is shown
+    document.getElementById('location-section').addEventListener('htmx:load', initMap);
+    
+    // Initialize Sortable for image reordering
+    const existingImages = document.getElementById('existing-images');
+    if (existingImages) {
+        new Sortable(existingImages, {
+            animation: 150,
+            handle: '.drag-handle',
+            onEnd: function() {
+                // Update order numbers
+                const items = existingImages.querySelectorAll('.image-item');
+                items.forEach((item, index) => {
+                    const orderInput = item.querySelector('.image-order');
+                    if (orderInput) {
+                        orderInput.value = index + 1;
+                    }
+                });
+            }
+        });
+    }
+    
+    // New image upload functionality
+    const newImagesInput = document.getElementById('new-images-input');
+    const newImagesPreview = document.getElementById('new-images-preview');
+    const newImagesDropzone = document.getElementById('new-images-dropzone');
+    
+    newImagesDropzone.addEventListener('click', () => newImagesInput.click());
+    
+    newImagesInput.addEventListener('change', handleNewImages);
+    
+    function handleNewImages(e) {
+        const files = Array.from(e.target.files);
+        
+        files.forEach(file => {
+            if (!file.type.startsWith('image/')) {
+                alert(`${file.name} is not an image file`);
+                return;
+            }
+            
+            if (file.size > 5 * 1024 * 1024) {
+                alert(`${file.name} exceeds 5MB limit`);
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const div = document.createElement('div');
+                div.className = 'image-item';
+                div.innerHTML = `
+                    <img src="${e.target.result}" alt="New Image">
+                    <div class="image-actions">
+                        <div class="image-checkbox">
+                            <button type="button" class="text-white text-sm remove-new-image">
+                                <i class="fas fa-times mr-1"></i> Remove
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                div.querySelector('.remove-new-image').addEventListener('click', () => {
+                    div.remove();
+                });
+                
+                newImagesPreview.appendChild(div);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+    
+    // Form validation before submit
+    document.getElementById('edit-form').addEventListener('submit', function(e) {
+        const deleteCheckboxes = document.querySelectorAll('input[name="delete_images"]:checked');
+        const totalImages = {{ existing_images|length }} - deleteCheckboxes.length;
+        const newImages = newImagesInput.files.length;
+        
+        if (totalImages + newImages === 0) {
+            e.preventDefault();
+            alert('Property must have at least one image.');
+            showSection('images');
+            return;
+        }
+        
+        // Show confirmation for large changes
+        const changes = getFormChanges();
+        if (changes.length > 5) {
+            if (!confirm('You have made multiple changes. Are you sure you want to save?')) {
+                e.preventDefault();
+            }
+        }
+    });
+    
+    // Track form changes for preview
+    const originalFormData = new FormData(document.getElementById('edit-form'));
+    const changedFields = new Set();
+    
+    document.querySelectorAll('input, select, textarea').forEach(field => {
+        field.addEventListener('change', () => {
+            changedFields.add(field.name);
+            updateChangesSummary();
+        });
+    });
+    
+    function updateChangesSummary() {
+        const summary = document.getElementById('changes-summary');
+        if (summary) {
+            const changes = Array.from(changedFields).slice(0, 10);
+            summary.innerHTML = changes.map(field => 
+                `<li><i class="fas fa-pen mr-2"></i> ${formatFieldName(field)}</li>`
+            ).join('');
+            
+            if (changedFields.size > 10) {
+                summary.innerHTML += `<li class="font-semibold">...and ${changedFields.size - 10} more changes</li>`;
+            }
+        }
+    }
+    
+    function formatFieldName(field) {
+        const names = {
+            'title': 'Property Title',
+            'description': 'Description',
+            'price': 'Price',
+            'area': 'Area',
+            'bedrooms': 'Bedrooms',
+            'bathrooms': 'Bathrooms',
+            'address': 'Address',
+            'city': 'City',
+            'locality': 'Locality',
+            'status': 'Status',
+            'furnishing': 'Furnishing',
+            'condition': 'Condition',
+            'is_active': 'Active Status',
+            'is_featured': 'Featured Status',
+            'amenities': 'Amenities',
+        };
+        return names[field] || field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
+    
+    // Auto-save draft functionality
+    let autoSaveTimer;
+    const form = document.getElementById('edit-form');
+    
+    form.addEventListener('input', () => {
+        clearTimeout(autoSaveTimer);
+        autoSaveTimer = setTimeout(saveDraft, 3000);
+    });
+    
+    function saveDraft() {
+        const formData = new FormData(form);
+        formData.append('action', 'save_draft');
+        
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            }
+        }).then(response => {
+            if (response.ok) {
+                showToast('Draft saved', 'success');
+            }
+        });
+    }
+    
+    function showToast(message, type = 'info') {
+        // Toast implementation
+    }
+</script>
+{% endblock %}
+{% endblock %}

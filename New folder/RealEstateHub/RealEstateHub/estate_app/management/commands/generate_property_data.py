@@ -1,0 +1,1068 @@
+# properties/management/commands/generate_property_data.py
+from django.core.management.base import BaseCommand
+from django.utils.text import slugify
+from estate_app.models import PropertyCategory, PropertySubCategory, Amenity
+from django.db import transaction
+import logging
+
+logger = logging.getLogger(__name__)
+
+class Command(BaseCommand):
+    help = 'Generate demo data for property categories, subcategories, and amenities'
+    
+    def handle(self, *args, **options):
+        self.stdout.write(self.style.SUCCESS('Starting to generate demo property data...'))
+        
+        with transaction.atomic():
+            # Clear existing data
+            self.stdout.write('Clearing existing data...')
+            PropertyCategory.objects.all().delete()
+            PropertySubCategory.objects.all().delete()
+            Amenity.objects.all().delete()
+            
+            # Create Property Categories
+            self.stdout.write('Creating property categories...')
+            categories = self.create_categories()
+            
+            # Create Subcategories
+            self.stdout.write('Creating property subcategories...')
+            self.create_subcategories(categories)
+            
+            # Create Amenities
+            self.stdout.write('Creating amenities...')
+            self.create_amenities(categories)
+            
+            self.stdout.write(self.style.SUCCESS('✅ Demo data generation completed successfully!'))
+    
+    def create_categories(self):
+        """Create all property categories with their configurations"""
+        categories_data = [
+            {
+                'name': 'Apartments',
+                'property_type': 'residential',
+                'icon': 'fa-building',
+                'display_order': 1,
+                'has_bedrooms': True,
+                'has_bathrooms': True,
+                'has_balconies': True,
+                'has_floor': True,
+                'has_furnishing': True,
+                'has_age': True,
+                'has_facing': True,
+                'has_parking': True,
+            },
+            {
+                'name': 'Independent Houses/Villas',
+                'property_type': 'residential',
+                'icon': 'fa-home',
+                'display_order': 2,
+                'has_bedrooms': True,
+                'has_bathrooms': True,
+                'has_balconies': True,
+                'has_floor': True,
+                'has_furnishing': True,
+                'has_age': True,
+                'has_facing': True,
+                'has_parking': True,
+            },
+            {
+                'name': 'Builder Floors',
+                'property_type': 'residential',
+                'icon': 'fa-layer-group',
+                'display_order': 3,
+                'has_bedrooms': True,
+                'has_bathrooms': True,
+                'has_balconies': True,
+                'has_floor': True,
+                'has_furnishing': True,
+                'has_age': True,
+                'has_facing': True,
+                'has_parking': True,
+            },
+            {
+                'name': 'Farm Houses',
+                'property_type': 'residential',
+                'icon': 'fa-tractor',
+                'display_order': 4,
+                'has_bedrooms': True,
+                'has_bathrooms': True,
+                'has_balconies': True,
+                'has_floor': False,
+                'has_furnishing': True,
+                'has_age': True,
+                'has_facing': True,
+                'has_parking': True,
+            },
+            {
+                'name': 'Studio Apartments',
+                'property_type': 'residential',
+                'icon': 'fa-couch',
+                'display_order': 5,
+                'has_bedrooms': True,
+                'has_bathrooms': True,
+                'has_balconies': False,
+                'has_floor': True,
+                'has_furnishing': True,
+                'has_age': True,
+                'has_facing': True,
+                'has_parking': True,
+            },
+            {
+                'name': 'Serviced Apartments',
+                'property_type': 'residential',
+                'icon': 'fa-concierge-bell',
+                'display_order': 6,
+                'has_bedrooms': True,
+                'has_bathrooms': True,
+                'has_balconies': True,
+                'has_floor': True,
+                'has_furnishing': True,
+                'has_age': True,
+                'has_facing': True,
+                'has_parking': True,
+            },
+            {
+                'name': 'Office Space',
+                'property_type': 'commercial',
+                'icon': 'fa-briefcase',
+                'display_order': 7,
+                'has_bedrooms': False,
+                'has_bathrooms': False,
+                'has_balconies': False,
+                'has_floor': True,
+                'has_furnishing': True,
+                'has_age': True,
+                'has_facing': True,
+                'has_pantry': True,
+                'has_conference_room': True,
+                'has_washrooms': True,
+                'has_power_backup': True,
+            },
+            {
+                'name': 'Shop/Showroom',
+                'property_type': 'commercial',
+                'icon': 'fa-store',
+                'display_order': 8,
+                'has_bedrooms': False,
+                'has_bathrooms': False,
+                'has_balconies': False,
+                'has_floor': True,
+                'has_furnishing': False,
+                'has_age': True,
+                'has_facing': True,
+                'has_parking': True,
+            },
+            {
+                'name': 'Industrial Building',
+                'property_type': 'commercial',
+                'icon': 'fa-industry',
+                'display_order': 9,
+                'has_bedrooms': False,
+                'has_bathrooms': False,
+                'has_balconies': False,
+                'has_floor': False,
+                'has_furnishing': False,
+                'has_age': True,
+                'has_facing': False,
+                'has_clear_height': True,
+                'has_floor_loading': True,
+                'has_parking': True,
+            },
+            {
+                'name': 'Warehouse/Godown',
+                'property_type': 'commercial',
+                'icon': 'fa-warehouse',
+                'display_order': 10,
+                'has_bedrooms': False,
+                'has_bathrooms': False,
+                'has_balconies': False,
+                'has_floor': False,
+                'has_furnishing': False,
+                'has_age': True,
+                'has_facing': False,
+                'has_clear_height': True,
+                'has_floor_loading': True,
+                'has_parking': True,
+            },
+            {
+                'name': 'Business Center',
+                'property_type': 'commercial',
+                'icon': 'fa-building',
+                'display_order': 11,
+                'has_bedrooms': False,
+                'has_bathrooms': True,
+                'has_balconies': False,
+                'has_floor': True,
+                'has_furnishing': True,
+                'has_age': True,
+                'has_facing': True,
+                'has_pantry': True,
+                'has_conference_room': True,
+                'has_washrooms': True,
+                'has_power_backup': True,
+            },
+            {
+                'name': 'Residential Plot',
+                'property_type': 'land',
+                'icon': 'fa-map-marked',
+                'display_order': 12,
+                'has_bedrooms': False,
+                'has_bathrooms': False,
+                'has_balconies': False,
+                'has_floor': False,
+                'has_furnishing': False,
+                'has_age': False,
+                'has_facing': True,
+                'has_dimensions': True,
+            },
+            {
+                'name': 'Commercial Plot',
+                'property_type': 'land',
+                'icon': 'fa-map-marked-alt',
+                'display_order': 13,
+                'has_bedrooms': False,
+                'has_bathrooms': False,
+                'has_balconies': False,
+                'has_floor': False,
+                'has_furnishing': False,
+                'has_age': False,
+                'has_facing': True,
+                'has_dimensions': True,
+            },
+            {
+                'name': 'Industrial Plot',
+                'property_type': 'land',
+                'icon': 'fa-map',
+                'display_order': 14,
+                'has_bedrooms': False,
+                'has_bathrooms': False,
+                'has_balconies': False,
+                'has_floor': False,
+                'has_furnishing': False,
+                'has_age': False,
+                'has_facing': True,
+                'has_dimensions': True,
+            },
+            {
+                'name': 'Agricultural Land',
+                'property_type': 'agricultural',
+                'icon': 'fa-tractor',
+                'display_order': 15,
+                'has_bedrooms': False,
+                'has_bathrooms': False,
+                'has_balconies': False,
+                'has_floor': False,
+                'has_furnishing': False,
+                'has_age': False,
+                'has_facing': False,
+                'has_soil_type': True,
+                'has_irrigation': True,
+                'has_crops': True,
+            },
+            {
+                'name': 'Farm Land',
+                'property_type': 'agricultural',
+                'icon': 'fa-seedling',
+                'display_order': 16,
+                'has_bedrooms': False,
+                'has_bathrooms': False,
+                'has_balconies': False,
+                'has_floor': False,
+                'has_furnishing': False,
+                'has_age': False,
+                'has_facing': False,
+                'has_soil_type': True,
+                'has_irrigation': True,
+                'has_crops': True,
+            },
+            {
+                'name': 'Plantation',
+                'property_type': 'agricultural',
+                'icon': 'fa-tree',
+                'display_order': 17,
+                'has_bedrooms': False,
+                'has_bathrooms': False,
+                'has_balconies': False,
+                'has_floor': False,
+                'has_furnishing': False,
+                'has_age': False,
+                'has_facing': False,
+                'has_soil_type': True,
+                'has_irrigation': True,
+                'has_crops': True,
+            },
+            {
+                'name': 'Factory',
+                'property_type': 'industrial',
+                'icon': 'fa-industry',
+                'display_order': 18,
+                'has_bedrooms': False,
+                'has_bathrooms': False,
+                'has_balconies': False,
+                'has_floor': False,
+                'has_furnishing': False,
+                'has_age': True,
+                'has_facing': False,
+                'has_clear_height': True,
+                'has_floor_loading': True,
+                'has_parking': True,
+            },
+            {
+                'name': 'Manufacturing Unit',
+                'property_type': 'industrial',
+                'icon': 'fa-cogs',
+                'display_order': 19,
+                'has_bedrooms': False,
+                'has_bathrooms': False,
+                'has_balconies': False,
+                'has_floor': False,
+                'has_furnishing': False,
+                'has_age': True,
+                'has_facing': False,
+                'has_clear_height': True,
+                'has_floor_loading': True,
+                'has_parking': True,
+            },
+            {
+                'name': 'Industrial Shed',
+                'property_type': 'industrial',
+                'icon': 'fa-warehouse',
+                'display_order': 20,
+                'has_bedrooms': False,
+                'has_bathrooms': False,
+                'has_balconies': False,
+                'has_floor': False,
+                'has_furnishing': False,
+                'has_age': True,
+                'has_facing': False,
+                'has_clear_height': True,
+                'has_floor_loading': True,
+                'has_parking': True,
+            },
+            {
+                'name': 'PG/Co-Living',
+                'property_type': 'pg_co-living',
+                'icon': 'fa-users',
+                'display_order': 21,
+                'has_bedrooms': True,
+                'has_bathrooms': True,
+                'has_balconies': True,
+                'has_floor': True,
+                'has_furnishing': True,
+                'has_age': True,
+                'has_facing': True,
+                'has_parking': True,
+            },
+        ]
+        
+        categories = {}
+        for cat_data in categories_data:
+            slug = slugify(cat_data['name'])
+            category, created = PropertyCategory.objects.get_or_create(
+                slug=slug,
+                defaults=cat_data
+            )
+            categories[cat_data['name']] = category
+            self.stdout.write(f'  ✅ {cat_data["name"]} ({cat_data["property_type"]})')
+        
+        return categories
+    
+    def create_subcategories(self, categories):
+        """Create subcategories for each category"""
+        subcategories_data = {
+            'Apartments': [
+                {'name': '1 BHK', 'display_order': 1},
+                {'name': '2 BHK', 'display_order': 2},
+                {'name': '3 BHK', 'display_order': 3},
+                {'name': '4 BHK', 'display_order': 4},
+                {'name': '5+ BHK', 'display_order': 5},
+                {'name': 'Duplex', 'display_order': 6},
+                {'name': 'Triplex', 'display_order': 7},
+                {'name': 'Penthouse', 'display_order': 8},
+                {'name': 'Studio', 'display_order': 9},
+            ],
+            'Independent Houses/Villas': [
+                {'name': 'Independent House', 'display_order': 1},
+                {'name': 'Villa', 'display_order': 2},
+                {'name': 'Bungalow', 'display_order': 3},
+                {'name': 'Row House', 'display_order': 4},
+                {'name': 'Townhouse', 'display_order': 5},
+                {'name': 'Farmhouse', 'display_order': 6},
+            ],
+            'Builder Floors': [
+                {'name': 'Ground Floor', 'display_order': 1},
+                {'name': 'First Floor', 'display_order': 2},
+                {'name': 'Second Floor', 'display_order': 3},
+                {'name': 'Third Floor', 'display_order': 4},
+                {'name': 'Top Floor', 'display_order': 5},
+                {'name': 'Duplex Floor', 'display_order': 6},
+            ],
+            'Farm Houses': [
+                {'name': 'Small Farmhouse (< 1 acre)', 'display_order': 1},
+                {'name': 'Medium Farmhouse (1-5 acres)', 'display_order': 2},
+                {'name': 'Large Farmhouse (5+ acres)', 'display_order': 3},
+                {'name': 'Luxury Farmhouse', 'display_order': 4},
+                {'name': 'Eco Farmhouse', 'display_order': 5},
+            ],
+            'Studio Apartments': [
+                {'name': 'Studio Apartment', 'display_order': 1},
+                {'name': 'Micro Apartment', 'display_order': 2},
+                {'name': 'Compact Apartment', 'display_order': 3},
+            ],
+            'Serviced Apartments': [
+                {'name': 'Luxury Serviced Apartment', 'display_order': 1},
+                {'name': 'Budget Serviced Apartment', 'display_order': 2},
+                {'name': 'Corporate Serviced Apartment', 'display_order': 3},
+                {'name': 'Monthly Serviced Apartment', 'display_order': 4},
+                {'name': 'Daily Serviced Apartment', 'display_order': 5},
+            ],
+            'Office Space': [
+                {'name': 'Private Office', 'display_order': 1},
+                {'name': 'Shared Office', 'display_order': 2},
+                {'name': 'Coworking Space', 'display_order': 3},
+                {'name': 'Virtual Office', 'display_order': 4},
+                {'name': 'Corporate Office', 'display_order': 5},
+                {'name': 'Startup Office', 'display_order': 6},
+                {'name': 'IT Park Office', 'display_order': 7},
+                {'name': 'SEZ Office', 'display_order': 8},
+            ],
+            'Shop/Showroom': [
+                {'name': 'Ground Floor Shop', 'display_order': 1},
+                {'name': 'First Floor Shop', 'display_order': 2},
+                {'name': 'Corner Shop', 'display_order': 3},
+                {'name': 'Showroom', 'display_order': 4},
+                {'name': 'Retail Shop', 'display_order': 5},
+                {'name': 'Boutique', 'display_order': 6},
+                {'name': 'Food Court Shop', 'display_order': 7},
+                {'name': 'Mall Shop', 'display_order': 8},
+            ],
+            'Industrial Building': [
+                {'name': 'Small Industrial Unit', 'display_order': 1},
+                {'name': 'Medium Industrial Unit', 'display_order': 2},
+                {'name': 'Large Industrial Unit', 'display_order': 3},
+                {'name': 'Heavy Industrial Unit', 'display_order': 4},
+                {'name': 'Light Industrial Unit', 'display_order': 5},
+            ],
+            'Warehouse/Godown': [
+                {'name': 'Small Warehouse (< 1000 sq ft)', 'display_order': 1},
+                {'name': 'Medium Warehouse (1000-5000 sq ft)', 'display_order': 2},
+                {'name': 'Large Warehouse (5000+ sq ft)', 'display_order': 3},
+                {'name': 'Cold Storage', 'display_order': 4},
+                {'name': 'Distribution Center', 'display_order': 5},
+                {'name': 'Logistics Warehouse', 'display_order': 6},
+            ],
+            'Business Center': [
+                {'name': 'Premium Business Center', 'display_order': 1},
+                {'name': 'Standard Business Center', 'display_order': 2},
+                {'name': 'Meeting Rooms', 'display_order': 3},
+                {'name': 'Training Center', 'display_order': 4},
+            ],
+            'Residential Plot': [
+                {'name': 'Corner Plot', 'display_order': 1},
+                {'name': 'Inside Plot', 'display_order': 2},
+                {'name': 'Park Facing', 'display_order': 3},
+                {'name': 'Main Road Facing', 'display_order': 4},
+                {'name': 'Gated Community Plot', 'display_order': 5},
+                {'name': 'Open Plot', 'display_order': 6},
+            ],
+            'Commercial Plot': [
+                {'name': 'Commercial Corner Plot', 'display_order': 1},
+                {'name': 'Commercial Inside Plot', 'display_order': 2},
+                {'name': 'High Street Plot', 'display_order': 3},
+                {'name': 'Market Plot', 'display_order': 4},
+                {'name': 'Highway Plot', 'display_order': 5},
+            ],
+            'Industrial Plot': [
+                {'name': 'Industrial Zone Plot', 'display_order': 1},
+                {'name': 'SEZ Plot', 'display_order': 2},
+                {'name': 'Industrial Estate Plot', 'display_order': 3},
+                {'name': 'Heavy Industrial Plot', 'display_order': 4},
+                {'name': 'Light Industrial Plot', 'display_order': 5},
+            ],
+            'Agricultural Land': [
+                {'name': 'Irrigated Land', 'display_order': 1},
+                {'name': 'Non-Irrigated Land', 'display_order': 2},
+                {'name': 'Orchard Land', 'display_order': 3},
+                {'name': 'Fertile Land', 'display_order': 4},
+                {'name': 'Barren Land', 'display_order': 5},
+            ],
+            'Farm Land': [
+                {'name': 'Crop Farm', 'display_order': 1},
+                {'name': 'Dairy Farm', 'display_order': 2},
+                {'name': 'Poultry Farm', 'display_order': 3},
+                {'name': 'Fish Farm', 'display_order': 4},
+                {'name': 'Organic Farm', 'display_order': 5},
+            ],
+            'Plantation': [
+                {'name': 'Tea Plantation', 'display_order': 1},
+                {'name': 'Coffee Plantation', 'display_order': 2},
+                {'name': 'Rubber Plantation', 'display_order': 3},
+                {'name': 'Spice Plantation', 'display_order': 4},
+                {'name': 'Fruit Plantation', 'display_order': 5},
+            ],
+            'Factory': [
+                {'name': 'Small Factory', 'display_order': 1},
+                {'name': 'Medium Factory', 'display_order': 2},
+                {'name': 'Large Factory', 'display_order': 3},
+                {'name': 'Automobile Factory', 'display_order': 4},
+                {'name': 'Textile Factory', 'display_order': 5},
+                {'name': 'Chemical Factory', 'display_order': 6},
+            ],
+            'Manufacturing Unit': [
+                {'name': 'Small Manufacturing Unit', 'display_order': 1},
+                {'name': 'Medium Manufacturing Unit', 'display_order': 2},
+                {'name': 'Large Manufacturing Unit', 'display_order': 3},
+                {'name': 'Food Processing Unit', 'display_order': 4},
+                {'name': 'Pharmaceutical Unit', 'display_order': 5},
+                {'name': 'Electronics Unit', 'display_order': 6},
+            ],
+            'Industrial Shed': [
+                {'name': 'Small Industrial Shed', 'display_order': 1},
+                {'name': 'Medium Industrial Shed', 'display_order': 2},
+                {'name': 'Large Industrial Shed', 'display_order': 3},
+                {'name': 'Prefabricated Shed', 'display_order': 4},
+                {'name': 'RCC Shed', 'display_order': 5},
+            ],
+            'PG/Co-Living': [
+                {'name': 'Boys PG', 'display_order': 1},
+                {'name': 'Girls PG', 'display_order': 2},
+                {'name': 'Unisex PG', 'display_order': 3},
+                {'name': 'Family PG', 'display_order': 4},
+                {'name': 'Luxury Co-Living', 'display_order': 5},
+                {'name': 'Budget Co-Living', 'display_order': 6},
+                {'name': 'Student Hostel', 'display_order': 7},
+                {'name': 'Working Professional PG', 'display_order': 8},
+            ],
+        }
+        
+        for category_name, subcat_list in subcategories_data.items():
+            category = categories.get(category_name)
+            if category:
+                for subcat_data in subcat_list:
+                    slug = slugify(f"{category.slug}-{subcat_data['name']}")
+                    subcategory, created = PropertySubCategory.objects.get_or_create(
+                        category=category,
+                        slug=slug,
+                        defaults={
+                            'name': subcat_data['name'],
+                            'display_order': subcat_data['display_order'],
+                            'is_active': True
+                        }
+                    )
+                self.stdout.write(f'  ✅ {category_name}: {len(subcat_list)} subcategories created')
+    
+    def create_amenities(self, categories):
+        """Create all amenities categorized by property type"""
+        amenities_data = [
+            # Basic Amenities (All property types)
+            {
+                'name': '24/7 Water Supply',
+                'category': 'basic',
+                'applicable_to': 'all',
+                'icon': 'fa-faucet',
+                'display_order': 1,
+            },
+            {
+                'name': '24/7 Electricity',
+                'category': 'basic',
+                'applicable_to': 'all',
+                'icon': 'fa-bolt',
+                'display_order': 2,
+            },
+            {
+                'name': 'Parking',
+                'category': 'basic',
+                'applicable_to': 'all',
+                'icon': 'fa-parking',
+                'display_order': 3,
+            },
+            {
+                'name': 'Lift/Elevator',
+                'category': 'basic',
+                'applicable_to': 'residential',
+                'icon': 'fa-elevator',
+                'display_order': 4,
+            },
+            {
+                'name': 'Power Backup',
+                'category': 'basic',
+                'applicable_to': 'all',
+                'icon': 'fa-plug',
+                'display_order': 5,
+            },
+            
+            # Security Amenities
+            {
+                'name': '24/7 Security',
+                'category': 'security',
+                'applicable_to': 'all',
+                'icon': 'fa-shield-alt',
+                'display_order': 1,
+            },
+            {
+                'name': 'CCTV Surveillance',
+                'category': 'security',
+                'applicable_to': 'all',
+                'icon': 'fa-video',
+                'display_order': 2,
+            },
+            {
+                'name': 'Security Guard',
+                'category': 'security',
+                'applicable_to': 'all',
+                'icon': 'fa-user-shield',
+                'display_order': 3,
+            },
+            {
+                'name': 'Intercom',
+                'category': 'security',
+                'applicable_to': 'residential',
+                'icon': 'fa-phone',
+                'display_order': 4,
+            },
+            {
+                'name': 'Fire Safety Equipment',
+                'category': 'security',
+                'applicable_to': 'all',
+                'icon': 'fa-fire-extinguisher',
+                'display_order': 5,
+            },
+            
+            # Parking Amenities
+            {
+                'name': 'Covered Parking',
+                'category': 'parking',
+                'applicable_to': 'all',
+                'icon': 'fa-car',
+                'display_order': 1,
+            },
+            {
+                'name': 'Open Parking',
+                'category': 'parking',
+                'applicable_to': 'all',
+                'icon': 'fa-square-parking',
+                'display_order': 2,
+            },
+            {
+                'name': 'Valet Parking',
+                'category': 'parking',
+                'applicable_to': 'commercial',
+                'icon': 'fa-key',
+                'display_order': 3,
+            },
+            {
+                'name': 'Visitor Parking',
+                'category': 'parking',
+                'applicable_to': 'residential',
+                'icon': 'fa-users',
+                'display_order': 4,
+            },
+            {
+                'name': 'Bike Parking',
+                'category': 'parking',
+                'applicable_to': 'all',
+                'icon': 'fa-motorcycle',
+                'display_order': 5,
+            },
+            
+            # Community Amenities
+            {
+                'name': 'Club House',
+                'category': 'community',
+                'applicable_to': 'residential',
+                'icon': 'fa-home',
+                'display_order': 1,
+            },
+            {
+                'name': 'Community Hall',
+                'category': 'community',
+                'applicable_to': 'residential',
+                'icon': 'fa-users',
+                'display_order': 2,
+            },
+            {
+                'name': 'Children\'s Play Area',
+                'category': 'community',
+                'applicable_to': 'residential',
+                'icon': 'fa-child',
+                'display_order': 3,
+            },
+            {
+                'name': 'Senior Citizen Area',
+                'category': 'community',
+                'applicable_to': 'residential',
+                'icon': 'fa-wheelchair',
+                'display_order': 4,
+            },
+            {
+                'name': 'Party Lawn',
+                'category': 'community',
+                'applicable_to': 'residential',
+                'icon': 'fa-glass-cheers',
+                'display_order': 5,
+            },
+            
+            # Green Amenities
+            {
+                'name': 'Landscaped Garden',
+                'category': 'green',
+                'applicable_to': 'residential',
+                'icon': 'fa-tree',
+                'display_order': 1,
+            },
+            {
+                'name': 'Rain Water Harvesting',
+                'category': 'green',
+                'applicable_to': 'all',
+                'icon': 'fa-cloud-rain',
+                'display_order': 2,
+            },
+            {
+                'name': 'Solar Power',
+                'category': 'green',
+                'applicable_to': 'all',
+                'icon': 'fa-sun',
+                'display_order': 3,
+            },
+            {
+                'name': 'Waste Management',
+                'category': 'green',
+                'applicable_to': 'all',
+                'icon': 'fa-recycle',
+                'display_order': 4,
+            },
+            {
+                'name': 'Organic Farming Area',
+                'category': 'green',
+                'applicable_to': 'residential',
+                'icon': 'fa-seedling',
+                'display_order': 5,
+            },
+            
+            # Luxury Amenities
+            {
+                'name': 'Swimming Pool',
+                'category': 'luxury',
+                'applicable_to': 'residential',
+                'icon': 'fa-swimming-pool',
+                'display_order': 1,
+            },
+            {
+                'name': 'Gym',
+                'category': 'luxury',
+                'applicable_to': 'residential',
+                'icon': 'fa-dumbbell',
+                'display_order': 2,
+            },
+            {
+                'name': 'Spa/Sauna',
+                'category': 'luxury',
+                'applicable_to': 'residential',
+                'icon': 'fa-spa',
+                'display_order': 3,
+            },
+            {
+                'name': 'Jacuzzi',
+                'category': 'luxury',
+                'applicable_to': 'residential',
+                'icon': 'fa-hot-tub',
+                'display_order': 4,
+            },
+            {
+                'name': 'Home Theater',
+                'category': 'luxury',
+                'applicable_to': 'residential',
+                'icon': 'fa-film',
+                'display_order': 5,
+            },
+            {
+                'name': 'Concierge Service',
+                'category': 'luxury',
+                'applicable_to': 'residential',
+                'icon': 'fa-bell-concierge',
+                'display_order': 6,
+            },
+            {
+                'name': 'Private Garden',
+                'category': 'luxury',
+                'applicable_to': 'residential',
+                'icon': 'fa-leaf',
+                'display_order': 7,
+            },
+            {
+                'name': 'Private Pool',
+                'category': 'luxury',
+                'applicable_to': 'residential',
+                'icon': 'fa-water-ladder',
+                'display_order': 8,
+            },
+            
+            # Commercial Amenities
+            {
+                'name': 'Air Conditioning',
+                'category': 'commercial',
+                'applicable_to': 'commercial',
+                'icon': 'fa-snowflake',
+                'display_order': 1,
+            },
+            {
+                'name': 'Centralized AC',
+                'category': 'commercial',
+                'applicable_to': 'commercial',
+                'icon': 'fa-wind',
+                'display_order': 2,
+            },
+            {
+                'name': 'Conference Room',
+                'category': 'commercial',
+                'applicable_to': 'commercial',
+                'icon': 'fa-users',
+                'display_order': 3,
+            },
+            {
+                'name': 'Pantry',
+                'category': 'commercial',
+                'applicable_to': 'commercial',
+                'icon': 'fa-utensils',
+                'display_order': 4,
+            },
+            {
+                'name': 'High Speed Internet',
+                'category': 'commercial',
+                'applicable_to': 'commercial',
+                'icon': 'fa-wifi',
+                'display_order': 5,
+            },
+            {
+                'name': 'Video Conferencing',
+                'category': 'commercial',
+                'applicable_to': 'commercial',
+                'icon': 'fa-video',
+                'display_order': 6,
+            },
+            {
+                'name': 'Printing Facility',
+                'category': 'commercial',
+                'applicable_to': 'commercial',
+                'icon': 'fa-print',
+                'display_order': 7,
+            },
+            {
+                'name': 'Reception Area',
+                'category': 'commercial',
+                'applicable_to': 'commercial',
+                'icon': 'fa-desk',
+                'display_order': 8,
+            },
+            {
+                'name': 'Separate Washrooms',
+                'category': 'commercial',
+                'applicable_to': 'commercial',
+                'icon': 'fa-restroom',
+                'display_order': 9,
+            },
+            {
+                'name': 'Cafeteria',
+                'category': 'commercial',
+                'applicable_to': 'commercial',
+                'icon': 'fa-coffee',
+                'display_order': 10,
+            },
+            
+            # Industrial Amenities
+            {
+                'name': 'Heavy Power Supply',
+                'category': 'commercial',
+                'applicable_to': 'industrial',
+                'icon': 'fa-bolt',
+                'display_order': 11,
+            },
+            {
+                'name': 'Loading Dock',
+                'category': 'commercial',
+                'applicable_to': 'industrial',
+                'icon': 'fa-truck-loading',
+                'display_order': 12,
+            },
+            {
+                'name': 'Crane Facility',
+                'category': 'commercial',
+                'applicable_to': 'industrial',
+                'icon': 'fa-crane',
+                'display_order': 13,
+            },
+            {
+                'name': 'Fire Protection System',
+                'category': 'commercial',
+                'applicable_to': 'industrial',
+                'icon': 'fa-fire',
+                'display_order': 14,
+            },
+            {
+                'name': 'Ventilation System',
+                'category': 'commercial',
+                'applicable_to': 'industrial',
+                'icon': 'fa-fan',
+                'display_order': 15,
+            },
+            {
+                'name': 'Dust Extraction System',
+                'category': 'commercial',
+                'applicable_to': 'industrial',
+                'icon': 'fa-wind',
+                'display_order': 16,
+            },
+            
+            # Agricultural Amenities
+            {
+                'name': 'Borewell',
+                'category': 'agricultural',
+                'applicable_to': 'agricultural',
+                'icon': 'fa-water',
+                'display_order': 1,
+            },
+            {
+                'name': 'Canal Irrigation',
+                'category': 'agricultural',
+                'applicable_to': 'agricultural',
+                'icon': 'fa-water',
+                'display_order': 2,
+            },
+            {
+                'name': 'Drip Irrigation',
+                'category': 'agricultural',
+                'applicable_to': 'agricultural',
+                'icon': 'fa-tint',
+                'display_order': 3,
+            },
+            {
+                'name': 'Sprinkler System',
+                'category': 'agricultural',
+                'applicable_to': 'agricultural',
+                'icon': 'fa-shower',
+                'display_order': 4,
+            },
+            {
+                'name': 'Farm House',
+                'category': 'agricultural',
+                'applicable_to': 'agricultural',
+                'icon': 'fa-home',
+                'display_order': 5,
+            },
+            {
+                'name': 'Storage Shed',
+                'category': 'agricultural',
+                'applicable_to': 'agricultural',
+                'icon': 'fa-warehouse',
+                'display_order': 6,
+            },
+            {
+                'name': 'Farm Equipment',
+                'category': 'agricultural',
+                'applicable_to': 'agricultural',
+                'icon': 'fa-tractor',
+                'display_order': 7,
+            },
+            {
+                'name': 'Electric Fencing',
+                'category': 'agricultural',
+                'applicable_to': 'agricultural',
+                'icon': 'fa-bolt',
+                'display_order': 8,
+            },
+            {
+                'name': 'Greenhouse',
+                'category': 'agricultural',
+                'applicable_to': 'agricultural',
+                'icon': 'fa-seedling',
+                'display_order': 9,
+            },
+            
+            # PG/Co-Living Amenities
+            {
+                'name': 'Food Included',
+                'category': 'basic',
+                'applicable_to': 'pg_co-living',
+                'icon': 'fa-utensils',
+                'display_order': 20,
+            },
+            {
+                'name': 'Laundry Service',
+                'category': 'basic',
+                'applicable_to': 'pg_co-living',
+                'icon': 'fa-soap',
+                'display_order': 21,
+            },
+            {
+                'name': 'Housekeeping',
+                'category': 'basic',
+                'applicable_to': 'pg_co-living',
+                'icon': 'fa-broom',
+                'display_order': 22,
+            },
+            {
+                'name': 'WiFi',
+                'category': 'basic',
+                'applicable_to': 'pg_co-living',
+                'icon': 'fa-wifi',
+                'display_order': 23,
+            },
+            {
+                'name': 'Study Table',
+                'category': 'basic',
+                'applicable_to': 'pg_co-living',
+                'icon': 'fa-desktop',
+                'display_order': 24,
+            },
+            {
+                'name': 'Wardrobe',
+                'category': 'basic',
+                'applicable_to': 'pg_co-living',
+                'icon': 'fa-archive',
+                'display_order': 25,
+            },
+            {
+                'name': 'Refrigerator',
+                'category': 'basic',
+                'applicable_to': 'pg_co-living',
+                'icon': 'fa-refrigerator',
+                'display_order': 26,
+            },
+            {
+                'name': 'Geyser',
+                'category': 'basic',
+                'applicable_to': 'pg_co-living',
+                'icon': 'fa-temperature-high',
+                'display_order': 27,
+            },
+            {
+                'name': 'TV',
+                'category': 'basic',
+                'applicable_to': 'pg_co-living',
+                'icon': 'fa-tv',
+                'display_order': 28,
+            },
+            {
+                'name': 'Common Kitchen',
+                'category': 'basic',
+                'applicable_to': 'pg_co-living',
+                'icon': 'fa-kitchen-set',
+                'display_order': 29,
+            },
+        ]
+        
+        for amenity_data in amenities_data:
+            slug = slugify(amenity_data['name'])
+            amenity, created = Amenity.objects.get_or_create(
+                slug=slug,
+                defaults={
+                    'name': amenity_data['name'],
+                    'category': amenity_data['category'],
+                    'applicable_to': amenity_data['applicable_to'],
+                    'icon': amenity_data['icon'],
+                    'display_order': amenity_data['display_order'],
+                    'is_active': True
+                }
+            )
+        
+        self.stdout.write(f'  ✅ {len(amenities_data)} amenities created')

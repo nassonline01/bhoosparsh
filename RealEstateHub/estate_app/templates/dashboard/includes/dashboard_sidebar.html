@@ -1,0 +1,210 @@
+{% load dashboard_filters %}
+
+<!-- Sidebar Header -->
+<div class="sidebar-header">
+    <div class="d-flex align-items-center">
+        <a href="{% url 'home' %}" class="text-white text-decoration-none">
+            <div class="d-flex align-items-center">
+                <div class="rounded-circle bg-white text-primary p-2 me-3">
+                    <i class="fas fa-home"></i>
+                </div>
+                <div>
+                    <h4 class="mb-0">{{ site_name }}</h4>
+                    <small class="opacity-75">Real Estate Platform</small>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Sidebar Menu -->
+<ul class="sidebar-menu">
+    <!-- Dashboard -->
+    <li>
+        <a href="{% url 'dashboard' %}" class="{% if request.path == '/dashboard/' %}active{% endif %}">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+        </a>
+    </li>
+    
+    <!-- For Sellers/Agents -->
+    {% if user.user_type in 'seller agent admin'|split %}
+    <li class="sidebar-menu-header">
+        <span class="small text-uppercase opacity-75">Property Management</span>
+    </li>
+    <li>
+        <a href="{% url 'create' %}">
+            <i class="fas fa-plus-circle"></i>
+            <span>Add Property</span>
+        </a>
+    </li>
+    <li>
+        <a href="{% url 'my_properties' %}">
+            <i class="fas fa-list"></i>
+            <span>My Properties</span>
+        </a>
+    </li>
+    <li>
+        <a href="#">
+            <i class="fas fa-envelope"></i>
+            <span>Inquiries</span>
+            {% if stats.engagement_stats.new_inquiries %}
+            <span class="badge bg-danger float-end">{{ stats.engagement_stats.new_inquiries }}</span>
+            {% endif %}
+        </a>
+    </li>
+    <li>
+        <a href="#">
+            <i class="fas fa-chart-line"></i>
+            <span>Analytics</span>
+        </a>
+    </li>
+    {% endif %}
+    
+    <!-- For Buyers -->
+    {% if user.user_type == 'buyer' %}
+    <li class="sidebar-menu-header">
+        <span class="small text-uppercase opacity-75">Property Search</span>
+    </li>
+    <li>
+        <a href="{% url 'list' %}">
+            <i class="fas fa-search"></i>
+            <span>Browse Properties</span>
+        </a>
+    </li>
+    <li>
+        <a href="#favorites-section">
+            <i class="fas fa-heart"></i>
+            <span>Saved Properties</span>
+            {% if stats.favorite_stats.total %}
+            <span class="badge bg-danger float-end">{{ stats.favorite_stats.total }}</span>
+            {% endif %}
+        </a>
+    </li>
+    <li>
+        <a href="#">
+            <i class="fas fa-history"></i>
+            <span>Recent Views</span>
+        </a>
+    </li>
+    {% endif %}
+    
+    <!-- Membership Section -->
+    <li class="sidebar-menu-header">
+        <span class="small text-uppercase opacity-75">Membership</span>
+    </li>
+    <li>
+        <a href="{% url 'dashboard' %}">
+            <i class="fas fa-crown"></i>
+            <span>My Subscription</span>
+            {% if subscription and subscription.days_remaining <= 7 %}
+            <span class="badge bg-warning float-end">{{ subscription.days_remaining }}d</span>
+            {% endif %}
+        </a>
+    </li>
+    <li>
+        <a href="{% url 'pricing' %}">
+            <i class="fas fa-tags"></i>
+            <span>Upgrade Plan</span>
+        </a>
+    </li>
+    <li>
+        <a href="{% url 'credit_purchase' %}">
+            <i class="fas fa-coins"></i>
+            <span>Buy Credits</span>
+        </a>
+    </li>
+    
+    <!-- Account Section -->
+    <li class="sidebar-menu-header">
+        <span class="small text-uppercase opacity-75">Account</span>
+    </li>
+    <li>
+        <a href="{% url 'profile' %}">
+            <i class="fas fa-user"></i>
+            <span>My Profile</span>
+        </a>
+    </li>
+    <li>
+        <a href="{% url 'edit_profile' %}">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+        </a>
+    </li>
+    <li>
+        <a href="{% url 'billing_history' %}">
+            <i class="fas fa-file-invoice-dollar"></i>
+            <span>Billing History</span>
+        </a>
+    </li>
+    
+    <!-- For Admins -->
+    {% if user.is_staff %}
+    <li class="sidebar-menu-header">
+        <span class="small text-uppercase opacity-75">Admin</span>
+    </li>
+    <li>
+        <a href="{% url 'admin_dashboard' %}">
+            <i class="fas fa-chart-pie"></i>
+            <span>Admin Dashboard</span>
+        </a>
+    </li>
+    <li>
+        <a href="/admin/" target="_blank">
+            <i class="fas fa-cogs"></i>
+            <span>Admin Panel</span>
+        </a>
+    </li>
+    <li>
+        <a href="/admin/core/customuser/">
+            <i class="fas fa-users"></i>
+            <span>User Management</span>
+        </a>
+    </li>
+    <li>
+        <a href="/admin/core/property/">
+            <i class="fas fa-home"></i>
+            <span>Property Management</span>
+        </a>
+    </li>
+    {% endif %}
+    
+    <!-- Support Section -->
+    <li class="sidebar-menu-header">
+        <span class="small text-uppercase opacity-75">Support</span>
+    </li>
+    <li>
+        <a href="#">
+            <i class="fas fa-question-circle"></i>
+            <span>Help Center</span>
+        </a>
+    </li>
+    <li>
+        <a href="#">
+            <i class="fas fa-headset"></i>
+            <span>Contact Support</span>
+        </a>
+    </li>
+    <li>
+        <a href="#">
+            <i class="fas fa-file-alt"></i>
+            <span>Documentation</span>
+        </a>
+    </li>
+    
+    <!-- Logout -->
+    <li class="mt-auto">
+        <a href="{% url 'logout' %}" class="text-danger">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+        </a>
+    </li>
+</ul>
+
+<!-- Sidebar Footer -->
+<div class="sidebar-footer mt-auto p-3 border-top border-white border-opacity-10">
+    <div class="text-center">
+        <small class="opacity-75">© {{ current_year }} {{ site_name }}</small><br>
+        <small class="opacity-50">v1.0.0</small>
+    </div>
+</div>

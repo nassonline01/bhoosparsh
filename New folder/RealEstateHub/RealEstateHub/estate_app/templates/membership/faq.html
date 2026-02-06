@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}FAQ - RealEstatePro{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold mb-4">Frequently Asked Questions</h1>
+            <p class="text-xl text-gray-600">Find answers to common questions about our platform</p>
+        </div>
+
+        <!-- Search -->
+        <div class="mb-8">
+            <div class="relative">
+                <input type="text" placeholder="Search questions..." 
+                       class="w-full px-6 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                <i class="fas fa-search absolute right-6 top-4 text-gray-400"></i>
+            </div>
+        </div>
+
+        <!-- FAQ Categories -->
+        <div class="mb-8">
+            <div class="flex flex-wrap gap-2">
+                <button class="px-4 py-2 bg-purple-600 text-white rounded-lg">All</button>
+                <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">Membership</button>
+                <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">Payments</button>
+                <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">Listings</button>
+                <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">Account</button>
+            </div>
+        </div>
+
+        <!-- FAQ Items -->
+        <div class="space-y-6">
+            <!-- Question 1 -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-bold mb-3">How do I list a property?</h3>
+                <div class="text-gray-600">
+                    <p>To list a property:</p>
+                    <ol class="list-decimal pl-5 mt-2 space-y-2">
+                        <li>Sign up for a seller account</li>
+                        <li>Choose a membership plan</li>
+                        <li>Click "List Property" in your dashboard</li>
+                        <li>Fill in property details and upload photos</li>
+                        <li>Submit for review (typically approved within 24 hours)</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Question 2 -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-bold mb-3">What payment methods do you accept?</h3>
+                <div class="text-gray-600">
+                    <p>We accept all major payment methods through Razorpay:</p>
+                    <ul class="list-disc pl-5 mt-2 space-y-1">
+                        <li>Credit/Debit Cards (Visa, MasterCard, American Express)</li>
+                        <li>Net Banking (All major Indian banks)</li>
+                        <li>UPI (PhonePe, Google Pay, Paytm, etc.)</li>
+                        <li>Digital Wallets</li>
+                        <li>EMI Options</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Question 3 -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-bold mb-3">Can I upgrade or downgrade my plan?</h3>
+                <div class="text-gray-600">
+                    <p>Yes, you can change your plan at any time:</p>
+                    <ul class="list-disc pl-5 mt-2 space-y-1">
+                        <li><strong>Upgrades:</strong> Take effect immediately with prorated billing</li>
+                        <li><strong>Downgrades:</strong> Take effect at the end of your current billing cycle</li>
+                        <li><strong>Process:</strong> Go to Membership Dashboard → Upgrade/Downgrade</li>
+                    </ul>
+                    <p class="mt-3">You'll receive credit for any unused portion when upgrading.</p>
+                </div>
+            </div>
+
+            <!-- Question 4 -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-bold mb-3">How long does property approval take?</h3>
+                <div class="text-gray-600">
+                    <p>Property listings are typically reviewed and approved within:</p>
+                    <ul class="list-disc pl-5 mt-2 space-y-1">
+                        <li><strong>Standard review:</strong> 24-48 hours</li>
+                        <li><strong>Priority review (Premium plans):</strong> 4-6 hours</li>
+                    </ul>
+                    <p class="mt-3">We review listings for:</p>
+                    <ul class="list-disc pl-5 mt-1 space-y-1">
+                        <li>Complete information</li>
+                        <li>Clear, appropriate photos</li>
+                        <li>Accurate pricing</li>
+                        <li>Compliance with our guidelines</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Question 5 -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-bold mb-3">What happens if I cancel my subscription?</h3>
+                <div class="text-gray-600">
+                    <p>When you cancel:</p>
+                    <ul class="list-disc pl-5 mt-2 space-y-1">
+                        <li>You continue to have access until the end of your billing period</li>
+                        <li>Your active listings become inactive</li>
+                        <li>You can no longer create new listings</li>
+                        <li>Your data is preserved for 30 days</li>
+                        <li>You can reactivate anytime</li>
+                    </ul>
+                    <p class="mt-3"><strong>Note:</strong> No refunds are provided for partial months.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Still Have Questions -->
+        <div class="mt-12 bg-blue-50 border border-blue-200 rounded-xl p-8">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-question-circle text-blue-600 text-2xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-2">Still have questions?</h3>
+                <p class="text-gray-600 mb-6">Our support team is here to help</p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="mailto:support@realestatepro.com" 
+                       class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-envelope mr-2"></i> Email Support
+                    </a>
+                    <a href="tel:+911800123456" 
+                       class="px-6 py-3 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition">
+                        <i class="fas fa-phone mr-2"></i> Call 1800-123-456
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

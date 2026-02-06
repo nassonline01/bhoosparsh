@@ -1,0 +1,692 @@
+<!-- templates/dashboard/seller/profile.html -->
+{% extends 'dashboard/seller/base.html' %}
+{% load static %}
+
+{% block title %}Profile Settings - BHOOSPARSH Seller{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border: 4px solid white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .profile-section {
+        transition: all 0.3s ease;
+    }
+
+    .profile-section:hover {
+        transform: translateY(-2px);
+    }
+
+    .edit-btn {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .profile-section:hover .edit-btn {
+        opacity: 1;
+    }
+
+    .verification-badge {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+        }
+        50% {
+            box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block header_title %}
+<h1 class="text-xl font-bold text-gray-900 dark:text-white">Profile Settings</h1>
+<p class="text-sm text-gray-600 dark:text-gray-400">Manage your profile and account settings</p>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left Column - Profile Overview -->
+    <div class="lg:col-span-1 space-y-6">
+        <!-- Profile Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 profile-section card-animate stagger-1">
+            <div class="text-center">
+                <div class="relative inline-block mb-4">
+                    <div class="profile-avatar rounded-full overflow-hidden mx-auto">
+                        {% if profile.avatar %}
+                            <img src="{{ profile.avatar.url }}" alt="Profile" class="w-full h-full object-cover">
+                        {% else %}
+                            <div class="w-full h-full bg-gradient-to-r from-bhoosparsh-blue to-blue-600 flex items-center justify-center text-white text-4xl font-bold">
+                                {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <button onclick="openAvatarUpload()" 
+                            class="absolute bottom-0 right-0 bg-bhoosparsh-blue text-white p-2 rounded-full hover:bg-blue-700 transition">
+                        <i class="fas fa-camera text-sm"></i>
+                    </button>
+                </div>
+                
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ user.get_full_name }}</h2>
+                <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">{{ user.email }}</p>
+                
+                <div class="mt-4 flex flex-wrap justify-center gap-2">
+                    <span class="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full text-xs font-medium">
+                        <i class="fas fa-check-circle mr-1"></i>Verified
+                    </span>
+                    <span class="px-3 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full text-xs font-medium">
+                        <i class="fas fa-crown mr-1"></i>Premium Seller
+                    </span>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 rounded-full text-xs font-medium">
+                        <i class="fas fa-star mr-1"></i>{{ user.get_user_type_display }}
+                    </span>
+                </div>
+                
+                <div class="mt-6">
+                    <button onclick="openEditProfile()" 
+                            class="w-full px-4 py-2 bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg hover:opacity-90 transition font-medium">
+                        <i class="fas fa-edit mr-2"></i>Edit Profile
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 profile-section card-animate stagger-2">
+            <h3 class="font-bold text-lg text-gray-900 dark:text-white mb-4">Profile Completion</h3>
+            <div class="space-y-4">
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-600 dark:text-gray-400">Basic Info</span>
+                        <span class="font-medium">100%</span>
+                    </div>
+                    <div class="custom-progress">
+                        <div class="custom-progress-bar" style="width: 100%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-600 dark:text-gray-400">Contact Details</span>
+                        <span class="font-medium">80%</span>
+                    </div>
+                    <div class="custom-progress">
+                        <div class="custom-progress-bar" style="width: 80%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-600 dark:text-gray-400">Professional Info</span>
+                        <span class="font-medium">60%</span>
+                    </div>
+                    <div class="custom-progress">
+                        <div class="custom-progress-bar" style="width: 60%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-600 dark:text-gray-400">Documents</span>
+                        <span class="font-medium">40%</span>
+                    </div>
+                    <div class="custom-progress">
+                        <div class="custom-progress-bar" style="width: 40%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                    <i class="fas fa-lightbulb text-bhoosparsh-blue mr-2"></i>
+                    Complete your profile to get 30% more leads
+                </p>
+            </div>
+        </div>
+
+        <!-- Verification Status -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 profile-section card-animate stagger-3">
+            <h3 class="font-bold text-lg text-gray-900 dark:text-white mb-4">Verification Status</h3>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mr-3">
+                            <i class="fas fa-check text-green-600 dark:text-green-400"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900 dark:text-white">Email Verified</p>
+                            <p class="text-xs text-gray-500">Verified on {{ user.date_joined|date:"M d, Y" }}</p>
+                        </div>
+                    </div>
+                    <span class="text-green-600"><i class="fas fa-check-circle"></i></span>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-{% if user.phone %}green{% else %}gray{% endif %}-100 dark:bg-{% if user.phone %}green{% else %}gray{% endif %}-900 flex items-center justify-center mr-3">
+                            <i class="fas fa-phone text-{% if user.phone %}green{% else %}gray{% endif %}-600 dark:text-{% if user.phone %}green{% else %}gray{% endif %}-400"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900 dark:text-white">Phone Verified</p>
+                            <p class="text-xs text-gray-500">
+                                {% if user.phone %}
+                                Verified
+                                {% else %}
+                                Not verified
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {% if user.phone %}
+                    <span class="text-green-600"><i class="fas fa-check-circle"></i></span>
+                    {% else %}
+                    <button onclick="verifyPhone()" class="text-sm text-bhoosparsh-blue hover:text-blue-700">
+                        Verify
+                    </button>
+                    {% endif %}
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-{% if profile.license %}green{% else %}gray{% endif %}-100 dark:bg-{% if profile.license %}green{% else %}gray{% endif %}-900 flex items-center justify-center mr-3">
+                            <i class="fas fa-id-card text-{% if profile.license %}green{% else %}gray{% endif %}-600 dark:text-{% if profile.license %}green{% else %}gray{% endif %}-400"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900 dark:text-white">Agent License</p>
+                            <p class="text-xs text-gray-500">
+                                {% if profile.license %}
+                                Verified
+                                {% else %}
+                                Not uploaded
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {% if profile.license %}
+                    <span class="text-green-600"><i class="fas fa-check-circle"></i></span>
+                    {% else %}
+                    <button onclick="uploadLicense()" class="text-sm text-bhoosparsh-blue hover:text-blue-700">
+                        Upload
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column - Profile Details -->
+    <div class="lg:col-span-2 space-y-6">
+        <!-- Personal Information -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 profile-section card-animate stagger-1">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="font-bold text-lg text-gray-900 dark:text-white">Personal Information</h3>
+                <button onclick="openEditPersonalInfo()" class="edit-btn text-bhoosparsh-blue hover:text-blue-700 text-sm font-medium">
+                    <i class="fas fa-edit mr-1"></i> Edit
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Full Name</label>
+                        <p class="text-gray-900 dark:text-white font-medium">{{ user.get_full_name }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Email Address</label>
+                        <p class="text-gray-900 dark:text-white font-medium">{{ user.email }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">User Type</label>
+                        <p class="text-gray-900 dark:text-white font-medium">{{ user.get_user_type_display }}</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Phone Number</label>
+                        <p class="text-gray-900 dark:text-white font-medium">{{ user.phone|default:"Not provided" }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Alternate Phone</label>
+                        <p class="text-gray-900 dark:text-white font-medium">{{ user.alternate_phone|default:"Not provided" }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Member Since</label>
+                        <p class="text-gray-900 dark:text-white font-medium">{{ user.date_joined|date:"F d, Y" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Professional Information -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 profile-section card-animate stagger-2">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="font-bold text-lg text-gray-900 dark:text-white">Professional Information</h3>
+                <button onclick="openEditProfessionalInfo()" class="edit-btn text-bhoosparsh-blue hover:text-blue-700 text-sm font-medium">
+                    <i class="fas fa-edit mr-1"></i> Edit
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Agency Name</label>
+                        <p class="text-gray-900 dark:text-white font-medium">{{ profile.agency_name|default:"Not provided" }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Real Estate License</label>
+                        <p class="text-gray-900 dark:text-white font-medium">{{ profile.license|default:"Not provided" }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Experience</label>
+                        <p class="text-gray-900 dark:text-white font-medium">{{ profile.experience_years }} years</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Specialization</label>
+                        <p class="text-gray-900 dark:text-white font-medium">{{ profile.specialization|default:"Not specified" }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Languages</label>
+                        <p class="text-gray-900 dark:text-white font-medium">{{ profile.languages|default:"Not specified" }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Website</label>
+                        <p class="text-gray-900 dark:text-white font-medium">{{ profile.website|default:"Not provided" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact & Social -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 profile-section card-animate stagger-3">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="font-bold text-lg text-gray-900 dark:text-white">Contact & Social</h3>
+                <button onclick="openEditContactInfo()" class="edit-btn text-bhoosparsh-blue hover:text-blue-700 text-sm font-medium">
+                    <i class="fas fa-edit mr-1"></i> Edit
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">WhatsApp Number</label>
+                        <p class="text-gray-900 dark:text-white font-medium">{{ profile.whatsapp_number|default:"Not provided" }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Address</label>
+                        <p class="text-gray-900 dark:text-white font-medium">{{ profile.address|default:"Not provided" }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">City</label>
+                        <p class="text-gray-900 dark:text-white font-medium">{{ profile.city|default:"Not provided" }}</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Social Links</label>
+                        <div class="flex space-x-3 mt-2">
+                            {% if profile.facebook %}
+                            <a href="{{ profile.facebook }}" target="_blank" class="text-blue-600 hover:text-blue-800">
+                                <i class="fab fa-facebook text-lg"></i>
+                            </a>
+                            {% endif %}
+                            {% if profile.twitter %}
+                            <a href="{{ profile.twitter }}" target="_blank" class="text-blue-400 hover:text-blue-600">
+                                <i class="fab fa-twitter text-lg"></i>
+                            </a>
+                            {% endif %}
+                            {% if profile.linkedin %}
+                            <a href="{{ profile.linkedin }}" target="_blank" class="text-blue-700 hover:text-blue-900">
+                                <i class="fab fa-linkedin text-lg"></i>
+                            </a>
+                            {% endif %}
+                            {% if profile.instagram %}
+                            <a href="{{ profile.instagram }}" target="_blank" class="text-pink-600 hover:text-pink-800">
+                                <i class="fab fa-instagram text-lg"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Bio</label>
+                        <p class="text-gray-900 dark:text-white">{{ profile.bio|default:"No bio added"|truncatechars:150 }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 profile-section card-animate stagger-4">
+            <h3 class="font-bold text-lg text-gray-900 dark:text-white mb-6">Performance Statistics</h3>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-bhoosparsh-blue">{{ profile.total_listings|default:"0" }}</div>
+                    <p class="text-xs text-gray-500 mt-1">Total Listings</p>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600">{{ profile.total_sales|default:"0" }}</div>
+                    <p class="text-xs text-gray-500 mt-1">Total Sales</p>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-purple-600">{{ profile.success_rate|default:"0" }}%</div>
+                    <p class="text-xs text-gray-500 mt-1">Success Rate</p>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-yellow-600">{{ profile.total_clicks|default:"0" }}</div>
+                    <p class="text-xs text-gray-500 mt-1">Total Clicks</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Profile Edit Modal -->
+<div id="editProfileModal" class="modal-overlay">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Edit Profile</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Update your profile information</p>
+                </div>
+                <button onclick="closeModal('editProfileModal')" 
+                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <form id="profileForm" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="space-y-6">
+                    <!-- Personal Information -->
+                    <div>
+                        <h4 class="font-bold text-gray-900 dark:text-white mb-4">Personal Information</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    First Name *
+                                </label>
+                                <input type="text" name="first_name" value="{{ user.first_name }}" 
+                                       class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300"
+                                       required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Last Name *
+                                </label>
+                                <input type="text" name="last_name" value="{{ user.last_name }}" 
+                                       class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300"
+                                       required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Phone Number
+                                </label>
+                                <input type="tel" name="phone" value="{{ user.phone|default:'' }}" 
+                                       class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300"
+                                       pattern="^\+?1?\d{9,15}$">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Alternate Phone
+                                </label>
+                                <input type="tel" name="alternate_phone" value="{{ user.alternate_phone|default:'' }}" 
+                                       class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Professional Information -->
+                    <div>
+                        <h4 class="font-bold text-gray-900 dark:text-white mb-4">Professional Information</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Agency Name
+                                </label>
+                                <input type="text" name="agency_name" value="{{ profile.agency_name|default:'' }}" 
+                                       class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Real Estate License
+                                </label>
+                                <input type="text" name="license" value="{{ profile.license|default:'' }}" 
+                                       class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Experience (Years)
+                                </label>
+                                <input type="number" name="experience_years" value="{{ profile.experience_years|default:0 }}" 
+                                       class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300"
+                                       min="0" max="50">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Specialization
+                                </label>
+                                <input type="text" name="specialization" value="{{ profile.specialization|default:'' }}" 
+                                       class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Information -->
+                    <div>
+                        <h4 class="font-bold text-gray-900 dark:text-white mb-4">Additional Information</h4>
+                        <div class="grid grid-cols-1 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Bio
+                                </label>
+                                <textarea name="bio" rows="3" 
+                                          class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300">{{ profile.bio|default:'' }}</textarea>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Address
+                                    </label>
+                                    <textarea name="address" rows="2" 
+                                              class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300">{{ profile.address|default:'' }}</textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        City
+                                    </label>
+                                    <input type="text" name="city" value="{{ profile.city|default:'' }}" 
+                                           class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+            <button onclick="closeModal('editProfileModal')" 
+                    class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                Cancel
+            </button>
+            <button type="submit" form="profileForm" 
+                    class="px-4 py-2 bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg hover:opacity-90 transition font-medium">
+                <i class="fas fa-save mr-2"></i>Save Changes
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Avatar Upload Modal -->
+<div id="avatarUploadModal" class="modal-overlay">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full mx-4">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Update Profile Picture</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Upload a new profile photo</p>
+                </div>
+                <button onclick="closeModal('avatarUploadModal')" 
+                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <div class="text-center">
+                <div class="w-32 h-32 rounded-full overflow-hidden mx-auto mb-6 border-4 border-gray-200 dark:border-gray-700">
+                    <div id="avatarPreview" class="w-full h-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                        {% if profile.avatar %}
+                        <img src="{{ profile.avatar.url }}" alt="Current Avatar" class="w-full h-full object-cover">
+                        {% else %}
+                        <span class="text-4xl font-bold text-gray-400">{{ user.first_name|first|upper }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="previewAvatar()">
+                
+                <button onclick="document.getElementById('avatarInput').click()" 
+                        class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition mb-4">
+                    <i class="fas fa-upload mr-2"></i>Choose Image
+                </button>
+                
+                <p class="text-xs text-gray-500 mt-3">
+                    Recommended: Square image, 300x300 pixels, max 2MB
+                </p>
+            </div>
+        </div>
+
+        <div class="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+            <button onclick="closeModal('avatarUploadModal')" 
+                    class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                Cancel
+            </button>
+            <button onclick="uploadAvatar()" 
+                    class="px-4 py-2 bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg hover:opacity-90 transition font-medium">
+                <i class="fas fa-save mr-2"></i>Upload Photo
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize animations
+        const cards = document.querySelectorAll('.card-animate');
+        cards.forEach((card, index) => {
+            setTimeout(() => {
+                card.style.animationDelay = `${index * 0.1}s`;
+                card.style.opacity = '1';
+            }, 100);
+        });
+    });
+
+    function openEditProfile() {
+        openModal('editProfileModal');
+    }
+
+    function openAvatarUpload() {
+        openModal('avatarUploadModal');
+    }
+
+    function openEditPersonalInfo() {
+        openModal('editProfileModal');
+        // Scroll to personal info section
+        setTimeout(() => {
+            document.querySelector('input[name="first_name"]').focus();
+        }, 300);
+    }
+
+    function openEditProfessionalInfo() {
+        openModal('editProfileModal');
+        // Scroll to professional info section
+        setTimeout(() => {
+            document.querySelector('input[name="agency_name"]').focus();
+        }, 300);
+    }
+
+    function openEditContactInfo() {
+        openModal('editProfileModal');
+        // Scroll to contact info section
+        setTimeout(() => {
+            document.querySelector('textarea[name="bio"]').focus();
+        }, 300);
+    }
+
+    function verifyPhone() {
+        showToast('Phone verification OTP sent to your number', 'info');
+    }
+
+    function uploadLicense() {
+        showToast('License upload feature coming soon', 'info');
+    }
+
+    function previewAvatar() {
+        const input = document.getElementById('avatarInput');
+        const preview = document.getElementById('avatarPreview');
+        
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                preview.innerHTML = `<img src="${e.target.result}" alt="Preview" class="w-full h-full object-cover">`;
+            }
+            
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function uploadAvatar() {
+        const input = document.getElementById('avatarInput');
+        
+        if (!input.files || !input.files[0]) {
+            showToast('Please select an image first', 'warning');
+            return;
+        }
+
+        // Simulate upload
+        showToast('Uploading profile picture...', 'info');
+        
+        setTimeout(() => {
+            showToast('Profile picture updated successfully!', 'success');
+            closeModal('avatarUploadModal');
+            // Reload page to show new avatar
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }, 1500);
+    }
+
+    // Handle form submission
+    document.getElementById('profileForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        showToast('Updating profile...', 'info');
+        
+        // Simulate form submission
+        setTimeout(() => {
+            showToast('Profile updated successfully!', 'success');
+            closeModal('editProfileModal');
+            // Reload page to show updated data
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }, 1500);
+    });
+</script>
+{% endblock %}

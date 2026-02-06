@@ -1,0 +1,1667 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .registration-section {
+        min-height: 100vh;
+        padding: 100px 0 50px;
+        background: linear-gradient(135deg, #f0f7f0 0%, #e1fae1 100%);
+    }
+    
+    .registration-card {
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(21, 39, 26, 0.15);
+        overflow: hidden;
+        border: none;
+        margin-bottom: 30px;
+    }
+    
+    .registration-header {
+        background: linear-gradient(135deg, #15271a 0%, #2a4d36 100%);
+        color: #ffffff;
+        padding: 40px;
+        text-align: center;
+    }
+    
+    .registration-header h2 {
+        font-weight: 700;
+        margin-bottom: 10px;
+        font-size: 2.2rem;
+    }
+    
+    .form-container {
+        padding: 40px;
+    }
+    
+    @media (max-width: 768px) {
+        .form-container {
+            padding: 25px;
+        }
+        
+        .registration-header {
+            padding: 30px 20px;
+        }
+        
+        .registration-header h2 {
+            font-size: 1.8rem;
+        }
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #15271a;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    .required {
+        color: #e74c3c;
+        margin-left: 4px;
+    }
+    
+    .form-control, .form-select {
+        padding: 12px 15px;
+        border: 2px solid rgba(21, 39, 26, 0.2);
+        border-radius: 10px;
+        transition: all 0.3s;
+        font-size: 1rem;
+        width: 100%;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #15271a;
+        box-shadow: 0 0 0 3px rgba(21, 39, 26, 0.1);
+        outline: none;
+    }
+    
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: #e74c3c;
+    }
+    
+    .invalid-feedback {
+        color: #e74c3c;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        display: none;
+    }
+    
+    .has-error .invalid-feedback {
+        display: block;
+    }
+    
+    .btn-submit {
+        background: linear-gradient(135deg, #15271a 0%, #2a4d36 100%);
+        color: #ffffff;
+        padding: 14px 35px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 10px;
+        border: none;
+        transition: all 0.3s;
+        width: 100%;
+    }
+    
+    .btn-submit:hover {
+        background: linear-gradient(135deg, #2a4d36 0%, #15271a 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(21, 39, 26, 0.2);
+    }
+    
+    .btn-submit:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(250, 216, 77, 0.3);
+        border-radius: 50%;
+        border-top-color: #fad84d;
+        animation: spin 1s ease-in-out infinite;
+        margin-right: 10px;
+        vertical-align: middle;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    .location-loading {
+        position: relative;
+    }
+    
+    .location-loading:after {
+        content: '';
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 16px;
+        height: 16px;
+        border: 2px solid #15271a;
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    .loading-text {
+        color: #15271a;
+        font-size: 0.9rem;
+        margin-top: 5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .alert-container {
+        margin-bottom: 20px;
+    }
+    
+    .alert {
+        border-radius: 10px;
+        padding: 15px 20px;
+        margin-bottom: 0;
+        border: 1px solid transparent;
+    }
+    
+    /* User Type Selection */
+    .user-type-container {
+        background: linear-gradient(135deg, rgba(250, 216, 77, 0.1) 0%, rgba(210, 173, 52, 0.1) 100%);
+        border-radius: 15px;
+        padding: 25px;
+        margin: 20px 0;
+        border: 2px solid #fad84d;
+    }
+    
+    .user-type-title {
+        font-weight: 600;
+        color: #15271a;
+        margin-bottom: 15px;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .user-type-options {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    
+    @media (max-width: 576px) {
+        .user-type-options {
+            flex-direction: column;
+            gap: 10px;
+        }
+    }
+    
+    .user-type-option {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    @media (max-width: 576px) {
+        .user-type-option {
+            min-width: 100%;
+        }
+    }
+    
+    .user-type-radio {
+        display: none;
+    }
+    
+    .user-type-label {
+        display: block;
+        padding: 20px;
+        background: #ffffff;
+        border: 2px solid rgba(21, 39, 26, 0.2);
+        border-radius: 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        height: 100%;
+    }
+    
+    .user-type-label:hover {
+        border-color: #15271a;
+        transform: translateY(-2px);
+    }
+    
+    .user-type-radio:checked + .user-type-label {
+        border-color: #fad84d;
+        background: linear-gradient(135deg, rgba(250, 216, 77, 0.05) 0%, rgba(210, 173, 52, 0.05) 100%);
+        box-shadow: 0 5px 15px rgba(250, 216, 77, 0.1);
+    }
+    
+    .user-type-icon {
+        font-size: 2rem;
+        margin-bottom: 10px;
+        color: #15271a;
+        display: block;
+    }
+    
+    .user-type-radio:checked + .user-type-label .user-type-icon {
+        color: #fad84d;
+    }
+    
+    .user-type-name {
+        font-weight: 600;
+        color: #15271a;
+        font-size: 1.1rem;
+        margin-bottom: 5px;
+    }
+    
+    .user-type-desc {
+        color: rgba(21, 39, 26, 0.7);
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+    
+    /* Conditional Sections */
+    .conditional-section {
+        transition: all 0.5s ease;
+        max-height: 1000px;
+        overflow: hidden;
+        opacity: 1;
+        margin: 20px 0;
+    }
+    
+    .conditional-section.hidden {
+        max-height: 0;
+        opacity: 0;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        border: none;
+    }
+    
+    /* Professional Details Section */
+    .professional-details-section,
+    .social-media-section,
+    .business-details-section {
+        background: linear-gradient(135deg, rgba(250, 216, 77, 0.1) 0%, rgba(210, 173, 52, 0.1) 100%);
+        border-radius: 15px;
+        padding: 25px;
+        border: 1px solid #fad84d;
+    }
+    
+    .section-title {
+        color: #15271a;
+        font-weight: 600;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #15271a;
+        display: flex;
+        align-items: center;
+    }
+    
+    .section-title i {
+        margin-right: 10px;
+    }
+
+    /* Social Media Input Groups */
+    .input-group-text {
+        background: #15271a;
+        border-color: #15271a;
+        color: #ffffff;
+        min-width: 45px;
+        justify-content: center;
+    }
+
+    /* Alert Styles */
+    .alert-success {
+        background: linear-gradient(135deg, rgba(21, 39, 26, 0.1) 0%, rgba(42, 77, 54, 0.1) 100%);
+        border: 1px solid #15271a;
+        color: #15271a;
+    }
+
+    .alert-info {
+        background: linear-gradient(135deg, rgba(250, 216, 77, 0.1) 0%, rgba(210, 173, 52, 0.1) 100%);
+        border: 1px solid #fad84d;
+        color: #15271a;
+    }
+
+    .alert-warning {
+        background: linear-gradient(135deg, rgba(210, 173, 52, 0.1) 0%, rgba(250, 216, 77, 0.1) 100%);
+        border: 1px solid #d2ad34;
+        color: #15271a;
+    }
+
+    .alert-danger {
+        background: linear-gradient(135deg, rgba(231, 76, 60, 0.1) 0%, rgba(192, 57, 43, 0.1) 100%);
+        border: 1px solid #e74c3c;
+        color: #15271a;
+    }
+
+    /* Checkbox Styles */
+    .form-check {
+        display: flex;
+        align-items: flex-start;
+        padding-left: 0;
+    }
+    
+    .form-check-input {
+        margin-top: 0.3em;
+        margin-right: 10px;
+        width: 1.2em;
+        height: 1.2em;
+    }
+    
+    .form-check-input:checked {
+        background-color: #15271a;
+        border-color: #15271a;
+    }
+
+    .form-check-label {
+        flex: 1;
+        color: #15271a;
+        line-height: 1.5;
+    }
+
+    .form-check-label a {
+        color: #15271a;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s;
+    }
+
+    .form-check-label a:hover {
+        color: #fad84d;
+        text-decoration: underline;
+    }
+
+    /* Section Dividers */
+    hr {
+        border-top: 2px solid rgba(21, 39, 26, 0.1);
+        opacity: 1;
+        margin: 2rem 0;
+    }
+
+    /* Text Colors */
+    .text-muted {
+        color: rgba(21, 39, 26, 0.6) !important;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .text-primary {
+        color: #15271a !important;
+    }
+
+    /* Placeholder Text */
+    .form-control::placeholder,
+    .form-select option[value=""][disabled] {
+        color: rgba(21, 39, 26, 0.5);
+    }
+
+    /* Loading overlay */
+    .loading-overlay {
+        position: relative;
+    }
+    
+    .loading-overlay:after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        border-radius: 10px;
+    }
+    
+    .loading-overlay:before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 30px;
+        height: 30px;
+        border: 3px solid #15271a;
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        z-index: 11;
+    }
+
+    /* Password validation indicator */
+    .password-strength {
+        height: 4px;
+        margin-top: 5px;
+        border-radius: 2px;
+        transition: all 0.3s;
+        background: #e0e0e0;
+    }
+    
+    .password-strength.weak {
+        background: #e74c3c;
+        width: 33%;
+    }
+    
+    .password-strength.medium {
+        background: #f39c12;
+        width: 66%;
+    }
+    
+    .password-strength.strong {
+        background: #27ae60;
+        width: 100%;
+    }
+
+    /* Error states */
+    .error-highlight {
+        animation: error-pulse 0.5s ease;
+    }
+    
+    @keyframes error-pulse {
+        0%, 100% { box-shadow: 0 0 0 rgba(231, 76, 60, 0); }
+        50% { box-shadow: 0 0 10px rgba(231, 76, 60, 0.5); }
+    }
+
+    /* Form header */
+    .form-header {
+        color: #15271a;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .form-header i {
+        margin-right: 10px;
+        color: #2a4d36;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 576px) {
+        .section-title {
+            font-size: 1.2rem;
+        }
+        
+        .form-header {
+            font-size: 1.3rem;
+        }
+        
+        .user-type-label {
+            padding: 15px;
+        }
+        
+        .professional-details-section,
+        .social-media-section,
+        .business-details-section {
+            padding: 15px;
+        }
+    }
+</style>
+
+<section class="registration-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-xl-6">
+                <!-- Messages -->
+                {% if messages %}
+                <div class="alert-container">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div class="registration-card">
+                    <!-- Header -->
+                    <div class="registration-header">
+                        <h2><i class="fas fa-user-plus me-2"></i>Registration</h2>
+                        <p>Join WardtoWorld as a Customer or Vendor</p>
+                    </div>
+                    
+                    <!-- Form Container -->
+                    <div class="form-container">
+                        <form method="POST" action="{% url 'business_signup' %}" id="registrationForm" novalidate>
+                            {% csrf_token %}
+                            
+                            <!-- Hidden fields for location IDs -->
+                            <input type="hidden" name="country_id" id="countryId">
+                            <input type="hidden" name="state_id" id="stateId">
+                            <input type="hidden" name="district_id" id="districtId">
+                            <input type="hidden" name="user_type" id="userType" value="customer">
+                            
+                            <h4 class="form-header">
+                                <i class="fas fa-user-circle"></i>Account Information
+                            </h4>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">First Name <span class="required">*</span></label>
+                                        <input type="text" class="form-control {% if form_errors and 'first_name' in form_errors %}is-invalid{% endif %}" 
+                                               name="first_name" required placeholder="Enter your first name" 
+                                               value="{{ form_data.first_name|default:'' }}">
+                                        {% if form_errors and 'first_name' in form_errors %}
+                                            <div class="invalid-feedback d-block">{{ form_errors.first_name }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Last Name <span class="required">*</span></label>
+                                        <input type="text" class="form-control {% if form_errors and 'last_name' in form_errors %}is-invalid{% endif %}" 
+                                               name="last_name" required placeholder="Enter your last name" 
+                                               value="{{ form_data.last_name|default:'' }}">
+                                        {% if form_errors and 'last_name' in form_errors %}
+                                            <div class="invalid-feedback d-block">{{ form_errors.last_name }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Email Address <span class="required">*</span></label>
+                                <input type="email" class="form-control {% if form_errors and 'business_email' in form_errors %}is-invalid{% endif %}" 
+                                       name="business_email" required placeholder="you@example.com" 
+                                       value="{{ form_data.business_email|default:'' }}">
+                                {% if form_errors and 'business_email' in form_errors %}
+                                    <div class="invalid-feedback d-block">{{ form_errors.business_email }}</div>
+                                {% endif %}
+                                <small class="text-muted">This will be used for login and communication</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Phone Number <span class="required">*</span></label>
+                                <input type="tel" class="form-control {% if form_errors and 'phone_number' in form_errors %}is-invalid{% endif %}" 
+                                       name="phone_number" required placeholder="Enter 10-digit phone number" 
+                                       pattern="[0-9]{10}" title="Please enter a valid 10-digit phone number"
+                                       value="{{ form_data.phone_number|default:'' }}">
+                                {% if form_errors and 'phone_number' in form_errors %}
+                                    <div class="invalid-feedback d-block">{{ form_errors.phone_number }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Username <span class="required">*</span></label>
+                                        <input type="text" class="form-control {% if form_errors and 'username' in form_errors %}is-invalid{% endif %}" 
+                                               name="username" required placeholder="Choose a username" 
+                                               value="{{ form_data.username|default:'' }}">
+                                        {% if form_errors and 'username' in form_errors %}
+                                            <div class="invalid-feedback d-block">{{ form_errors.username }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Password <span class="required">*</span></label>
+                                        <input type="password" class="form-control {% if form_errors and 'password' in form_errors %}is-invalid{% endif %}" 
+                                               name="password" id="password" required placeholder="Create a password" 
+                                               minlength="8">
+                                        <div class="password-strength" id="passwordStrength"></div>
+                                        {% if form_errors and 'password' in form_errors %}
+                                            <div class="invalid-feedback d-block">{{ form_errors.password }}</div>
+                                        {% endif %}
+                                        <small class="text-muted">Minimum 8 characters with letters and numbers</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Confirm Password <span class="required">*</span></label>
+                                <input type="password" class="form-control {% if form_errors and 'confirm_password' in form_errors %}is-invalid{% endif %}" 
+                                       name="confirm_password" id="confirmPassword" required placeholder="Confirm your password">
+                                <div class="invalid-feedback" id="passwordError">Passwords do not match</div>
+                                {% if form_errors and 'confirm_password' in form_errors %}
+                                    <div class="invalid-feedback d-block">{{ form_errors.confirm_password }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <hr>
+                            
+                            <h4 class="form-header">
+                                <i class="fas fa-map-marker-alt"></i>Business Location
+                            </h4>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Country <span class="required">*</span></label>
+                                <select class="form-select {% if form_errors and 'country' in form_errors %}is-invalid{% endif %}" 
+                                        name="country" id="country" required>
+                                    <option value="" disabled selected>Loading countries...</option>
+                                </select>
+                                {% if form_errors and 'country' in form_errors %}
+                                    <div class="invalid-feedback d-block">{{ form_errors.country }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">State <span class="required">*</span></label>
+                                <select class="form-select {% if form_errors and 'state' in form_errors %}is-invalid{% endif %}" 
+                                        name="state" id="state" required disabled>
+                                    <option value="" disabled selected>Select country first</option>
+                                </select>
+                                {% if form_errors and 'state' in form_errors %}
+                                    <div class="invalid-feedback d-block">{{ form_errors.state }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">District <span class="required">*</span></label>
+                                <select class="form-select {% if form_errors and 'district' in form_errors %}is-invalid{% endif %}" 
+                                        name="district" id="district" required disabled>
+                                    <option value="" disabled selected>Select state first</option>
+                                </select>
+                                {% if form_errors and 'district' in form_errors %}
+                                    <div class="invalid-feedback d-block">{{ form_errors.district }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Local Body <span class="required">*</span></label>
+                                <select class="form-select {% if form_errors and 'local_body' in form_errors %}is-invalid{% endif %}" 
+                                        name="local_body" id="localBody" required disabled>
+                                    <option value="" disabled selected>Select district first</option>
+                                </select>
+                                <div class="loading-text" id="localBodyLoading" style="display: none;">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading local bodies...
+                                </div>
+                                {% if form_errors and 'local_body' in form_errors %}
+                                    <div class="invalid-feedback d-block">{{ form_errors.local_body }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Ward (Optional)</label>
+                                <div style="position: relative;">
+                                    <select class="form-select" name="ward" id="ward" disabled>
+                                        <option value="" selected>Select local body first</option>
+                                    </select>
+                                    <div class="loading-text" id="wardLoading" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); display: none;">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- User Type Selection -->
+                            <div class="user-type-container">
+                                <div class="user-type-title">
+                                    <i class="fas fa-user-tag me-2"></i>Select Your Role
+                                </div>
+                                <div class="user-type-options">
+                                    <div class="user-type-option">
+                                        <input type="radio" class="user-type-radio" name="user_type_radio" 
+                                               id="customerType" value="customer" 
+                                               {% if form_data.user_type != 'vendor' %}checked{% endif %}>
+                                        <label for="customerType" class="user-type-label">
+                                            <div class="user-type-icon">
+                                                <i class="fas fa-shopping-cart"></i>
+                                            </div>
+                                            <div class="user-type-name">Customer</div>
+                                            <div class="user-type-desc">I want to find and purchase products/services</div>
+                                        </label>
+                                    </div>
+                                    <div class="user-type-option">
+                                        <input type="radio" class="user-type-radio" name="user_type_radio" 
+                                               id="vendorType" value="vendor"
+                                               {% if form_data.user_type == 'vendor' %}checked{% endif %}>
+                                        <label for="vendorType" class="user-type-label">
+                                            <div class="user-type-icon">
+                                                <i class="fas fa-store"></i>
+                                            </div>
+                                            <div class="user-type-name">Vendor</div>
+                                            <div class="user-type-desc">I want to sell products/services on WardtoWorld</div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Professional Details Section (For Customers) -->
+                            <div id="professionalDetailsSection" class="conditional-section professional-details-section">
+                                <h4 class="section-title">
+                                    <i class="fas fa-briefcase me-2"></i>Professional Details
+                                </h4>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Profession</label>
+                                            <select class="form-select" name="profession" id="profession">
+                                                <option value="" selected>Select your profession</option>
+                                                {% for profession in professions %}
+                                                    <option value="{{ profession.id }}" 
+                                                            {% if form_data.profession == profession.id|stringformat:"s" %}selected{% endif %}>
+                                                        {{ profession.name }}
+                                                    </option>
+                                                {% endfor %}
+                                                <option value="other" {% if form_data.profession == 'other' %}selected{% endif %}>Other (Please specify in company field)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Company/Organization (Optional)</label>
+                                            <input type="text" class="form-control" name="company" 
+                                                placeholder="Enter company name" 
+                                                value="{{ form_data.company|default:'' }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Social Media Section (For Customers) -->
+                            <div id="socialMediaSection" class="conditional-section social-media-section">
+                                <h4 class="section-title">
+                                    <i class="fas fa-share-alt me-2"></i>Social Media Links (Optional)
+                                </h4>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Facebook Profile</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">
+                                                    <i class="fab fa-facebook"></i>
+                                                </span>
+                                                <input type="url" class="form-control" name="facebook_url" 
+                                                       placeholder="https://facebook.com/username" 
+                                                       value="{{ form_data.facebook_url|default:'' }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">LinkedIn Profile</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">
+                                                    <i class="fab fa-linkedin"></i>
+                                                </span>
+                                                <input type="url" class="form-control" name="linkedin_url" 
+                                                       placeholder="https://linkedin.com/in/username" 
+                                                       value="{{ form_data.linkedin_url|default:'' }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Instagram Profile</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">
+                                                    <i class="fab fa-instagram"></i>
+                                                </span>
+                                                <input type="url" class="form-control" name="instagram_url" 
+                                                       placeholder="https://instagram.com/username" 
+                                                       value="{{ form_data.instagram_url|default:'' }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">Twitter Profile</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">
+                                                    <i class="fab fa-twitter"></i>
+                                                </span>
+                                                <input type="url" class="form-control" name="twitter_url" 
+                                                       placeholder="https://twitter.com/username" 
+                                                       value="{{ form_data.twitter_url|default:'' }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Website/Blog (Optional)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-globe"></i>
+                                        </span>
+                                        <input type="url" class="form-control" name="website_url" 
+                                               placeholder="https://example.com" 
+                                               value="{{ form_data.website_url|default:'' }}">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Business Details Section (For Vendors) -->
+                            <div id="businessDetailsSection" class="conditional-section business-details-section hidden">
+                                <h4 class="section-title">
+                                    <i class="fas fa-building me-2"></i>Business Details
+                                </h4>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Business Name <span class="required">*</span></label>
+                                    <input type="text" class="form-control {% if form_errors and 'business_name' in form_errors %}is-invalid{% endif %}" 
+                                           name="business_name" id="businessName" placeholder="Enter your business name" 
+                                           value="{{ form_data.business_name|default:'' }}">
+                                    {% if form_errors and 'business_name' in form_errors %}
+                                        <div class="invalid-feedback d-block">{{ form_errors.business_name }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Business Category <span class="required">*</span></label>
+                                    <select class="form-select {% if form_errors and 'category' in form_errors %}is-invalid{% endif %}" 
+                                            name="category" id="category">
+                                        <option value="" disabled {% if not form_data.category %}selected{% endif %}>Select your business category</option>
+                                        {% for category in categories %}
+                                            <option value="{{ category.id }}" 
+                                                    {% if form_data.category == category.id|stringformat:"s" %}selected{% endif %}>
+                                                {{ category.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    {% if form_errors and 'category' in form_errors %}
+                                        <div class="invalid-feedback d-block">{{ form_errors.category }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Business Description (Optional)</label>
+                                    <textarea class="form-control" name="business_description" 
+                                              rows="3" placeholder="Describe your business...">{{ form_data.business_description|default:'' }}</textarea>
+                                    <small class="text-muted">Briefly describe your products or services</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Years in Business</label>
+                                    <select class="form-select" name="years_in_business">
+                                        <option value="" selected>Select years in business</option>
+                                        <option value="less_than_1" {% if form_data.years_in_business == 'less_than_1' %}selected{% endif %}>Less than 1 year</option>
+                                        <option value="1_3" {% if form_data.years_in_business == '1_3' %}selected{% endif %}>1-3 years</option>
+                                        <option value="3_5" {% if form_data.years_in_business == '3_5' %}selected{% endif %}>3-5 years</option>
+                                        <option value="5_10" {% if form_data.years_in_business == '5_10' %}selected{% endif %}>5-10 years</option>
+                                        <option value="over_10" {% if form_data.years_in_business == 'over_10' %}selected{% endif %}>Over 10 years</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <hr>
+                            
+                            <div class="form-check mb-4">
+                                <input class="form-check-input {% if form_errors and 'terms' in form_errors %}is-invalid{% endif %}" 
+                                       type="checkbox" id="termsCheck" name="terms" required 
+                                       {% if form_data.terms %}checked{% endif %}>
+                                <label class="form-check-label" for="termsCheck">
+                                    I agree to the <a href="#" target="_blank">Terms & Conditions</a> and <a href="#" target="_blank">Privacy Policy</a>
+                                </label>
+                                {% if form_errors and 'terms' in form_errors %}
+                                    <div class="invalid-feedback d-block">{{ form_errors.terms }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <button type="submit" class="btn btn-submit" id="submitBtn">
+                                Register Now
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    // Global state to track loading and prevent duplicate calls
+    const formState = {
+        loading: false,
+        currentLocalBodyId: null,
+        locationLoaded: false,
+        apiRetries: {}
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get elements
+        const customerRadio = document.getElementById('customerType');
+        const vendorRadio = document.getElementById('vendorType');
+        const userTypeField = document.getElementById('userType');
+        const professionalSection = document.getElementById('professionalDetailsSection');
+        const socialMediaSection = document.getElementById('socialMediaSection');
+        const businessSection = document.getElementById('businessDetailsSection');
+        const businessNameField = document.getElementById('businessName');
+        const categoryField = document.getElementById('category');
+        
+        // Password validation elements
+        const passwordField = document.getElementById('password');
+        const confirmPasswordField = document.getElementById('confirmPassword');
+        const passwordError = document.getElementById('passwordError');
+        const passwordStrength = document.getElementById('passwordStrength');
+        
+        // Password strength checker
+        function checkPasswordStrength(password) {
+            if (!password) {
+                passwordStrength.className = 'password-strength';
+                return;
+            }
+            
+            let strength = 0;
+            
+            // Length check
+            if (password.length >= 8) strength++;
+            if (password.length >= 12) strength++;
+            
+            // Character variety checks
+            if (/[a-z]/.test(password)) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^A-Za-z0-9]/.test(password)) strength++;
+            
+            // Classify strength
+            if (strength <= 2) {
+                passwordStrength.className = 'password-strength weak';
+            } else if (strength <= 4) {
+                passwordStrength.className = 'password-strength medium';
+            } else {
+                passwordStrength.className = 'password-strength strong';
+            }
+        }
+        
+        // Password validation
+        function validatePasswords() {
+            if (passwordField.value && confirmPasswordField.value) {
+                if (passwordField.value !== confirmPasswordField.value) {
+                    passwordError.style.display = 'block';
+                    confirmPasswordField.classList.add('is-invalid');
+                    return false;
+                } else {
+                    passwordError.style.display = 'none';
+                    confirmPasswordField.classList.remove('is-invalid');
+                    return true;
+                }
+            }
+            return null; // Not validated yet
+        }
+        
+        // Event listeners for password
+        passwordField.addEventListener('input', function() {
+            checkPasswordStrength(this.value);
+            validatePasswords();
+        });
+        
+        confirmPasswordField.addEventListener('input', validatePasswords);
+        
+        // Toggle sections based on user type
+        function toggleSections() {
+            if (customerRadio.checked) {
+                userTypeField.value = 'customer';
+                // Show customer sections with animation
+                setTimeout(() => {
+                    professionalSection.classList.remove('hidden');
+                    socialMediaSection.classList.remove('hidden');
+                }, 10);
+                // Hide vendor section
+                businessSection.classList.add('hidden');
+                // Make business fields optional
+                businessNameField.removeAttribute('required');
+                categoryField.removeAttribute('required');
+            } else {
+                userTypeField.value = 'vendor';
+                // Hide customer sections
+                professionalSection.classList.add('hidden');
+                socialMediaSection.classList.add('hidden');
+                // Show vendor section with animation
+                setTimeout(() => {
+                    businessSection.classList.remove('hidden');
+                }, 10);
+                // Make business fields required
+                businessNameField.setAttribute('required', 'required');
+                categoryField.setAttribute('required', 'required');
+            }
+        }
+        
+        // Add event listeners to radio buttons
+        customerRadio.addEventListener('change', toggleSections);
+        vendorRadio.addEventListener('change', toggleSections);
+        
+        // Initial toggle
+        toggleSections();
+        
+        // Location elements
+        const countrySelect = document.getElementById('country');
+        const stateSelect = document.getElementById('state');
+        const districtSelect = document.getElementById('district');
+        const localBodySelect = document.getElementById('localBody');
+        const wardSelect = document.getElementById('ward');
+        const localBodyLoading = document.getElementById('localBodyLoading');
+        const wardLoading = document.getElementById('wardLoading');
+        
+        // Hidden fields for IDs
+        const countryIdField = document.getElementById('countryId');
+        const stateIdField = document.getElementById('stateId');
+        const districtIdField = document.getElementById('districtId');
+        
+        // Saved form data from Django template
+        const savedFormData = {
+            country: "{{ form_data.country|default:''|escapejs }}",
+            state: "{{ form_data.state|default:''|escapejs }}",
+            district: "{{ form_data.district|default:''|escapejs }}",
+            localBody: "{{ form_data.local_body|default:''|escapejs }}",
+            ward: "{{ form_data.ward|default:''|escapejs }}"
+        };
+        
+        // Load countries on page load
+        function loadCountries() {
+            if (formState.loading) return;
+            formState.loading = true;
+            
+            countrySelect.classList.add('location-loading');
+            countrySelect.disabled = true;
+
+            // API call with retry logic
+            function fetchCountries(retryCount = 0) {
+                fetch('/api/countries/')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        countrySelect.classList.remove('location-loading');
+                        countrySelect.disabled = false;
+                        formState.loading = false;
+                        
+                        if (data.success && data.countries && data.countries.length > 0) {
+                            populateCountries(data.countries);
+                        } else {
+                            showFallbackCountries();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading countries:', error);
+                        
+                        if (retryCount < 2) {
+                            // Retry after delay
+                            setTimeout(() => fetchCountries(retryCount + 1), 1000 * (retryCount + 1));
+                        } else {
+                            countrySelect.classList.remove('location-loading');
+                            countrySelect.disabled = false;
+                            formState.loading = false;
+                            showFallbackCountries();
+                        }
+                    });
+            }
+            
+            fetchCountries();
+        }
+        
+        function populateCountries(countries) {
+            countrySelect.innerHTML = '<option value="" disabled>Select country</option>';
+            
+            // Add countries
+            countries.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country.name;
+                option.textContent = country.name;
+                option.dataset.countryId = country.id;
+                countrySelect.appendChild(option);
+            });
+            
+            // Set saved selection or default to India
+            if (savedFormData.country) {
+                const savedOption = Array.from(countrySelect.options).find(
+                    opt => opt.value === savedFormData.country
+                );
+                if (savedOption) {
+                    savedOption.selected = true;
+                    const countryId = savedOption.dataset.countryId;
+                    countryIdField.value = countryId;
+                    loadStates(countryId);
+                }
+            } else {
+                // Default to India if available
+                const indiaOption = Array.from(countrySelect.options).find(
+                    opt => opt.value === 'India'
+                );
+                if (indiaOption) {
+                    indiaOption.selected = true;
+                    const countryId = indiaOption.dataset.countryId || 'IN';
+                    countryIdField.value = countryId;
+                    loadStates(countryId);
+                }
+            }
+            
+            // If no selection was made, ensure we have a placeholder
+            if (!countrySelect.value) {
+                const placeholder = countrySelect.querySelector('option[value=""]');
+                if (placeholder) {
+                    placeholder.selected = true;
+                    placeholder.textContent = "Select country";
+                }
+            }
+        }
+        
+        function showFallbackCountries() {
+            const fallbackCountries = [
+                {id: 'IN', name: 'India'},
+                {id: 'US', name: 'United States'},
+                {id: 'GB', name: 'United Kingdom'},
+                {id: 'AU', name: 'Australia'},
+                {id: 'CA', name: 'Canada'},
+            ];
+            
+            countrySelect.innerHTML = '<option value="" disabled>Select country</option>';
+            fallbackCountries.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country.name;
+                option.textContent = country.name;
+                option.dataset.countryId = country.id;
+                countrySelect.appendChild(option);
+            });
+            
+            // Select saved or default
+            if (savedFormData.country) {
+                const savedOption = Array.from(countrySelect.options).find(
+                    opt => opt.value === savedFormData.country
+                );
+                if (savedOption) {
+                    savedOption.selected = true;
+                    countryIdField.value = savedOption.dataset.countryId;
+                    loadStates(savedOption.dataset.countryId);
+                }
+            } else {
+                // Default to India
+                const indiaOption = countrySelect.querySelector('option[value="India"]');
+                if (indiaOption) {
+                    indiaOption.selected = true;
+                    countryIdField.value = 'IN';
+                    loadStates('IN');
+                }
+            }
+        }
+        
+        function loadStates(countryCode) {
+            if (!countryCode || formState.loading) return;
+            
+            formState.loading = true;
+            stateSelect.disabled = true;
+            stateSelect.classList.add('location-loading');
+            stateSelect.innerHTML = '<option value="" disabled selected>Loading states...</option>';
+            
+            districtSelect.disabled = true;
+            districtSelect.innerHTML = '<option value="" disabled selected>Select state first</option>';
+            localBodySelect.disabled = true;
+            localBodySelect.innerHTML = '<option value="" disabled selected>Select district first</option>';
+            wardSelect.disabled = true;
+            wardSelect.innerHTML = '<option value="" selected>Select local body first</option>';
+            
+            fetch(`/api/states/${countryCode}/`)
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    stateSelect.classList.remove('location-loading');
+                    formState.loading = false;
+                    
+                    if (data.success && data.states && data.states.length > 0) {
+                        stateSelect.innerHTML = '<option value="" disabled>Select state</option>';
+                        
+                        data.states.forEach(state => {
+                            const option = document.createElement('option');
+                            option.value = state.name;
+                            option.textContent = state.name;
+                            option.dataset.stateId = state.id;
+                            stateSelect.appendChild(option);
+                        });
+                        
+                        stateSelect.disabled = false;
+                        
+                        // Select saved state
+                        if (savedFormData.state) {
+                            const savedOption = Array.from(stateSelect.options).find(
+                                opt => opt.value === savedFormData.state
+                            );
+                            if (savedOption) {
+                                savedOption.selected = true;
+                                stateIdField.value = savedOption.dataset.stateId;
+                                loadDistricts(countryCode, savedOption.dataset.stateId);
+                            }
+                        }
+                    } else {
+                        stateSelect.innerHTML = '<option value="" disabled selected>No states found</option>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading states:', error);
+                    stateSelect.classList.remove('location-loading');
+                    stateSelect.innerHTML = '<option value="" disabled selected>Error loading states</option>';
+                    formState.loading = false;
+                });
+        }
+        
+        function loadDistricts(countryCode, stateId) {
+            if (!countryCode || !stateId || formState.loading) return;
+            
+            formState.loading = true;
+            districtSelect.disabled = true;
+            districtSelect.classList.add('location-loading');
+            districtSelect.innerHTML = '<option value="" disabled selected>Loading districts...</option>';
+            
+            localBodySelect.disabled = true;
+            localBodySelect.innerHTML = '<option value="" disabled selected>Select district first</option>';
+            wardSelect.disabled = true;
+            wardSelect.innerHTML = '<option value="" selected>Select local body first</option>';
+            
+            fetch(`/api/districts/${countryCode}/${stateId}/`)
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    districtSelect.classList.remove('location-loading');
+                    formState.loading = false;
+                    
+                    if (data.success && data.districts && data.districts.length > 0) {
+                        districtSelect.innerHTML = '<option value="" disabled>Select district</option>';
+                        
+                        data.districts.forEach(district => {
+                            const option = document.createElement('option');
+                            option.value = district.name;
+                            option.textContent = district.name;
+                            option.dataset.districtId = district.id;
+                            districtSelect.appendChild(option);
+                        });
+                        
+                        districtSelect.disabled = false;
+                        
+                        // Select saved district
+                        if (savedFormData.district) {
+                            const savedOption = Array.from(districtSelect.options).find(
+                                opt => opt.value === savedFormData.district
+                            );
+                            if (savedOption) {
+                                savedOption.selected = true;
+                                districtIdField.value = savedOption.dataset.districtId;
+                                // Load local bodies after a short delay
+                                setTimeout(() => {
+                                    loadLocalBodies(countryCode, stateId, savedOption.dataset.districtId);
+                                }, 100);
+                            }
+                        }
+                    } else {
+                        districtSelect.innerHTML = '<option value="" disabled selected>No districts found</option>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading districts:', error);
+                    districtSelect.classList.remove('location-loading');
+                    districtSelect.innerHTML = '<option value="" disabled selected>Error loading districts</option>';
+                    formState.loading = false;
+                });
+        }
+        
+        function loadLocalBodies(countryCode, stateId, districtId) {
+            if (!countryCode || !stateId || !districtId || formState.loading) return;
+            
+            const country = countrySelect.value;
+            const state = stateSelect.value;
+            const district = districtSelect.value;
+            
+            console.log('Loading local bodies for:', {country, state, district, countryCode, stateId, districtId});
+            
+            formState.loading = true;
+            localBodySelect.disabled = true;
+            localBodySelect.innerHTML = '<option value="" disabled selected>Loading...</option>';
+            localBodyLoading.style.display = 'flex';
+            wardSelect.disabled = true;
+            wardSelect.innerHTML = '<option value="" selected>Select local body first</option>';
+            
+            // Construct URL with proper encoding
+            const url = `/api/local-bodies/?country=${encodeURIComponent(country)}&state=${encodeURIComponent(state)}&district=${encodeURIComponent(district)}&country_code=${countryCode}`;
+            
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Local bodies response:', data);
+                    localBodyLoading.style.display = 'none';
+                    formState.loading = false;
+                    
+                    if (data.success && data.local_bodies && data.local_bodies.length > 0) {
+                        localBodySelect.disabled = false;
+                        localBodySelect.innerHTML = '<option value="" disabled>Select local body</option>';
+                        
+                        data.local_bodies.forEach(localBody => {
+                            const option = document.createElement('option');
+                            option.value = localBody.id;
+                            option.textContent = `${localBody.name} (${localBody.body_type})`;
+                            localBodySelect.appendChild(option);
+                        });
+                        
+                        // Select saved local body
+                        if (savedFormData.localBody) {
+                            const savedOption = Array.from(localBodySelect.options).find(
+                                opt => opt.value === savedFormData.localBody
+                            );
+                            if (savedOption) {
+                                savedOption.selected = true;
+                                // Load wards for saved local body
+                                setTimeout(() => {
+                                    loadWards(savedFormData.localBody);
+                                }, 100);
+                            }
+                        }
+                        
+                        // Add change listener for local body
+                        localBodySelect.removeEventListener('change', handleLocalBodyChange);
+                        localBodySelect.addEventListener('change', handleLocalBodyChange);
+                    } else {
+                        localBodySelect.innerHTML = '<option value="" disabled selected>No local bodies found</option>';
+                        console.warn('No local bodies found:', data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading local bodies:', error);
+                    localBodyLoading.style.display = 'none';
+                    localBodySelect.innerHTML = '<option value="" disabled selected>Error loading local bodies</option>';
+                    formState.loading = false;
+                });
+        }
+        
+        function loadWards(localBodyId) {
+            if (!localBodyId || formState.currentLocalBodyId === localBodyId) return;
+            
+            formState.currentLocalBodyId = localBodyId;
+            console.log('Loading wards for local body:', localBodyId);
+            
+            wardSelect.disabled = true;
+            wardSelect.innerHTML = '<option value="" disabled>Loading wards...</option>';
+            wardLoading.style.display = 'block';
+            
+            fetch(`/api/wards/${localBodyId}/`)
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Wards response:', data);
+                    wardLoading.style.display = 'none';
+                    
+                    if (data.success) {
+                        // Clear existing options
+                        wardSelect.innerHTML = '<option value="">Select ward (Optional)</option>';
+                        
+                        if (data.wards && data.wards.length > 0) {
+                            data.wards.forEach(ward => {
+                                const option = document.createElement('option');
+                                option.value = ward.id;
+                                option.textContent = ward.full_name || `Ward ${ward.ward_number}: ${ward.name}`;
+                                wardSelect.appendChild(option);
+                            });
+                            
+                            // Select saved ward
+                            if (savedFormData.ward) {
+                                const savedOption = Array.from(wardSelect.options).find(
+                                    opt => opt.value === savedFormData.ward
+                                );
+                                if (savedOption) {
+                                    savedOption.selected = true;
+                                }
+                            }
+                        } else {
+                            wardSelect.innerHTML = '<option value="" selected>No wards available</option>';
+                        }
+                        
+                        wardSelect.disabled = false;
+                    } else {
+                        wardSelect.innerHTML = '<option value="" selected>Error loading wards</option>';
+                        console.error('API error:', data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading wards:', error);
+                    wardLoading.style.display = 'none';
+                    wardSelect.innerHTML = '<option value="" selected>Error loading wards</option>';
+                    wardSelect.disabled = false;
+                });
+        }
+        
+        // Handle local body change
+        function handleLocalBodyChange() {
+            const localBodyId = this.value;
+            if (localBodyId && localBodyId !== '') {
+                loadWards(localBodyId);
+            } else {
+                wardSelect.disabled = true;
+                wardSelect.innerHTML = '<option value="" selected>Select local body first</option>';
+            }
+        }
+        
+        // Event listeners for location dropdowns
+        countrySelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const countryCode = selectedOption.dataset.countryId;
+            const countryName = selectedOption.value;
+            
+            if (countryCode && countryName) {
+                countryIdField.value = countryCode;
+                
+                // Clear dependent fields
+                stateSelect.value = '';
+                districtSelect.value = '';
+                localBodySelect.value = '';
+                wardSelect.value = '';
+                
+                // Disable dependent fields
+                stateSelect.disabled = false;
+                districtSelect.disabled = true;
+                localBodySelect.disabled = true;
+                wardSelect.disabled = true;
+                
+                // Clear hidden fields
+                stateIdField.value = '';
+                districtIdField.value = '';
+                
+                // Load states
+                loadStates(countryCode);
+                
+                // Reset selects
+                stateSelect.innerHTML = '<option value="" disabled selected>Loading states...</option>';
+                districtSelect.innerHTML = '<option value="" disabled selected>Select state first</option>';
+                localBodySelect.innerHTML = '<option value="" disabled selected>Select district first</option>';
+                wardSelect.innerHTML = '<option value="" selected>Select local body first</option>';
+                
+                // Remove event listeners
+                localBodySelect.removeEventListener('change', handleLocalBodyChange);
+            }
+        });
+        
+        stateSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const stateId = selectedOption.dataset.stateId;
+            const stateName = selectedOption.value;
+            const selectedCountryOption = countrySelect.options[countrySelect.selectedIndex];
+            const countryCode = selectedCountryOption.dataset.countryId;
+            
+            if (stateId && stateName && countryCode) {
+                stateIdField.value = stateId;
+                
+                // Clear dependent fields
+                districtSelect.value = '';
+                localBodySelect.value = '';
+                wardSelect.value = '';
+                
+                // Disable dependent fields
+                districtSelect.disabled = false;
+                localBodySelect.disabled = true;
+                wardSelect.disabled = true;
+                
+                // Clear district ID
+                districtIdField.value = '';
+                
+                // Load districts
+                loadDistricts(countryCode, stateId);
+                
+                // Reset selects
+                districtSelect.innerHTML = '<option value="" disabled selected>Loading districts...</option>';
+                localBodySelect.innerHTML = '<option value="" disabled selected>Select district first</option>';
+                wardSelect.innerHTML = '<option value="" selected>Select local body first</option>';
+                
+                // Remove event listeners
+                localBodySelect.removeEventListener('change', handleLocalBodyChange);
+            }
+        });
+        
+        districtSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const districtId = selectedOption.dataset.districtId;
+            const stateOption = stateSelect.options[stateSelect.selectedIndex];
+            const stateId = stateOption.dataset.stateId;
+            const countryOption = countrySelect.options[countrySelect.selectedIndex];
+            const countryCode = countryOption.dataset.countryId;
+            
+            districtIdField.value = districtId || '';
+            
+            // Clear local body and ward
+            localBodySelect.value = '';
+            wardSelect.value = '';
+            
+            // Load local bodies
+            if (countryCode && stateId && districtId) {
+                loadLocalBodies(countryCode, stateId, districtId);
+            }
+        });
+        
+        // Form submission
+        const form = document.getElementById('registrationForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const termsCheck = document.getElementById('termsCheck');
+        
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validate passwords
+            const passwordValid = validatePasswords();
+            if (passwordValid === false) {
+                showError('Please make sure passwords match', confirmPasswordField);
+                return;
+            }
+            
+            // Validate terms
+            if (!termsCheck.checked) {
+                showError('Please agree to the Terms & Conditions', termsCheck);
+                return;
+            }
+            
+            // Validate location fields
+            const requiredLocationFields = [
+                {field: countrySelect, message: 'Please select a country'},
+                {field: stateSelect, message: 'Please select a state'},
+                {field: districtSelect, message: 'Please select a district'},
+                {field: localBodySelect, message: 'Please select a local body'},
+            ];
+            
+            for (const req of requiredLocationFields) {
+                if (!req.field.value) {
+                    showError(req.message, req.field);
+                    return;
+                }
+            }
+            
+            // Validate business fields if vendor is selected
+            if (vendorRadio.checked) {
+                if (!businessNameField.value.trim()) {
+                    showError('Please enter your business name', businessNameField);
+                    return;
+                }
+                
+                if (!categoryField.value) {
+                    showError('Please select a business category', categoryField);
+                    return;
+                }
+            }
+            
+            // Show loading state
+            submitBtn.innerHTML = '<span class="loading-spinner"></span> Processing...';
+            submitBtn.disabled = true;
+            
+            // Submit form
+            setTimeout(() => {
+                this.submit();
+            }, 100);
+        });
+        
+        // Helper function to show errors
+        function showError(message, element) {
+            // Create toast notification
+            const toast = document.createElement('div');
+            toast.className = 'position-fixed bottom-0 end-0 p-3';
+            toast.style.zIndex = '1060';
+            toast.innerHTML = `
+                <div class="toast show" role="alert">
+                    <div class="toast-header" style="background: #e74c3c; color: white;">
+                        <strong class="me-auto">Error</strong>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                    </div>
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            
+            // Auto-remove toast
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 5000);
+            
+            // Highlight the problematic field
+            element.classList.add('error-highlight');
+            element.focus();
+            setTimeout(() => {
+                element.classList.remove('error-highlight');
+            }, 1000);
+        }
+        
+        // Initialize countries on page load
+        loadCountries();
+        
+        // Auto-close alert messages after 5 seconds
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                const closeBtn = alert.querySelector('.btn-close');
+                if (closeBtn) {
+                    setTimeout(() => {
+                        alert.style.opacity = '0';
+                        setTimeout(() => {
+                            if (alert.parentNode) {
+                                alert.parentNode.removeChild(alert);
+                            }
+                        }, 300);
+                    }, 5000);
+                }
+            });
+        }, 100);
+        
+        // Check initial password strength
+        checkPasswordStrength(passwordField.value);
+        
+        // Validate passwords on page load
+        validatePasswords();
+    });
+</script>
+
+{% endblock %}

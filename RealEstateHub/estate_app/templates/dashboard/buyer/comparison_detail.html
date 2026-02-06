@@ -1,0 +1,679 @@
+<!-- templates/dashboard/buyer/comparison_detail.html -->
+{% extends 'dashboard/buyer/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Comparison: {{ comparison.name }} - BHOOSPARSH Buyer{% endblock %}
+
+{% block extra_css %}
+<!-- Include the same CSS from comparisons.html -->
+<style>
+    /* ... (include all the CSS from comparisons.html above) ... */
+</style>
+{% endblock %}
+
+{% block header_title %}
+<h1 class="text-2xl font-bold text-gray-900">
+    <span class="gradient-text">{{ comparison.name }}</span>
+</h1>
+<p class="text-sm text-gray-600 mt-2">
+    <i class="fas fa-balance-scale text-orange-500 mr-2"></i>
+    Compare {{ comparison.properties.count }} properties side by side
+</p>
+{% endblock %}
+
+{% block header_buttons %}
+<div class="flex flex-wrap gap-3">
+    <a href="{% url 'buyer_comparisons' %}" 
+       class="px-4 py-2 border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-all duration-300 flex items-center gap-2 font-medium">
+        <i class="fas fa-arrow-left"></i>
+        <span class="hidden sm:inline">Back to Lists</span>
+    </a>
+    
+    <button onclick="shareComparison()" 
+            class="btn-gradient flex items-center gap-2 px-4 py-2">
+        <i class="fas fa-share-alt"></i>
+        <span class="hidden sm:inline">Share</span>
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="content-spacing">
+    <!-- Share Section -->
+    {% if comparison.is_shared %}
+    <div class="share-comparison">
+        <div class="flex items-center gap-2">
+            <i class="fas fa-link text-blue-500 text-xl"></i>
+            <span class="font-medium text-gray-700">Share this comparison:</span>
+        </div>
+        
+        <div class="share-url" id="shareUrl">
+            {{ request.build_absolute_uri }}
+        </div>
+        
+        <button onclick="copyShareUrl()" class="copy-share-btn">
+            <i class="fas fa-copy"></i>
+            Copy Link
+        </button>
+    </div>
+    {% endif %}
+
+    <!-- Add Property Section -->
+    <div class="add-property-section">
+        <h3 class="font-bold text-gray-900 mb-3">Add More Properties to Compare</h3>
+        <form method="POST" action="{% url 'buyer_comparison_detail' comparison.pk %}" class="add-property-form">
+            {% csrf_token %}
+            <input type="text" 
+                   name="property_search" 
+                   placeholder="Search properties by name, location, or ID..."
+                   class="add-property-input"
+                   id="propertySearch"
+                   autocomplete="off">
+            
+            <button type="button" onclick="searchProperties()" class="btn-gradient">
+                <i class="fas fa-search"></i>
+                Search
+            </button>
+        </form>
+        
+        <!-- Search Results -->
+        <div id="searchResults" class="mt-4 hidden">
+            <div class="border border-gray-200 rounded-lg max-h-60 overflow-y-auto">
+                <!-- Results will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Comparison Table -->
+    <div class="comparison-table-container">
+        {% if comparison.properties.all %}
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Features</th>
+                    {% for property in comparison.properties.all %}
+                    <th>
+                        <div class="property-header">
+                            <button onclick="removeFromComparison('{{ property.id }}', this)" 
+                                    class="remove-from-comparison">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            
+                            <div class="property-image-large">
+                                {% if property.primary_image %}
+                                <img src="{{ property.primary_image.url }}" alt="{{ property.title }}">
+                                {% else %}
+                                <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                                    <i class="fas fa-home text-gray-400"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <h4 class="font-bold text-gray-900 mb-1 line-clamp-2">{{ property.title }}</h4>
+                            <p class="text-sm text-gray-600 mb-2">{{ property.city }}, {{ property.state }}</p>
+                            <div class="property-price text-lg font-bold text-orange-600">
+                                ₹{{ property.price|intcomma }}
+                                {% if property.property_for in 'rent,pg' %}
+                                <span class="text-sm font-normal">/month</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            
+            <tbody>
+                <!-- Basic Info -->
+                <tr>
+                    <td><strong>Property Type</strong></td>
+                    {% for property in comparison.properties.all %}
+                    <td>
+                        <span class="feature-value">{{ property.property_type.name|default:"N/A" }}</span>
+                    </td>
+                    {% endfor %}
+                </tr>
+                
+                <!-- Price & Area -->
+                <tr>
+                    <td><strong>Price</strong></td>
+                    {% for property in comparison.properties.all %}
+                    <td>
+                        <span class="feature-value">₹{{ property.price|intcomma }}</span>
+                        <span class="feature-label">
+                            {% if property.property_for in 'rent,pg' %}
+                            Per Month
+                            {% else %}
+                            Total Price
+                            {% endif %}
+                        </span>
+                    </td>
+                    {% endfor %}
+                </tr>
+                
+                <tr>
+                    <td><strong>Price per Sq.ft</strong></td>
+                    {% for property in comparison.properties.all %}
+                    <td>
+                        <span class="feature-value">
+                            {% if property.price_per_sqft %}
+                            ₹{{ property.price_per_sqft|floatformat:2 }}
+                            {% else %}
+                            N/A
+                            {% endif %}
+                        </span>
+                    </td>
+                    {% endfor %}
+                </tr>
+                
+                <tr>
+                    <td><strong>Carpet Area</strong></td>
+                    {% for property in comparison.properties.all %}
+                    <td>
+                        <span class="feature-value">{{ property.carpet_area|intcomma }} sq.ft</span>
+                    </td>
+                    {% endfor %}
+                </tr>
+                
+                <!-- Property Details -->
+                {% if comparison.properties.all.0.bedrooms %}
+                <tr>
+                    <td><strong>Bedrooms</strong></td>
+                    {% for property in comparison.properties.all %}
+                    <td>
+                        <span class="feature-value">{{ property.bedrooms|default:"N/A" }}</span>
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endif %}
+                
+                {% if comparison.properties.all.0.bathrooms %}
+                <tr>
+                    <td><strong>Bathrooms</strong></td>
+                    {% for property in comparison.properties.all %}
+                    <td>
+                        <span class="feature-value">{{ property.bathrooms|default:"N/A" }}</span>
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endif %}
+                
+                <tr>
+                    <td><strong>Furnishing</strong></td>
+                    {% for property in comparison.properties.all %}
+                    <td>
+                        <span class="feature-value">{{ property.get_furnishing_display|default:"N/A" }}</span>
+                    </td>
+                    {% endfor %}
+                </tr>
+                
+                <tr>
+                    <td><strong>Age of Property</strong></td>
+                    {% for property in comparison.properties.all %}
+                    <td>
+                        <span class="feature-value">{{ property.age_of_property|default:"N/A" }}</span>
+                    </td>
+                    {% endfor %}
+                </tr>
+                
+                <!-- Location -->
+                <tr>
+                    <td><strong>Location</strong></td>
+                    {% for property in comparison.properties.all %}
+                    <td>
+                        <span class="feature-value">{{ property.city }}, {{ property.state }}</span>
+                        <span class="feature-label">{{ property.landmark|default:"" }}</span>
+                    </td>
+                    {% endfor %}
+                </tr>
+                
+                <!-- Additional Features -->
+                <tr>
+                    <td><strong>Additional Features</strong></td>
+                    {% for property in comparison.properties.all %}
+                    <td>
+                        <div class="flex flex-wrap gap-1">
+                            {% if property.is_featured %}
+                            <span class="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">Featured</span>
+                            {% endif %}
+                            
+                            {% if property.is_verified %}
+                            <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Verified</span>
+                            {% endif %}
+                            
+                            {% if property.is_urgent %}
+                            <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">Urgent</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    {% endfor %}
+                </tr>
+                
+                <!-- Actions -->
+                <tr>
+                    <td><strong>Actions</strong></td>
+                    {% for property in comparison.properties.all %}
+                    <td>
+                        <div class="flex gap-2">
+                            <a href="{% url 'buyer_property_detail' property.slug %}" 
+                               class="text-sm bg-blue-100 text-blue-800 hover:bg-blue-200 px-3 py-1 rounded transition-colors">
+                                View Details
+                            </a>
+                            
+                            <button onclick="removeFromComparison('{{ property.id }}')" 
+                                    class="text-sm bg-red-100 text-red-800 hover:bg-red-200 px-3 py-1 rounded transition-colors">
+                                Remove
+                            </button>
+                        </div>
+                    </td>
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+        {% else %}
+        <!-- Empty Comparison -->
+        <div class="empty-state">
+            <i class="fas fa-balance-scale"></i>
+            <h3>No Properties in Comparison</h3>
+            <p>Add properties to start comparing features, prices, and locations.</p>
+            
+            <div class="flex flex-wrap gap-3 justify-center mt-6">
+                <a href="{% url 'buyer_properties' %}" 
+                   class="btn-gradient flex items-center gap-2 px-6 py-3">
+                    <i class="fas fa-search"></i>
+                    <span>Browse Properties</span>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Comparison Summary -->
+    {% if comparison.properties.count > 1 %}
+    <div class="comparisons-section">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Comparison Summary</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                <div class="text-2xl font-bold text-blue-600 mb-2">
+                    ₹{{ price_range.min|intcomma }} - ₹{{ price_range.max|intcomma }}
+                </div>
+                <p class="text-sm text-gray-600">Price Range</p>
+            </div>
+            
+            <div class="p-4 bg-green-50 border border-green-100 rounded-xl">
+                <div class="text-2xl font-bold text-green-600 mb-2">
+                    {{ area_range.min|intcomma }} - {{ area_range.max|intcomma }} sq.ft
+                </div>
+                <p class="text-sm text-gray-600">Area Range</p>
+            </div>
+            
+            <div class="p-4 bg-purple-50 border border-purple-100 rounded-xl">
+                <div class="text-2xl font-bold text-purple-600 mb-2">
+                    {{ comparison.properties.count }}
+                </div>
+                <p class="text-sm text-gray-600">Properties Compared</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Add similar modals from comparisons.html if needed -->
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeComparisonDetail();
+    });
+
+    function initializeComparisonDetail() {
+        // Initialize property search
+        const propertySearch = document.getElementById('propertySearch');
+        if (propertySearch) {
+            propertySearch.addEventListener('input', debounce(searchProperties, 300));
+        }
+        
+        // Initialize share functionality
+        initializeShare();
+    }
+
+    function searchProperties() {
+        const query = document.getElementById('propertySearch').value.trim();
+        const resultsContainer = document.getElementById('searchResults');
+        
+        if (!query) {
+            resultsContainer.classList.add('hidden');
+            return;
+        }
+        
+        showLoading('Searching properties...');
+        
+        fetch(`/buyer/properties/search/?q=${encodeURIComponent(query)}&limit=5`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            
+            if (data.success && data.properties.length > 0) {
+                displaySearchResults(data.properties);
+                resultsContainer.classList.remove('hidden');
+            } else {
+                resultsContainer.innerHTML = `
+                    <div class="p-4 text-center text-gray-500">
+                        <i class="fas fa-search text-2xl mb-2"></i>
+                        <p>No properties found matching "${query}"</p>
+                    </div>
+                `;
+                resultsContainer.classList.remove('hidden');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            resultsContainer.innerHTML = `
+                <div class="p-4 text-center text-red-500">
+                    <i class="fas fa-exclamation-circle text-2xl mb-2"></i>
+                    <p>Error searching properties</p>
+                </div>
+            `;
+            resultsContainer.classList.remove('hidden');
+        });
+    }
+
+    function displaySearchResults(properties) {
+        const resultsContainer = document.getElementById('searchResults');
+        let html = '<div class="divide-y divide-gray-100">';
+        
+        properties.forEach(property => {
+            html += `
+                <div class="p-3 hover:bg-gray-50 cursor-pointer transition-colors" 
+                     onclick="addToComparison('${property.id}', '${property.title.replace(/'/g, "\\'")}')">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                            ${property.primary_image_url ? 
+                                `<img src="${property.primary_image_url}" alt="${property.title}" class="w-full h-full object-cover">` :
+                                `<div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                                    <i class="fas fa-home text-gray-400"></i>
+                                </div>`
+                            }
+                        </div>
+                        
+                        <div class="flex-1 min-w-0">
+                            <div class="font-medium text-gray-900 truncate">${property.title}</div>
+                            <div class="text-sm text-gray-600">${property.city}, ${property.state}</div>
+                            <div class="text-sm font-bold text-orange-600">₹${property.price.toLocaleString()}</div>
+                        </div>
+                        
+                        <div class="text-green-600">
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        resultsContainer.innerHTML = html;
+    }
+
+    function addToComparison(propertyId, propertyTitle) {
+        showLoading('Adding property to comparison...');
+        
+        const formData = new FormData();
+        formData.append('property_id', propertyId);
+        formData.append('action', 'add');
+        
+        fetch(window.location.href, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: formData,
+        })
+        .then(response => {
+            if (response.ok) {
+                showToast(`"${propertyTitle}" added to comparison`, 'success');
+                // Reload page to update comparison table
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showToast('Failed to add property to comparison', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Network error. Please try again.', 'error');
+        })
+        .finally(() => {
+            hideLoading();
+        });
+    }
+
+    function removeFromComparison(propertyId, button = null) {
+        if (!confirm('Are you sure you want to remove this property from the comparison?')) {
+            return;
+        }
+        
+        if (button) {
+            // Show loading on the button
+            const icon = button.querySelector('i');
+            const originalIcon = icon.className;
+            icon.className = 'fas fa-spinner fa-spin';
+        } else {
+            showLoading('Removing property...');
+        }
+        
+        const formData = new FormData();
+        formData.append('property_id', propertyId);
+        formData.append('action', 'remove');
+        
+        fetch(window.location.href, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: formData,
+        })
+        .then(response => {
+            if (response.ok) {
+                showToast('Property removed from comparison', 'success');
+                // Reload page to update comparison table
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showToast('Failed to remove property from comparison', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Network error. Please try again.', 'error');
+        })
+        .finally(() => {
+            if (button) {
+                const icon = button.querySelector('i');
+                icon.className = originalIcon;
+            } else {
+                hideLoading();
+            }
+        });
+    }
+
+    function initializeShare() {
+        // Check if share API is available
+        if (navigator.share) {
+            // Modern browsers with Share API
+            document.querySelector('.share-comparison .copy-share-btn').style.display = 'none';
+            
+            const shareBtn = document.createElement('button');
+            shareBtn.className = 'copy-share-btn';
+            shareBtn.innerHTML = '<i class="fas fa-share-alt"></i> Share';
+            shareBtn.onclick = shareViaAPI;
+            
+            document.querySelector('.share-comparison').appendChild(shareBtn);
+        }
+    }
+
+    function shareViaAPI() {
+        navigator.share({
+            title: 'Property Comparison: {{ comparison.name }}',
+            text: 'Check out this property comparison on BHOOSPARSH',
+            url: window.location.href,
+        })
+        .catch(error => {
+            console.log('Error sharing:', error);
+            copyShareUrl();
+        });
+    }
+
+    function copyShareUrl() {
+        const shareUrl = document.getElementById('shareUrl');
+        const textArea = document.createElement('textarea');
+        textArea.value = shareUrl.textContent;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        showToast('Link copied to clipboard!', 'success');
+    }
+
+    function shareComparison() {
+        {% if not comparison.is_shared %}
+        // Make comparison shareable first
+        showLoading('Making comparison shareable...');
+        
+        fetch(`/buyer/comparisons/{{ comparison.pk }}/share/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                showToast('Comparison is now shareable!', 'success');
+                // Reload to show share section
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showToast(data.error || 'Failed to share comparison', 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            showToast('Network error. Please try again.', 'error');
+        });
+        {% else %}
+        copyShareUrl();
+        {% endif %}
+    }
+
+    // Utility functions
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    function showLoading(message = 'Loading...') {
+        const loadingOverlay = document.createElement('div');
+        loadingOverlay.id = 'loadingOverlay';
+        loadingOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        loadingOverlay.innerHTML = `
+            <div class="bg-white rounded-2xl p-8 shadow-2xl">
+                <div class="flex flex-col items-center gap-4">
+                    <div class="loading-spinner">
+                        <div class="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                    <p class="text-gray-700 font-medium">${message}</p>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(loadingOverlay);
+    }
+
+    function hideLoading() {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (loadingOverlay) {
+            loadingOverlay.remove();
+        }
+    }
+
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        if (!container) {
+            const toastContainer = document.createElement('div');
+            toastContainer.id = 'toastContainer';
+            toastContainer.className = 'toast-container';
+            document.body.appendChild(toastContainer);
+            container = toastContainer;
+        }
+        
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        
+        const icons = {
+            info: 'fa-info-circle',
+            success: 'fa-check-circle',
+            error: 'fa-exclamation-circle',
+            warning: 'fa-exclamation-triangle'
+        };
+        
+        toast.innerHTML = `
+            <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                <i class="fas ${icons[type]}"></i>
+            </div>
+            <div class="flex-1">
+                <span class="font-medium">${message}</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-white/80 hover:text-white transition-colors flex-shrink-0">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        container.appendChild(toast);
+        
+        // Auto remove after 4 seconds
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 4000);
+    }
+
+    // Utility function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}

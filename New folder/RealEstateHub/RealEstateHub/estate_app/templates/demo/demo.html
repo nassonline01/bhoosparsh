@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EverGreen - Real Estate</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { 
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .hero-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      
+      .hero-text {
+        max-width: 100% !important;
+      }
+      
+      .hero-subtext {
+        max-width: 100% !important;
+        text-align: left !important;
+      }
+      
+      .search-grid {
+        grid-template-columns: 1fr !important;
+      }
+      
+      .property-grid {
+        grid-template-columns: 1fr !important;
+      }
+      
+      .feature-grid {
+        grid-template-columns: 1fr !important;
+      }
+    }
+    
+    @media (max-width: 1024px) and (min-width: 769px) {
+      .search-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+      
+      .property-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-white">
+  <!-- Main Container with Background Image -->
+  <div class="relative">
+    <!-- Background Image for entire section including nav -->
+    <div class="absolute inset-0">
+      <img src="images/pic-1.jpg" 
+           alt="Background Image" 
+           class="w-full h-[120vh] md:h-[110vh] lg:h-[100vh] object-cover">
+    </div>
+    
+    <!-- Header with sticky navigation -->
+    <header class="sticky  top-2 z-50 px-2 md:px-4 lg:px-8 py-2">
+      <!-- Container for nav with responsive width -->
+      <div class="relative mx-auto w-[95%] md:w-[92%] lg:w-[90%]">
+        <!-- Background blur effect for entire nav -->
+        <div class="absolute inset-0 bg-white/20 backdrop-blur-sm rounded-full"></div>
+        
+        <!-- Navigation content -->
+        <div class="relative z-10 flex items-center justify-between px-4 md:px-5 lg:px-6 py-2">
+          <!-- Logo inside the blur effect -->
+          <div class="text-lg md:text-xl font-bold text-white">EverGreen</div>
+          
+          <!-- Desktop Navigation inside blur effect -->
+          <nav class="hidden lg:flex items-center gap-3 xl:gap-4">
+            <a href="#" class="px-3 md:px-4 py-1.5 md:py-2 bg-white/80 backdrop-blur-sm rounded-full text-xs md:text-sm font-medium shadow-sm hover:bg-white transition-all text-gray-800">Home</a>
+            <a href="#" class="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm text-white hover:text-gray-200 transition-colors">About Us</a>
+            <a href="#" class="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm text-white hover:text-gray-200 transition-colors">Property List</a>
+            <a href="#" class="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm text-white hover:text-gray-200 transition-colors">Contact Us</a>
+          </nav>
+          
+          <!-- Sign Up button inside blur effect -->
+          <button class="hidden lg:block bg-green-900 text-white px-4 md:px-6 py-1.5 md:py-2.5 rounded-full text-xs md:text-sm font-medium hover:bg-green-800 transition-colors shadow-lg hover:shadow-xl">
+            Sign Up
+          </button>
+          
+          <!-- Mobile Menu Button -->
+          <button class="lg:hidden p-2">
+            <svg class="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Mobile Navigation -->
+    <div class="lg:hidden px-3 md:px-4 relative z-10 mt-3 md:mt-4">
+      <div class="bg-white/20 backdrop-blur-sm rounded-xl p-3 md:p-4">
+        <div class="flex flex-col md:flex-row flex-wrap gap-2 md:gap-3">
+          <a href="#" class="text-xs md:text-sm font-medium text-white">Home</a>
+          <a href="#" class="text-xs md:text-sm text-white/90">About Us</a>
+          <a href="#" class="text-xs md:text-sm text-white/90">Property List</a>
+          <a href="#" class="text-xs md:text-sm text-white/90">Contact Us</a>
+          <button class="bg-green-900 text-white px-3 md:px-4 py-1 md:py-1.5 rounded-full text-xs md:text-sm font-medium mt-1 md:mt-0">
+            Sign Up
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hero Section with Extended Background -->
+    <div class="relative overflow-hidden">
+      <!-- Hero Content -->
+      <div class="relative h-[300px] sm:h-[320px] md:h-[380px] lg:h-[420px] pt-6 md:pt-8">
+        
+        <!-- Hero Content Container - Aligned with filter section -->
+        <div class="absolute inset-0 left-0 right-0">
+          <!-- Container matching filter section width and alignment -->
+          <div class="mx-auto w-[95%] sm:w-[92%] md:w-[90%] lg:w-[88vw] px-2 sm:px-3 md:px-4 h-full flex flex-col justify-end pb-4 sm:pb-6 md:pb-8 lg:pb-12">
+            
+            <!-- Category Tags - Positioned above H1 -->
+            <div class="mb-3 sm:mb-4 md:mb-5 lg:mb-6">
+              <div class="flex flex-wrap gap-1.5 sm:gap-2">
+                <span class="bg-white/90 backdrop-blur-sm px-2.5 sm:px-3 md:px-4 py-1 sm:py-1.5 rounded-full text-xs font-medium shadow-sm">House</span>
+                <span class="bg-white/80 backdrop-blur-sm px-2.5 sm:px-3 md:px-4 py-1 sm:py-1.5 rounded-full text-xs font-medium shadow-sm">Apartment</span>
+                <span class="bg-white/80 backdrop-blur-sm px-2.5 sm:px-3 md:px-4 py-1 sm:py-1.5 rounded-full text-xs font-medium shadow-sm">Residential</span>
+              </div>
+            </div>
+            
+            <!-- Main Hero Content -->
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 sm:gap-4">
+              <!-- H1 on left (aligned with filter inputs) -->
+              <h1 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white leading-tight max-w-full lg:max-w-md hero-text">
+                Build Your Future, One Property at a Time.
+              </h1>
+              
+              <!-- P on right (aligned with filter button area) -->
+              <p class="text-white/90 text-xs sm:text-sm md:text-sm lg:text-xs max-w-full lg:max-w-[200px] text-left lg:text-right leading-relaxed hero-subtext">
+                Find your perfect home with our curated selection of premium properties across prime locations.
+              </p>
+            </div>
+            
+          </div>
+        </div>
+      </div>
+      
+      <!-- Search Section positioned on top of the extended background -->
+      <div class="relative z-10 mt-4 sm:mt-5 md:mt-6 lg:-mt-10">
+        <div class="mx-auto w-[95%] sm:w-[92%] md:w-[90%] lg:w-[88vw] px-2 sm:px-3 md:px-4">
+          <div class="bg-white/95 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-xl sm:shadow-2xl p-3 sm:p-4 md:p-5 lg:p-6 border border-white/20">
+            <h2 class="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-gray-800">Find the best place</h2>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 search-grid">
+              <div>
+                <label class="text-xs text-gray-600 mb-1 block font-medium">Looking for</label>
+                <input type="text" placeholder="Enter type" class="w-full border border-gray-300 rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition bg-white/80">
+              </div>
+              <div>
+                <label class="text-xs text-gray-600 mb-1 block font-medium">Price</label>
+                <div class="relative">
+                  <select class="w-full border border-gray-300 rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm appearance-none bg-white/80 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition">
+                    <option>Select Price Range</option>
+                    <option>$100K - $250K</option>
+                    <option>$250K - $500K</option>
+                    <option>$500K - $1M</option>
+                    <option>$1M+</option>
+                  </select>
+                  <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </div>
+              </div>
+              <div>
+                <label class="text-xs text-gray-600 mb-1 block font-medium">Location</label>
+                <div class="relative">
+                  <select class="w-full border border-gray-300 rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm appearance-none bg-white/80 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition">
+                    <option>Select Location</option>
+                    <option>New York</option>
+                    <option>Los Angeles</option>
+                    <option>Chicago</option>
+                    <option>Miami</option>
+                  </select>
+                  <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </div>
+              </div>
+              <div>
+                <label class="text-xs text-gray-600 mb-1 block font-medium">Bedrooms</label>
+                <div class="relative">
+                  <select class="w-full border border-gray-300 rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm appearance-none bg-white/80 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition">
+                    <option>Any</option>
+                    <option>1 Bedroom</option>
+                    <option>2 Bedrooms</option>
+                    <option>3 Bedrooms</option>
+                    <option>4+ Bedrooms</option>
+                  </select>
+                  <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-4">
+              <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <span class="text-xs text-gray-600 font-medium">Filter:</span>
+                <span class="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-white/80 backdrop-blur-sm rounded-full text-xs hover:bg-white transition-colors cursor-pointer border border-white/30">City</span>
+                <span class="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-white/80 backdrop-blur-sm rounded-full text-xs hover:bg-white transition-colors cursor-pointer border border-white/30">House</span>
+                <span class="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-white/80 backdrop-blur-sm rounded-full text-xs hover:bg-white transition-colors cursor-pointer border border-white/30">Residential</span>
+                <span class="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-white/80 backdrop-blur-sm rounded-full text-xs hover:bg-white transition-colors cursor-pointer border border-white/30">Apartment</span>
+              </div>
+              <button class="bg-green-900 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-medium hover:bg-green-800 transition-colors shadow-lg hover:shadow-xl w-full md:w-auto mt-2 md:mt-0">
+                Search Properties
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Our Services Section -->
+<section class="py-16 sm:py-20 mt-8 sm:mt-12 bg-gradient-to-b from-white to-gray-50">
+  <!-- Header -->
+  <div class="text-center mb-12 sm:mb-16">
+    <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">Our Comprehensive Services</h2>
+    <p class="text-gray-600 text-sm sm:text-base max-w-2xl mx-auto px-4">
+      A full-featured property marketplace with tiered membership system designed for buyers, sellers, and agents
+    </p>
+  </div>
+  
+  <!-- Services Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10">
+    
+    <!-- Service 1 - Property Discovery -->
+    <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-6 sm:p-8 border border-gray-100">
+      <div class="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-6 shadow-md">
+        <i class="fas fa-search text-white text-2xl"></i>
+      </div>
+      <h3 class="font-bold text-gray-900 mb-4 text-xl text-center">Advanced Property Search</h3>
+      <p class="text-gray-600 text-sm sm:text-base leading-relaxed mb-4">
+        Find your perfect property with our intelligent search system. Filter by location, price, property type, BHK configuration, and amenities.
+      </p>
+      <ul class="text-sm text-gray-500 space-y-2">
+        <li class="flex items-start">
+          <i class="fas fa-check-circle text-green-500 mt-1 mr-3 text-sm"></i>
+          <span>Interactive map-based search</span>
+        </li>
+        <li class="flex items-start">
+          <i class="fas fa-check-circle text-green-500 mt-1 mr-3 text-sm"></i>
+          <span>Save searches & email alerts</span>
+        </li>
+        <li class="flex items-start">
+          <i class="fas fa-check-circle text-green-500 mt-1 mr-3 text-sm"></i>
+          <span>Property comparison tool</span>
+        </li>
+      </ul>
+    </div>
+    
+    <!-- Service 2 - Seller Platform -->
+    <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-6 sm:p-8 border border-gray-100">
+      <div class="w-16 h-16 bg-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-6 shadow-md">
+        <i class="fas fa-home text-white text-2xl"></i>
+      </div>
+      <h3 class="font-bold text-gray-900 mb-4 text-xl text-center">Professional Listing Management</h3>
+      <p class="text-gray-600 text-sm sm:text-base leading-relaxed mb-4">
+        Powerful dashboard for sellers and agents to manage properties, track performance, and handle inquiries efficiently.
+      </p>
+      <ul class="text-sm text-gray-500 space-y-2">
+        <li class="flex items-start">
+          <i class="fas fa-check-circle text-green-500 mt-1 mr-3 text-sm"></i>
+          <span>Bulk & single property uploads</span>
+        </li>
+        <li class="flex items-start">
+          <i class="fas fa-check-circle text-green-500 mt-1 mr-3 text-sm"></i>
+          <span>Multi-image uploads (5-15 images)</span>
+        </li>
+        <li class="flex items-start">
+          <i class="fas fa-check-circle text-green-500 mt-1 mr-3 text-sm"></i>
+          <span>Integrated inquiry management</span>
+        </li>
+      </ul>
+    </div>
+    
+    <!-- Service 3 - Tiered Membership -->
+    <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-6 sm:p-8 border border-gray-100">
+      <div class="w-16 h-16 bg-purple-600 rounded-xl flex items-center justify-center mx-auto mb-6 shadow-md">
+        <i class="fas fa-crown text-white text-2xl"></i>
+      </div>
+      <h3 class="font-bold text-gray-900 mb-4 text-xl text-center">Tiered Membership Plans</h3>
+      <p class="text-gray-600 text-sm sm:text-base leading-relaxed mb-4">
+        Choose from Basic, Professional, or Enterprise plans with increasing benefits for serious sellers and agents.
+      </p>
+      <div class="grid grid-cols-3 gap-2 mt-4">
+        <div class="bg-blue-50 rounded-lg p-3 text-center">
+          <span class="block font-bold text-blue-700 text-sm">Basic</span>
+          <span class="text-xs text-gray-600">Free</span>
+        </div>
+        <div class="bg-emerald-50 rounded-lg p-3 text-center">
+          <span class="block font-bold text-emerald-700 text-sm">Pro</span>
+          <span class="text-xs text-gray-600">10 Listings</span>
+        </div>
+        <div class="bg-purple-50 rounded-lg p-3 text-center">
+          <span class="block font-bold text-purple-700 text-sm">Enterprise</span>
+          <span class="text-xs text-gray-600">Unlimited</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Service 4 - Direct Communication -->
+    <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-6 sm:p-8 border border-gray-100">
+      <div class="w-16 h-16 bg-amber-600 rounded-xl flex items-center justify-center mx-auto mb-6 shadow-md">
+        <i class="fas fa-comments text-white text-2xl"></i>
+      </div>
+      <h3 class="font-bold text-gray-900 mb-4 text-xl text-center">Secure Communication System</h3>
+      <p class="text-gray-600 text-sm sm:text-base leading-relaxed mb-4">
+        Connect buyers with sellers through our integrated, secure messaging system without exposing personal contact details.
+      </p>
+      <ul class="text-sm text-gray-500 space-y-2">
+        <li class="flex items-start">
+          <i class="fas fa-check-circle text-green-500 mt-1 mr-3 text-sm"></i>
+          <span>Direct buyer-seller inquiries</span>
+        </li>
+        <li class="flex items-start">
+          <i class="fas fa-check-circle text-green-500 mt-1 mr-3 text-sm"></i>
+          <span>Dashboard notification center</span>
+        </li>
+        <li class="flex items-start">
+          <i class="fas fa-check-circle text-green-500 mt-1 mr-3 text-sm"></i>
+          <span>Privacy-protected communication</span>
+        </li>
+      </ul>
+    </div>
+    
+    <!-- Service 5 - Payment Integration -->
+    <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-6 sm:p-8 border border-gray-100">
+      <div class="w-16 h-16 bg-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-6 shadow-md">
+        <i class="fas fa-credit-card text-white text-2xl"></i>
+      </div>
+      <h3 class="font-bold text-gray-900 mb-4 text-xl text-center">Seamless Payment Processing</h3>
+      <p class="text-gray-600 text-sm sm:text-base leading-relaxed mb-4">
+        Integrated payment gateway for membership upgrades and premium features with secure transaction handling.
+      </p>
+      <ul class="text-sm text-gray-500 space-y-2">
+        <li class="flex items-start">
+          <i class="fas fa-check-circle text-green-500 mt-1 mr-3 text-sm"></i>
+          <span>Stripe & Razorpay integration</span>
+        </li>
+        <li class="flex items-start">
+          <i class="fas fa-check-circle text-green-500 mt-1 mr-3 text-sm"></i>
+          <span>Webhook verification system</span>
+        </li>
+        <li class="flex items-start">
+          <i class="fas fa-check-circle text-green-500 mt-1 mr-3 text-sm"></i>
+          <span>Instant subscription activation</span>
+        </li>
+      </ul>
+    </div>
+    
+    <!-- Service 6 - Admin & Analytics -->
+    <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-6 sm:p-8 border border-gray-100">
+      <div class="w-16 h-16 bg-red-600 rounded-xl flex items-center justify-center mx-auto mb-6 shadow-md">
+        <i class="fas fa-chart-line text-white text-2xl"></i>
+      </div>
+      <h3 class="font-bold text-gray-900 mb-4 text-xl text-center">Advanced Analytics & Admin</h3>
+      <p class="text-gray-600 text-sm sm:text-base leading-relaxed mb-4">
+        Comprehensive admin panel for platform management, user moderation, and business intelligence reporting.
+      </p>
+      <ul class="text-sm text-gray-500 space-y-2">
+        <li class="flex items-start">
+          <i class="fas fa-check-circle text-green-500 mt=1 mr-3 text-sm"></i>
+          <span>Property moderation system</span>
+        </li>
+        <li class="flex items-start">
+          <i class="fas fa-check-circle text-green-500 mt-1 mr-3 text-sm"></i>
+          <span>Membership & pricing management</span>
+        </li>
+        <li class="flex items-start">
+          <i class="fas fa-check-circle text-green-500 mt-1 mr-3 text-sm"></i>
+          <span>Business analytics dashboard</span>
+        </li>
+      </ul>
+    </div>
+    
+  </div>
+  
+</section>
+    
+    <!-- We Help You To Find Best Properties Section -->
+    <section class="py-12 sm:py-16 mt-8 sm:mt-12">
+      <div class="flex flex-col lg:flex-row items-center gap-8 sm:gap-10 md:gap-12">
+        <!-- Image Side -->
+        <div class="lg:w-1/2 relative">
+          <div class="relative">
+            <!-- Main Image -->
+            <img 
+              src="images/pic-2.jpg" 
+              alt="Modern luxury kitchen interior" 
+              class="rounded-xl sm:rounded-2xl w-full h-auto object-cover shadow-lg"
+            >
+            
+            <!-- Floating Badge -->
+            <div class="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 bg-white rounded-lg sm:rounded-xl shadow-lg p-3 flex items-center gap-2">
+              <div class="w-8 h-8 bg-teal-500 rounded-lg flex items-center justify-center">
+                <i class="fas fa-home text-white text-sm"></i>
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-gray-900">99+ Customers Love It</p>
+                <div class="flex text-yellow-400 text-xs">
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Content Side -->
+        <div class="lg:w-1/2">
+          <h2 class="text-2xl sm:text-3xl md:text-3xl font-bold text-gray-900 mb-4 leading-tight">
+            We Help You To Find Best Properties
+          </h2>
+          <p class="text-gray-500 text-sm sm:text-base leading-relaxed mb-6">
+            Amet minim mollit non deserunt ullamco est sit aliqua dolor do amet sint. Velit officia consequat duis enim velit mollit. Exercitation veniam consequat sunt nostrud amet. Amet minim mollit non deserunt ullamco est sit aliqua dolor.
+          </p>
+          <a 
+            href="#" 
+            class="inline-block bg-sky-500 hover:bg-sky-600 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 text-sm sm:text-base"
+          >
+            Find Our Agent
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Explore Our Premier Houses Section -->
+    <section class="py-12 sm:py-16 mt-8 sm:mt-12">
+      <div class="flex flex-col md:flex-row md:items-start md:justify-between mb-8">
+        <div class="mb-6 md:mb-0">
+          <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3">Explore our premier houses</h1>
+          <p class="text-gray-500 text-sm sm:text-base max-w-md">
+            Each listing offers unique features, exceptional quality, and prime locations, ensuring an exclusive living experience.*
+          </p>
+        </div>
+        <button class="flex items-center gap-2 border border-gray-300 rounded-full px-5 py-2.5 text-sm sm:text-base font-medium text-gray-800 hover:bg-gray-50 transition-colors w-fit">
+          See All Properties
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"/>
+            <path d="m12 5 7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Property Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+        <!-- Property Card 1 -->
+        <div class="group cursor-pointer">
+          <div class="relative mb-4">
+            <img 
+              src="images/pic-3.jpg" 
+              alt="The Pinnacle at Highland Park" 
+              class="w-full h-48 sm:h-56 object-cover rounded-xl sm:rounded-2xl group-hover:scale-[1.02] transition-transform duration-300"
+            />
+            <span class="absolute top-3 left-3 bg-white text-xs font-medium px-3 py-1 rounded-full text-gray-700">For Sale</span>
+          </div>
+          <div class="flex items-center gap-3 sm:gap-4 text-gray-500 text-xs sm:text-sm mb-3">
+            <div class="flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 4v16"/>
+                <path d="M2 8h18a2 2 0 0 1 2 2v10"/>
+                <path d="M2 17h20"/>
+                <path d="M6 8v9"/>
+              </svg>
+              <span>5 Bedrooms</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 6 6.5 3.5a1.5 1.5 0 0 0-1-.5C4.683 3 4 3.683 4 4.5V17a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/>
+                <line x1="10" x2="8" y1="5" y2="7"/>
+                <line x1="2" x2="22" y1="12" y2="12"/>
+                <line x1="7" x2="7" y1="19" y2="21"/>
+                <line x1="17" x2="17" y1="19" y2="21"/>
+              </svg>
+              <span>2 Bathroom</span>
+            </div>
+          </div>
+          <h3 class="font-semibold text-gray-900 mb-2 text-base sm:text-lg">The Pinnacle at Highland Park</h3>
+          <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+            <span class="font-bold text-gray-900 text-base sm:text-lg">$3,56798.00</span>
+            <span class="text-gray-400 text-xs sm:text-sm">123 Maple Street, New York</span>
+          </div>
+        </div>
+
+        <!-- Property Card 2 -->
+        <div class="group cursor-pointer">
+          <div class="relative mb-4">
+            <img 
+              src="images/pic-3 - Copy.jpg" 
+              alt="The Pinnacle at Highland Park" 
+              class="w-full h-48 sm:h-56 object-cover rounded-xl sm:rounded-2xl group-hover:scale-[1.02] transition-transform duration-300"
+            />
+            <span class="absolute top-3 left-3 bg-white text-xs font-medium px-3 py-1 rounded-full text-gray-700">For Sale</span>
+          </div>
+          <div class="flex items-center gap-3 sm:gap-4 text-gray-500 text-xs sm:text-sm mb-3">
+            <div class="flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 4v16"/>
+                <path d="M2 8h18a2 2 0 0 1 2 2v10"/>
+                <path d="M2 17h20"/>
+                <path d="M6 8v9"/>
+              </svg>
+              <span>5 Bedrooms</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 6 6.5 3.5a1.5 1.5 0 0 0-1-.5C4.683 3 4 3.683 4 4.5V17a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/>
+                <line x1="10" x2="8" y1="5" y2="7"/>
+                <line x1="2" x2="22" y1="12" y2="12"/>
+                <line x1="7" x2="7" y1="19" y2="21"/>
+                <line x1="17" x2="17" y1="19" y2="21"/>
+              </svg>
+              <span>2 Bathroom</span>
+            </div>
+          </div>
+          <h3 class="font-semibold text-gray-900 mb-2 text-base sm:text-lg">The Pinnacle at Highland Park</h3>
+          <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+            <span class="font-bold text-gray-900 text-base sm:text-lg">$2,49089.99</span>
+            <span class="text-gray-400 text-xs sm:text-sm">789 Forest Lane, Denver, CO</span>
+          </div>
+        </div>
+
+        <!-- Property Card 3 -->
+        <div class="group cursor-pointer">
+          <div class="relative mb-4">
+            <img 
+              src="images/pic-1.jpg" 
+              alt="The Pinnacle at Highland Park" 
+              class="w-full h-48 sm:h-56 object-cover rounded-xl sm:rounded-2xl group-hover:scale-[1.02] transition-transform duration-300"
+            />
+            <span class="absolute top-3 left-3 bg-white text-xs font-medium px-3 py-1 rounded-full text-gray-700">For Sale</span>
+          </div>
+          <div class="flex items-center gap-3 sm:gap-4 text-gray-500 text-xs sm:text-sm mb-3">
+            <div class="flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 4v16"/>
+                <path d="M2 8h18a2 2 0 0 1 2 2v10"/>
+                <path d="M2 17h20"/>
+                <path d="M6 8v9"/>
+              </svg>
+              <span>5 Bedrooms</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 6 6.5 3.5a1.5 1.5 0 0 0-1-.5C4.683 3 4 3.683 4 4.5V17a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/>
+                <line x1="10" x2="8" y1="5" y2="7"/>
+                <line x1="2" x2="22" y1="12" y2="12"/>
+                <line x1="7" x2="7" y1="19" y2="21"/>
+                <line x1="17" x2="17" y1="19" y2="21"/>
+              </svg>
+              <span>2 Bathroom</span>
+            </div>
+          </div>
+          <h3 class="font-semibold text-gray-900 mb-2 text-base sm:text-lg">The Pinnacle at Highland Park</h3>
+          <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+            <span class="font-bold text-gray-900 text-base sm:text-lg">$4,56745.00</span>
+            <span class="text-gray-400 text-xs sm:text-sm">123 Serenity Drive, Austin, TX</span>
+          </div>
+        </div>
+
+        <!-- Property Card 4 -->
+        <div class="group cursor-pointer">
+          <div class="relative mb-4">
+            <img 
+              src="images/pic-1.jpg" 
+              alt="The Pinnacle at Highland Park" 
+              class="w-full h-48 sm:h-56 object-cover rounded-xl sm:rounded-2xl group-hover:scale-[1.02] transition-transform duration-300"
+            />
+            <span class="absolute top-3 left-3 bg-white text-xs font-medium px-3 py-1 rounded-full text-gray-700">For Sale</span>
+          </div>
+          <div class="flex items-center gap-3 sm:gap-4 text-gray-500 text-xs sm:text-sm mb-3">
+            <div class="flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 4v16"/>
+                <path d="M2 8h18a2 2 0 0 1 2 2v10"/>
+                <path d="M2 17h20"/>
+                <path d="M6 8v9"/>
+              </svg>
+              <span>5 Bedrooms</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 6 6.5 3.5a1.5 1.5 0 0 0-1-.5C4.683 3 4 3.683 4 4.5V17a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/>
+                <line x1="10" x2="8" y1="5" y2="7"/>
+                <line x1="2" x2="22" y1="12" y2="12"/>
+                <line x1="7" x2="7" y1="19" y2="21"/>
+                <line x1="17" x2="17" y1="19" y2="21"/>
+              </svg>
+              <span>2 Bathroom</span>
+            </div>
+          </div>
+          <h3 class="font-semibold text-gray-900 mb-2 text-base sm:text-lg">The Pinnacle at Highland Park</h3>
+          <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+            <span class="font-bold text-gray-900 text-base sm:text-lg">$3,56798.00</span>
+            <span class="text-gray-400 text-xs sm:text-sm">123 Maple Street, New York</span>
+          </div>
+        </div>
+
+        <!-- Property Card 5 -->
+        <div class="group cursor-pointer">
+          <div class="relative mb-4">
+            <img 
+              src="images/pic-1.jpg" 
+              alt="The Pinnacle at Highland Park" 
+              class="w-full h-48 sm:h-56 object-cover rounded-xl sm:rounded-2xl group-hover:scale-[1.02] transition-transform duration-300"
+            />
+            <span class="absolute top-3 left-3 bg-white text-xs font-medium px-3 py-1 rounded-full text-gray-700">For Sale</span>
+          </div>
+          <div class="flex items-center gap-3 sm:gap-4 text-gray-500 text-xs sm:text-sm mb-3">
+            <div class="flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 4v16"/>
+                <path d="M2 8h18a2 2 0 0 1 2 2v10"/>
+                <path d="M2 17h20"/>
+                <path d="M6 8v9"/>
+              </svg>
+              <span>5 Bedrooms</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 6 6.5 3.5a1.5 1.5 0 0 0-1-.5C4.683 3 4 3.683 4 4.5V17a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/>
+                <line x1="10" x2="8" y1="5" y2="7"/>
+                <line x1="2" x2="22" y1="12" y2="12"/>
+                <line x1="7" x2="7" y1="19" y2="21"/>
+                <line x1="17" x2="17" y1="19" y2="21"/>
+              </svg>
+              <span>2 Bathroom</span>
+            </div>
+          </div>
+          <h3 class="font-semibold text-gray-900 mb-2 text-base sm:text-lg">The Pinnacle at Highland Park</h3>
+          <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+            <span class="font-bold text-gray-900 text-base sm:text-lg">$2,49089.99</span>
+            <span class="text-gray-400 text-xs sm:text-sm">789 Forest Lane, Denver, CO</span>
+          </div>
+        </div>
+
+        <!-- Property Card 6 -->
+        <div class="group cursor-pointer">
+          <div class="relative mb-4">
+            <img 
+              src="images/pic-1.jpg" 
+              alt="The Pinnacle at Highland Park" 
+              class="w-full h-48 sm:h-56 object-cover rounded-xl sm:rounded-2xl group-hover:scale-[1.02] transition-transform duration-300"
+            />
+            <span class="absolute top-3 left-3 bg-white text-xs font-medium px-3 py-1 rounded-full text-gray-700">For Sale</span>
+          </div>
+          <div class="flex items-center gap-3 sm:gap-4 text-gray-500 text-xs sm:text-sm mb-3">
+            <div class="flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 4v16"/>
+                <path d="M2 8h18a2 2 0 0 1 2 2v10"/>
+                <path d="M2 17h20"/>
+                <path d="M6 8v9"/>
+              </svg>
+              <span>5 Bedrooms</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 6 6.5 3.5a1.5 1.5 0 0 0-1-.5C4.683 3 4 3.683 4 4.5V17a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/>
+                <line x1="10" x2="8" y1="5" y2="7"/>
+                <line x1="2" x2="22" y1="12" y2="12"/>
+                <line x1="7" x2="7" y1="19" y2="21"/>
+                <line x1="17" x2="17" y1="19" y2="21"/>
+              </svg>
+              <span>2 Bathroom</span>
+            </div>
+          </div>
+          <h3 class="font-semibold text-gray-900 mb-2 text-base sm:text-lg">The Pinnacle at Highland Park</h3>
+          <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+            <span class="font-bold text-gray-900 text-base sm:text-lg">$4,56745.00</span>
+            <span class="text-gray-400 text-xs sm:text-sm">123 Serenity Drive, Austin, TX</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Call to Action -->
+    <div class="py-12 sm:py-16 mt-8 sm:mt-12 bg-gradient-to-r from-green-900 to-green-700 rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center">
+      <h3 class="text-2xl sm:text-3xl font-bold text-white mb-4">Ready to Find Your Dream Home?</h3>
+      <p class="text-white/90 mb-6 text-sm sm:text-base max-w-2xl mx-auto px-4">
+        Join thousands of happy homeowners who found their perfect match with EverGreen Real Estate.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <button class="bg-white text-green-900 px-6 sm:px-8 py-3 rounded-full font-medium hover:bg-gray-100 transition text-sm sm:text-base">
+          Browse Properties
+        </button>
+        <button class="bg-transparent border-2 border-white text-white px-6 sm:px-8 py-3 rounded-full font-medium hover:bg-white/10 transition text-sm sm:text-base">
+          Schedule Tour
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-12 sm:mt-16 py-8 sm:py-10 border-t border-gray-200">
+    <div class="mx-auto w-[95%] sm:w-[92%] md:w-[90%] lg:w-[88vw]">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+        <div class="text-xl sm:text-2xl font-bold text-gray-900">EverGreen</div>
+        <div class="flex flex-wrap gap-4 sm:gap-6 md:gap-8 justify-center">
+          <a href="#" class="text-sm sm:text-base text-gray-600 hover:text-gray-900">Privacy Policy</a>
+          <a href="#" class="text-sm sm:text-base text-gray-600 hover:text-gray-900">Terms of Service</a>
+          <a href="#" class="text-sm sm:text-base text-gray-600 hover:text-gray-900">Contact</a>
+        </div>
+      </div>
+      <div class="text-center text-sm sm:text-base text-gray-500 mt-6 sm:mt-8">
+        © 2024 EverGreen Real Estate. All rights reserved.
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

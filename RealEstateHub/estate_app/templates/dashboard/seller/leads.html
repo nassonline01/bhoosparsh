@@ -1,0 +1,932 @@
+<!-- templates/dashboard/seller/leads.html -->
+{% extends 'dashboard/seller/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Leads & Inquiries - BHOOSPARSH Seller{% endblock %}
+
+{% block extra_css %}
+<style>
+    .lead-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+
+    .lead-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .lead-card.new {
+        border-left-color: #3B82F6;
+        background: linear-gradient(90deg, rgba(59, 130, 246, 0.05) 0%, transparent 100%);
+    }
+
+    .lead-card.contacted {
+        border-left-color: #10B981;
+        background: linear-gradient(90deg, rgba(16, 185, 129, 0.05) 0%, transparent 100%);
+    }
+
+    .lead-card.interested {
+        border-left-color: #8B5CF6;
+        background: linear-gradient(90deg, rgba(139, 92, 246, 0.05) 0%, transparent 100%);
+    }
+
+    .lead-card.converted {
+        border-left-color: #F59E0B;
+        background: linear-gradient(90deg, rgba(245, 158, 11, 0.05) 0%, transparent 100%);
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 6px;
+    }
+
+    .status-new .status-dot { background-color: #3B82F6; }
+    .status-contacted .status-dot { background-color: #10B981; }
+    .status-interested .status-dot { background-color: #8B5CF6; }
+    .status-not_interested .status-dot { background-color: #EF4444; }
+    .status-converted .status-dot { background-color: #F59E0B; }
+    .status-spam .status-dot { background-color: #6B7280; }
+
+    .priority-badge {
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: 600;
+    }
+
+    .priority-1 { background-color: #EF4444; color: white; }
+    .priority-2 { background-color: #F59E0B; color: white; }
+    .priority-3 { background-color: #10B981; color: white; }
+    .priority-4 { background-color: #3B82F6; color: white; }
+    .priority-5 { background-color: #8B5CF6; color: white; }
+
+    .time-ago {
+        font-size: 11px;
+        color: #6B7280;
+    }
+
+    .filter-chip {
+        background: #EFF6FF;
+        color: #1E40AF;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .filter-chip:hover {
+        background: #DBEAFE;
+    }
+
+    .stat-card {
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .quick-action-btn {
+        transition: all 0.3s ease;
+    }
+
+    .quick-action-btn:hover {
+        transform: scale(1.05);
+    }
+
+    .lead-actions {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .lead-card:hover .lead-actions {
+        opacity: 1;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+
+    .pulse-animation {
+        animation: pulse 2s infinite;
+    }
+</style>
+{% endblock %}
+
+{% block header_title %}
+<h1 class="text-xl font-bold text-gray-900 dark:text-white">Leads & Inquiries</h1>
+<p class="text-sm text-gray-600 dark:text-gray-400">
+    Manage your property inquiries and customer leads
+</p>
+{% endblock %}
+
+{% block header_buttons %}
+<div class="flex flex-wrap gap-2">
+    <a href="{% url 'seller_lead_export' %}" 
+       class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-2">
+        <i class="fas fa-download"></i>
+        <span>Export CSV</span>
+    </a>
+    
+    <div class="relative">
+        <button onclick="toggleFilterDropdown()" 
+                class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-2">
+            <i class="fas fa-filter"></i>
+            <span>Filter</span>
+            {% if status_filter != 'all' or property_filter != 'all' or date_from or date_to %}
+            <span class="w-2 h-2 bg-red-500 rounded-full"></span>
+            {% endif %}
+        </button>
+        
+        <div id="filterDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 z-10">
+            <form method="GET" id="filterForm">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                        <select name="status" class="w-full p-2 border rounded-lg">
+                            <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Status</option>
+                            <option value="new" {% if status_filter == 'new' %}selected{% endif %}>New</option>
+                            <option value="contacted" {% if status_filter == 'contacted' %}selected{% endif %}>Contacted</option>
+                            <option value="interested" {% if status_filter == 'interested' %}selected{% endif %}>Interested</option>
+                            <option value="not_interested" {% if status_filter == 'not_interested' %}selected{% endif %}>Not Interested</option>
+                            <option value="converted" {% if status_filter == 'converted' %}selected{% endif %}>Converted</option>
+                            <option value="spam" {% if status_filter == 'spam' %}selected{% endif %}>Spam</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Property</label>
+                        <select name="property" class="w-full p-2 border rounded-lg">
+                            <option value="all" {% if property_filter == 'all' %}selected{% endif %}>All Properties</option>
+                            {% for prop in user_properties %}
+                            <option value="{{ prop.id }}" {% if property_filter == prop.id|stringformat:"s" %}selected{% endif %}>
+                                {{ prop.title|truncatechars:30 }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">From Date</label>
+                            <input type="date" name="date_from" value="{{ date_from }}" 
+                                   class="w-full p-2 border rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">To Date</label>
+                            <input type="date" name="date_to" value="{{ date_to }}" 
+                                   class="w-full p-2 border rounded-lg">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort By</label>
+                        <select name="sort" class="w-full p-2 border rounded-lg">
+                            <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>Newest First</option>
+                            <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>Oldest First</option>
+                            <option value="priority" {% if sort_by == 'priority' %}selected{% endif %}>Priority (High to Low)</option>
+                            <option value="-priority" {% if sort_by == '-priority' %}selected{% endif %}>Priority (Low to High)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex gap-2 pt-2">
+                        <button type="submit" 
+                                class="flex-1 px-3 py-2 bg-bhoosparsh-blue text-white rounded-lg hover:bg-blue-700 transition text-sm">
+                            Apply Filters
+                        </button>
+                        <a href="{% url 'seller_leads' %}" 
+                           class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition text-sm">
+                            Clear All
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Stats Overview -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-5">
+        <div class="flex items-center">
+            <div class="rounded-full bg-blue-100 dark:bg-blue-900 p-3 mr-4">
+                <i class="fas fa-inbox text-blue-600 dark:text-blue-400 text-xl"></i>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ total_leads }}</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Total Leads</p>
+            </div>
+        </div>
+        <div class="mt-3">
+            <div class="flex items-center text-xs text-blue-600">
+                <i class="fas fa-arrow-up mr-1"></i>
+                <span>From last month</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-5">
+        <div class="flex items-center">
+            <div class="rounded-full bg-green-100 dark:bg-green-900 p-3 mr-4">
+                <i class="fas fa-bell text-green-600 dark:text-green-400 text-xl"></i>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ new_leads }}</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400">New Leads</p>
+            </div>
+        </div>
+        <div class="mt-3">
+            {% if new_leads > 0 %}
+            <div class="flex items-center text-xs text-green-600 pulse-animation">
+                <i class="fas fa-circle mr-1"></i>
+                <span>Needs attention</span>
+            </div>
+            {% else %}
+            <div class="text-xs text-gray-500">All caught up!</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-5">
+        <div class="flex items-center">
+            <div class="rounded-full bg-yellow-100 dark:bg-yellow-900 p-3 mr-4">
+                <i class="fas fa-reply text-yellow-600 dark:text-yellow-400 text-xl"></i>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ response_rate }}%</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Response Rate</p>
+            </div>
+        </div>
+        <div class="mt-3">
+            <div class="flex items-center text-xs text-yellow-600">
+                <i class="fas fa-chart-line mr-1"></i>
+                <span>{{ avg_response_time }} avg response</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-5">
+        <div class="flex items-center">
+            <div class="rounded-full bg-purple-100 dark:bg-purple-900 p-3 mr-4">
+                <i class="fas fa-trophy text-purple-600 dark:text-purple-400 text-xl"></i>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ converted_leads }}</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Converted</p>
+            </div>
+        </div>
+        <div class="mt-3">
+            <div class="flex items-center text-xs text-purple-600">
+                <i class="fas fa-star mr-1"></i>
+                <span>Successful deals</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Active Filters -->
+<div class="flex flex-wrap gap-2 mb-6">
+    {% if status_filter != 'all' %}
+    <span class="filter-chip">
+        Status: {{ status_filter|title }}
+        <a href="?{% if property_filter != 'all' %}property={{ property_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
+           class="ml-2 text-xs">×</a>
+    </span>
+    {% endif %}
+    
+    {% if property_filter != 'all' %}
+    {% with selected_property=user_properties|first %}
+    {% if selected_property %}
+    <span class="filter-chip">
+        Property: {{ selected_property.title|truncatechars:20 }}
+        <a href="?{% if status_filter != 'all' %}status={{ status_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
+           class="ml-2 text-xs">×</a>
+    </span>
+    {% endif %}
+    {% endwith %}
+    {% endif %}
+    
+    {% if date_from %}
+    <span class="filter-chip">
+        From: {{ date_from }}
+        <a href="?{% if status_filter != 'all' %}status={{ status_filter }}{% endif %}{% if property_filter != 'all' %}&property={{ property_filter }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
+           class="ml-2 text-xs">×</a>
+    </span>
+    {% endif %}
+    
+    {% if date_to %}
+    <span class="filter-chip">
+        To: {{ date_to }}
+        <a href="?{% if status_filter != 'all' %}status={{ status_filter }}{% endif %}{% if property_filter != 'all' %}&property={{ property_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
+           class="ml-2 text-xs">×</a>
+    </span>
+    {% endif %}
+    
+    {% if search_query %}
+    <span class="filter-chip">
+        Search: "{{ search_query }}"
+        <a href="?{% if status_filter != 'all' %}status={{ status_filter }}{% endif %}{% if property_filter != 'all' %}&property={{ property_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}&sort={{ sort_by }}" 
+           class="ml-2 text-xs">×</a>
+    </span>
+    {% endif %}
+    
+    {% if status_filter != 'all' or property_filter != 'all' or date_from or date_to or search_query %}
+    <a href="{% url 'seller_leads' %}" class="text-sm text-bhoosparsh-blue hover:text-blue-700 flex items-center gap-1">
+        Clear all filters
+        <i class="fas fa-times"></i>
+    </a>
+    {% endif %}
+</div>
+
+<!-- Search Bar -->
+<div class="mb-6">
+    <form method="GET" class="relative">
+        <input type="text" 
+               name="q" 
+               value="{{ search_query }}" 
+               placeholder="Search leads by name, email, phone, or message..." 
+               class="w-full p-3 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
+        <i class="fas fa-search absolute left-3 top-3.5 text-gray-400"></i>
+        <button type="submit" class="absolute right-3 top-3 text-gray-400 hover:text-gray-600">
+            <i class="fas fa-arrow-right"></i>
+        </button>
+    </form>
+</div>
+
+<!-- Quick Actions -->
+<div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl p-6 mb-6 border border-blue-100 dark:border-blue-800">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h3 class="font-bold text-gray-900 dark:text-white mb-2">Quick Actions</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+                Manage your leads efficiently with these actions
+            </p>
+        </div>
+        
+        <div class="flex flex-wrap gap-2">
+            <button onclick="markAllAsContacted()" 
+                    class="quick-action-btn px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-medium flex items-center gap-2">
+                <i class="fas fa-check-circle"></i>
+                <span>Mark All as Contacted</span>
+            </button>
+            
+            <button onclick="sendBulkResponse()" 
+                    class="quick-action-btn px-4 py-2 bg-bhoosparsh-blue text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium flex items-center gap-2">
+                <i class="fas fa-paper-plane"></i>
+                <span>Send Bulk Response</span>
+            </button>
+            
+            <button onclick="scheduleCallbacks()" 
+                    class="quick-action-btn px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm font-medium flex items-center gap-2">
+                <i class="fas fa-phone"></i>
+                <span>Schedule Callbacks</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Lead Sources Chart -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <!-- Lead Sources -->
+    <div class="lg:col-span-1">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 h-full">
+            <h3 class="font-bold text-lg text-gray-900 dark:text-white mb-6">Lead Sources</h3>
+            <div class="space-y-4">
+                {% for source in lead_sources %}
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <div class="flex items-center">
+                            <div class="w-3 h-3 rounded-full mr-2" 
+                                 style="background-color: {% cycle '#10B981' '#3B82F6' '#8B5CF6' '#F59E0B' '#EF4444' as colors %}"></div>
+                            <span class="text-gray-600 dark:text-gray-400">
+                                {% if source.source == 'website' %}Website Form
+                                {% elif source.source == 'phone' %}Phone Call
+                                {% elif source.source == 'whatsapp' %}WhatsApp
+                                {% elif source.source == 'email' %}Email
+                                {% elif source.source == 'walkin' %}Walk-in
+                                {% else %}{{ source.source|title }}
+                                {% endif %}
+                            </span>
+                        </div>
+                        <span class="font-medium">{{ source.count }} ({{ source.percentage|floatformat:1 }}%)</span>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div class="h-2 rounded-full" 
+                             style="width: {{ source.percentage|floatformat:1 }}%; background-color: {% cycle '#10B981' '#3B82F6' '#8B5CF6' '#F59E0B' '#EF4444' %}"></div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-4">
+                    <i class="fas fa-chart-pie text-gray-400 text-3xl mb-3"></i>
+                    <p class="text-gray-600 dark:text-gray-400">No lead data available</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Conversion Funnel -->
+    <div class="lg:col-span-2">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 h-full">
+            <h3 class="font-bold text-lg text-gray-900 dark:text-white mb-6">Conversion Funnel</h3>
+            <div class="space-y-6">
+                <div class="relative">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Total Leads</span>
+                        <span class="text-sm font-bold text-gray-900 dark:text-white">{{ total_leads }}</span>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+                        <div class="bg-blue-600 h-4 rounded-full" style="width: 100%"></div>
+                    </div>
+                </div>
+                
+                <div class="relative">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Contacted</span>
+                        <span class="text-sm font-bold text-gray-900 dark:text-white">{{ contacted_leads }} 
+                            ({% if total_leads > 0 %}{{ contacted_leads|divisibleby:total_leads|floatformat:1 }}{% else %}0{% endif %}%)
+                        </span>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+                        <div class="bg-green-600 h-4 rounded-full" 
+                             style="width: {% if total_leads > 0 %}{{ contacted_leads|divisibleby:total_leads|floatformat:0 }}{% else %}0{% endif %}%"></div>
+                    </div>
+                </div>
+                
+                <div class="relative">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Interested</span>
+                        <span class="text-sm font-bold text-gray-900 dark:text-white">
+                            {{ interested_leads }} 
+                            ({% if total_leads > 0 %}{{ interested_leads|divisibleby:total_leads|floatformat:1 }}{% else %}0{% endif %}%)
+                        </span>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+                        <div class="bg-yellow-600 h-4 rounded-full" 
+                             style="width: {% if total_leads > 0 %}{{ interested_leads|divisibleby:total_leads|floatformat:0 }}{% else %}0{% endif %}%"></div>
+                    </div>
+                </div>
+                
+                <div class="relative">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Converted</span>
+                        <span class="text-sm font-bold text-gray-900 dark:text-white">
+                            {{ converted_leads }} 
+                            ({% if total_leads > 0 %}{{ converted_leads|divisibleby:total_leads|floatformat:1 }}{% else %}0{% endif %}%)
+                        </span>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+                        <div class="bg-purple-600 h-4 rounded-full" 
+                             style="width: {% if total_leads > 0 %}{{ converted_leads|divisibleby:total_leads|floatformat:0 }}{% else %}0{% endif %}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Leads List -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden mb-6">
+    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <h3 class="font-bold text-lg text-gray-900 dark:text-white">All Leads ({{ total_leads }})</h3>
+            <div class="text-sm text-gray-600 dark:text-gray-400">
+                Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ total_leads }}
+            </div>
+        </div>
+    </div>
+    
+    {% if page_obj.object_list %}
+    <div class="divide-y divide-gray-100 dark:divide-gray-700">
+        {% for inquiry in page_obj.object_list %}
+        <div class="lead-card p-6 {% if inquiry.status == 'new' %}new{% elif inquiry.status == 'contacted' %}contacted{% elif inquiry.status == 'interested' %}interested{% elif inquiry.status == 'converted' %}converted{% endif %}">
+            <div class="flex flex-col lg:flex-row lg:items-start gap-4">
+                <!-- Lead Info -->
+                <div class="flex-1">
+                    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
+                        <div class="flex items-start gap-3">
+                            <div class="w-12 h-12 rounded-full bg-bhoosparsh-blue flex items-center justify-center text-white font-bold text-lg">
+                                {{ inquiry.name|first|upper }}
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 dark:text-white">{{ inquiry.name }}</h4>
+                                <div class="flex flex-wrap items-center gap-2 mt-1">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">{{ inquiry.email }}</span>
+                                    <span class="text-xs text-gray-500">•</span>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">{{ inquiry.phone }}</span>
+                                </div>
+                                <div class="flex items-center mt-2">
+                                    <span class="status-{{ inquiry.status }}">
+                                        <span class="status-dot"></span>
+                                        <span class="text-xs font-medium">{{ inquiry.get_status_display }}</span>
+                                    </span>
+                                    <span class="mx-2 text-gray-300">•</span>
+                                    <span class="priority-badge priority-{{ inquiry.priority }}">
+                                        Priority {{ inquiry.priority }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start gap-3">
+                            <div class="text-right">
+                                <div class="time-ago mb-2">{{ inquiry.created_at|timesince }} ago</div>
+                                <div class="text-xs text-gray-500">
+                                    {% if inquiry.source == 'website' %}Website Form
+                                    {% elif inquiry.source == 'phone' %}Phone Call
+                                    {% elif inquiry.source == 'whatsapp' %}WhatsApp
+                                    {% elif inquiry.source == 'email' %}Email
+                                    {% elif inquiry.source == 'walkin' %}Walk-in
+                                    {% else %}{{ inquiry.source|title }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="lead-actions flex gap-1">
+                                <a href="{% url 'seller_lead_detail' inquiry.id %}" 
+                                   class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-800 transition"
+                                   title="View Details">
+                                    <i class="fas fa-eye text-sm"></i>
+                                </a>
+                                <a href="tel:{{ inquiry.phone }}" 
+                                   class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center text-green-600 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-800 transition"
+                                   title="Call">
+                                    <i class="fas fa-phone text-sm"></i>
+                                </a>
+                                <a href="mailto:{{ inquiry.email }}" 
+                                   class="w-8 h-8 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center text-yellow-600 dark:text-yellow-400 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition"
+                                   title="Email">
+                                    <i class="fas fa-envelope text-sm"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Property Info -->
+                    <div class="mb-4">
+                        <div class="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-1">
+                            <i class="fas fa-home mr-2"></i>
+                            <span class="font-medium text-gray-900 dark:text-white">Property:</span>
+                            <a href="{% url 'property_detail' inquiry.property.slug %}" target="_blank" 
+                               class="ml-2 text-bhoosparsh-blue hover:text-blue-700">
+                                {{ inquiry.property.title|truncatechars:40 }}
+                            </a>
+                        </div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">
+                            <span class="font-medium">Budget:</span>
+                            <span class="ml-2">
+                                {% if inquiry.budget %}
+                                ₹{{ inquiry.budget|intcomma }}
+                                {% else %}
+                                Not specified
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Message -->
+                    <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                        <p class="text-sm text-gray-700 dark:text-gray-300">
+                            "{{ inquiry.message|truncatechars:200 }}"
+                        </p>
+                        {% if inquiry.preferred_date %}
+                        <div class="flex items-center mt-3 text-sm text-gray-600 dark:text-gray-400">
+                            <i class="fas fa-calendar-alt mr-2"></i>
+                            <span>Preferred: {{ inquiry.preferred_date|date:"M d, Y" }}</span>
+                            {% if inquiry.preferred_time %}
+                            <span class="mx-2">•</span>
+                            <span>{{ inquiry.preferred_time|time:"g:i A" }}</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Response (if any) -->
+                    {% if inquiry.response %}
+                    <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-l-4 border-blue-500">
+                        <div class="flex items-start gap-2 mb-2">
+                            <i class="fas fa-reply text-blue-500 mt-1"></i>
+                            <div>
+                                <div class="text-sm font-medium text-gray-900 dark:text-white">Your Response</div>
+                                <div class="text-xs text-gray-500">
+                                    {{ inquiry.responded_at|date:"M d, Y g:i A" }}
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-700 dark:text-gray-300 mt-2">
+                            {{ inquiry.response|truncatechars:150 }}
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Quick Status Update -->
+                <div class="lg:w-48">
+                    <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4">
+                        <h5 class="text-sm font-medium text-gray-900 dark:text-white mb-3">Update Status</h5>
+                        <div class="space-y-2">
+                            <select class="w-full p-2 text-sm border rounded-lg" 
+                                    onchange="updateLeadStatus('{{ inquiry.id }}', this.value)">
+                                <option value="new" {% if inquiry.status == 'new' %}selected{% endif %}>New</option>
+                                <option value="contacted" {% if inquiry.status == 'contacted' %}selected{% endif %}>Contacted</option>
+                                <option value="interested" {% if inquiry.status == 'interested' %}selected{% endif %}>Interested</option>
+                                <option value="not_interested" {% if inquiry.status == 'not_interested' %}selected{% endif %}>Not Interested</option>
+                                <option value="converted" {% if inquiry.status == 'converted' %}selected{% endif %}>Converted</option>
+                                <option value="spam" {% if inquiry.status == 'spam' %}selected{% endif %}>Spam</option>
+                            </select>
+                            
+                            <div class="flex gap-2">
+                                <a href="{% url 'seller_lead_detail' inquiry.id %}" 
+                                   class="flex-1 px-3 py-2 bg-bhoosparsh-blue text-white rounded-lg hover:bg-blue-700 transition text-sm text-center">
+                                    Respond
+                                </a>
+                                <button onclick="addReminder('{{ inquiry.id }}')" 
+                                        class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition text-sm">
+                                    <i class="fas fa-bell"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="p-6 border-t border-gray-200 dark:border-gray-700">
+        <nav class="flex items-center justify-between">
+            <div class="text-sm text-gray-700 dark:text-gray-300">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </div>
+            
+            <div class="flex items-center gap-1">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if property_filter != 'all' %}&property={{ property_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
+                   class="px-3 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <span class="px-3 py-2 bg-bhoosparsh-blue text-white rounded-lg">{{ num }}</span>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <a href="?page={{ num }}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if property_filter != 'all' %}&property={{ property_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
+                       class="px-3 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                        {{ num }}
+                    </a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if property_filter != 'all' %}&property={{ property_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
+                   class="px-3 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+                {% endif %}
+            </div>
+        </nav>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-16">
+        <div class="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-inbox text-gray-400 text-3xl"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No leads found</h3>
+        <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+            {% if status_filter != 'all' or property_filter != 'all' or date_from or date_to or search_query %}
+            Try adjusting your filters or search query
+            {% else %}
+            You haven't received any leads yet. Promote your properties to get inquiries!
+            {% endif %}
+        </p>
+        
+        <a href="{% url 'seller_packages' %}" 
+           class="px-6 py-3 bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg hover:opacity-90 transition font-medium inline-flex items-center gap-2">
+            <i class="fas fa-bolt"></i>
+            <span>Boost Your Properties</span>
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Bulk Actions Modal -->
+<div id="bulkActionsModal" class="modal-overlay">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full mx-4">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Bulk Actions</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Apply actions to selected leads</p>
+                </div>
+                <button onclick="closeModal('bulkActionsModal')" 
+                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Update Status
+                    </label>
+                    <select id="bulkStatus" class="w-full p-3 border rounded-lg">
+                        <option value="contacted">Mark as Contacted</option>
+                        <option value="interested">Mark as Interested</option>
+                        <option value="not_interested">Mark as Not Interested</option>
+                        <option value="converted">Mark as Converted</option>
+                        <option value="spam">Mark as Spam</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Send Response Template
+                    </label>
+                    <select id="bulkTemplate" class="w-full p-3 border rounded-lg">
+                        <option value="">Select Template</option>
+                        <option value="thank_you">Thank You for Inquiry</option>
+                        <option value="follow_up">Follow-up Message</option>
+                        <option value="property_details">Property Details</option>
+                        <option value="meeting_request">Meeting Request</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Custom Message
+                    </label>
+                    <textarea id="bulkMessage" rows="3" 
+                              class="w-full p-3 border rounded-lg"
+                              placeholder="Enter your message..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+            <button onclick="closeModal('bulkActionsModal')" 
+                    class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                Cancel
+            </button>
+            <button onclick="applyBulkActions()" 
+                    class="px-4 py-2 bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg hover:opacity-90 transition font-medium">
+                <i class="fas fa-check mr-2"></i>Apply to Selected
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize animations
+        const cards = document.querySelectorAll('.stat-card');
+        cards.forEach((card, index) => {
+            setTimeout(() => {
+                card.style.animationDelay = `${index * 0.1}s`;
+                card.style.opacity = '1';
+            }, 100);
+        });
+    });
+
+    function toggleFilterDropdown() {
+        const dropdown = document.getElementById('filterDropdown');
+        dropdown.classList.toggle('hidden');
+    }
+
+    function markAllAsContacted() {
+        if (confirm('Mark all new leads as contacted?')) {
+            showToast('Marking all new leads as contacted...', 'info');
+            
+            // In real app, make AJAX call
+            setTimeout(() => {
+                showToast('All new leads marked as contacted!', 'success');
+                location.reload();
+            }, 1500);
+        }
+    }
+
+    function sendBulkResponse() {
+        openModal('bulkActionsModal');
+    }
+
+    function scheduleCallbacks() {
+        showToast('Callback scheduling feature coming soon!', 'info');
+    }
+
+    function updateLeadStatus(leadId, newStatus) {
+        // In real app, make AJAX call
+        fetch('/seller/ajax/update-lead-status/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify({
+                lead_id: leadId,
+                status: newStatus,
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(`Status updated to ${data.new_status}`, 'success');
+                
+                // Update UI
+                const leadCard = document.querySelector(`select[onchange*="${leadId}"]`).closest('.lead-card');
+                const statusDot = leadCard.querySelector('.status-dot');
+                const statusText = leadCard.querySelector('.status-new span:last-child, .status-contacted span:last-child, .status-interested span:last-child, .status-converted span:last-child');
+                
+                // Update colors based on status
+                if (newStatus === 'new') {
+                    statusDot.style.backgroundColor = '#3B82F6';
+                    statusText.textContent = 'New';
+                } else if (newStatus === 'contacted') {
+                    statusDot.style.backgroundColor = '#10B981';
+                    statusText.textContent = 'Contacted';
+                } else if (newStatus === 'interested') {
+                    statusDot.style.backgroundColor = '#8B5CF6';
+                    statusText.textContent = 'Interested';
+                } else if (newStatus === 'converted') {
+                    statusDot.style.backgroundColor = '#F59E0B';
+                    statusText.textContent = 'Converted';
+                }
+            } else {
+                showToast(data.error, 'error');
+            }
+        })
+        .catch(error => {
+            showToast('Error updating status', 'error');
+        });
+    }
+
+    function addReminder(leadId) {
+        const reminderTime = prompt('Set reminder for (e.g., 2 hours, tomorrow 10 AM):', 'tomorrow 10 AM');
+        
+        if (reminderTime) {
+            showToast(`Reminder set for ${reminderTime}`, 'success');
+            
+            // In real app, save reminder to database
+            // For demo, just show toast
+        }
+    }
+
+    function applyBulkActions() {
+        const status = document.getElementById('bulkStatus').value;
+        const template = document.getElementById('bulkTemplate').value;
+        const message = document.getElementById('bulkMessage').value;
+        
+        if (!message && !template) {
+            showToast('Please select a template or enter a message', 'warning');
+            return;
+        }
+        
+        showToast('Applying bulk actions...', 'info');
+        closeModal('bulkActionsModal');
+        
+        // Simulate processing
+        setTimeout(() => {
+            showToast('Bulk actions applied successfully!', 'success');
+        }, 2000);
+    }
+
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.relative')) {
+            document.getElementById('filterDropdown').classList.add('hidden');
+        }
+    });
+</script>
+{% endblock %}

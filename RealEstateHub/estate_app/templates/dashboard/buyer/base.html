@@ -1,0 +1,2118 @@
+{% load humanize  %}
+
+<!DOCTYPE html>
+<!-- templates/dashboard/buyer/base.html -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BHOOSPARSH Pro - Intelligent Property Discovery{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Sidebar Navigation Improvements */
+.sidebar-content {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Navigation Group Headers */
+.nav-group-header {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #6b7280;
+    margin-left: 0.5rem;
+    margin-bottom: 0.5rem;
+    margin-top: 1rem;
+}
+
+/* Improved navigation items */
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    margin: 0 0.25rem 0.25rem;
+    border-radius: 0.75rem;
+    color: #4b5563;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid transparent;
+    font-size: 0.875rem;
+}
+
+.nav-item:hover {
+    background: linear-gradient(90deg, rgba(255, 107, 53, 0.08) 0%, rgba(255, 107, 53, 0.04) 100%);
+    color: #FF6B35;
+    transform: translateX(4px);
+    border-color: rgba(255, 107, 53, 0.2);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.1);
+}
+
+.nav-item.active {
+    background: linear-gradient(90deg, #FF6B35 0%, #FF8B5A 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+    border: none;
+}
+
+.nav-item.active .nav-text {
+    color: white;
+}
+
+.nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: white;
+    border-radius: 0 4px 4px 0;
+}
+
+/* Icon alignment */
+.nav-item .fas {
+    font-size: 0.875rem;
+    width: 20px;
+    text-align: center;
+}
+
+/* Badge improvements */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.5rem;
+    height: 1.25rem;
+    padding: 0 0.375rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.025em;
+}
+
+.badge-premium {
+    background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+    color: white;
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+}
+
+/* Premium section styling */
+.premium-section {
+    margin: 1rem 0.5rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.05) 0%, rgba(255, 139, 90, 0.05) 100%);
+    border: 1px solid rgba(255, 107, 53, 0.2);
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.premium-section:hover {
+    border-color: rgba(255, 107, 53, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 107, 53, 0.1);
+}
+
+/* Footer improvements */
+.sidebar-footer {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* Mobile sidebar improvements */
+@media (max-width: 767px) {
+    .sidebar-content {
+        padding-top: 1rem;
+    }
+    
+    .nav-item {
+        padding: 0.875rem 1rem;
+        margin: 0 0.5rem 0.25rem;
+    }
+    
+    .premium-section {
+        margin: 1rem;
+    }
+}
+
+/* Smooth scroll for sidebar */
+.sidebar-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.3), rgba(255, 139, 90, 0.3));
+    border-radius: 2px;
+}
+
+/* Active indicator animation */
+.nav-item.active::after {
+    content: '';
+    position: absolute;
+    right: 0.75rem;
+    width: 0.5rem;
+    height: 0.5rem;
+    background: white;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes navItemActive {
+    0% {
+        transform: translateX(-10px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.nav-item {
+    animation: navItemActive 0.3s ease-out forwards;
+}
+
+.nav-item:nth-child(1) { animation-delay: 0.1s; }
+.nav-item:nth-child(2) { animation-delay: 0.15s; }
+.nav-item:nth-child(3) { animation-delay: 0.2s; }
+.nav-item:nth-child(4) { animation-delay: 0.25s; }
+.nav-item:nth-child(5) { animation-delay: 0.3s; }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Layout Structure */
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+            width: 100%;
+        }
+
+        /* Sidebar Styles */
+        .sidebar-container {
+            width: 280px;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #ffffff 0%, #fef7f3 100%);
+            border-right: 1px solid rgba(255, 107, 53, 0.1);
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 50;
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @media (min-width: 768px) {
+            .sidebar-container {
+                transform: translateX(0);
+                position: fixed;
+                height: 100vh;
+            }
+        }
+
+        .sidebar-container.mobile-open {
+            transform: translateX(0);
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Main Content Area - FIXED SPACING */
+        .main-content {
+            flex: 1;
+            min-height: 100vh;
+            margin-left: 0;
+            width: 100%;
+            position: relative;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+
+        @media (min-width: 768px) {
+            .main-content {
+                margin-left: 280px;
+                width: calc(100% - 280px);
+            }
+        }
+
+        /* Mobile Overlay */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 49;
+            display: none;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        /* Sidebar Content */
+        .sidebar-content {
+            height: 100vh;
+            overflow-y: auto;
+            padding-bottom: 2rem;
+        }
+
+        /* Logo Section */
+        .logo-section {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            position: sticky;
+            top: 0;
+            background: linear-gradient(180deg, #ffffff 0%, #fef7f3 100%);
+            z-index: 10;
+        }
+
+        /* Navigation */
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.875rem 1rem;
+            margin: 0 0.5rem 0.25rem;
+            border-radius: 0.75rem;
+            color: #4b5563;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: linear-gradient(90deg, rgba(255, 107, 53, 0.08) 0%, rgba(255, 107, 53, 0.04) 100%);
+            color: #FF6B35;
+            transform: translateX(8px);
+            border-color: rgba(255, 107, 53, 0.2);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.1);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(90deg, #FF6B35 0%, #FF8B5A 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+            border: none;
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: white;
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 242, 0.95));
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 107, 53, 0.1);
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.1);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+        }
+
+        /* Profile Section */
+        .profile-section {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .profile-avatar {
+            width: 4rem;
+            height: 4rem;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-verified {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .badge-level {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
+        .badge-premium {
+            background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+            color: white;
+            box-shadow: 0 2px 10px rgba(255, 107, 53, 0.3);
+        }
+
+        /* AI Assistant */
+        .ai-assistant {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .ai-assistant:hover {
+            transform: scale(1.1);
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 0.5rem;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #34d399);
+            border-radius: 9999px;
+            transition: width 0.3s ease;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #e55a2e, #e87a4a);
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        /* Toast Container */
+        .toast-container {
+            position: fixed;
+            bottom: 1rem;
+            left: 1rem;
+            z-index: 1000;
+        }
+
+        .toast {
+            background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+            color: white;
+            padding: 1rem 1.25rem;
+            border-radius: 0.75rem;
+            margin-bottom: 0.5rem;
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
+            animation: slideInLeft 0.3s ease-out;
+            max-width: 20rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* Animations */
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .animate-fade-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Utility Classes */
+        .gradient-text {
+            background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+        }
+
+        /* AI Suggestions Bar */
+        .ai-suggestions-bar {
+            background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(14, 104, 185, 0.1));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 107, 53, 0.2);
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(255, 107, 53, 0.1);
+        }
+
+        /* Fix for mobile sidebar */
+        .mobile-menu-button {
+            display: block;
+        }
+
+        @media (min-width: 768px) {
+            .mobile-menu-button {
+                display: none;
+            }
+        }
+
+        /* Ensure content doesn't hide behind sidebar - FIXED */
+        .main-content-wrapper {
+            padding: 1.5rem;
+            min-height: calc(100vh - 140px);
+            width: 100%;
+        }
+
+        @media (max-width: 767px) {
+            .main-content-wrapper {
+                padding: 1rem;
+                padding-top: 0.5rem;
+            }
+        }
+
+        /* Fix z-index stacking */
+        .z-sidebar {
+            z-index: 50;
+        }
+
+        .z-overlay {
+            z-index: 49;
+        }
+
+        .z-topbar {
+            z-index: 40;
+        }
+
+        .z-content {
+            z-index: 1;
+        }
+
+        /* Dashboard Specific Styles */
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-color: rgba(255, 107, 53, 0.3);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #FF6B35, #FF8B5A);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .property-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+
+        .property-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(255, 107, 53, 0.1), 0 10px 10px -5px rgba(255, 107, 53, 0.04);
+            border-color: rgba(255, 107, 53, 0.3);
+        }
+
+        .property-image-container {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .property-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+
+        .property-card:hover .property-image-container img {
+            transform: scale(1.1);
+        }
+
+        .heart-btn {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            width: 2.5rem;
+            height: 2.5rem;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .heart-btn:hover {
+            transform: scale(1.1);
+            background: #fef2f2;
+        }
+
+        .heart-btn.active i {
+            color: #ef4444;
+        }
+
+        .filter-chip {
+            background: #f8fafc;
+            color: #4b5563;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .filter-chip:hover {
+            background: #f1f5f9;
+            transform: translateY(-1px);
+        }
+
+        .filter-chip.active {
+            background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+            color: white;
+            border-color: #FF6B35;
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
+        }
+
+        .enhanced-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .enhanced-card:hover {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border-color: rgba(255, 107, 53, 0.2);
+        }
+
+        .section-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .section-header h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .section-header p {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 2px dashed #d1d5db;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: #9ca3af;
+            margin-bottom: 1rem;
+        }
+
+        .quick-action-card {
+            background: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(255, 139, 90, 0.1) 100%);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            height: 100%;
+            border: 2px solid transparent;
+        }
+
+        .quick-action-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(255, 107, 53, 0.1);
+            border-color: rgba(255, 107, 53, 0.3);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-interested {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-shortlisted {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-view_scheduled {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-offered {
+            background: #f3e8ff;
+            color: #5b21b6;
+        }
+
+        .visit-badge {
+            background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .btn-gradient {
+            background: linear-gradient(135deg, #FF6B35 0%, #FF8B5A 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #FF6B35;
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .market-trend {
+            background: #f0f9ff;
+            border: 2px solid rgba(14, 165, 233, 0.2);
+            border-radius: 16px;
+            padding: 1.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .market-trend:hover {
+            border-color: rgba(14, 165, 233, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .market-trend.up {
+            background: #f0fdf4;
+            border-color: rgba(34, 197, 94, 0.2);
+        }
+
+        .market-trend.down {
+            background: #fef2f2;
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        /* SPACING FIXES FOR DASHBOARD */
+        .dashboard-container {
+            padding-top: 0.5rem;
+        }
+        
+        .content-spacing > * + * {
+            margin-top: 1.5rem;
+        }
+        
+        /* Mobile spacing fixes */
+        @media (max-width: 767px) {
+            .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+            
+            .sidebar-container.mobile-open {
+                transform: translateX(0);
+                box-shadow: 10px 0 30px rgba(0, 0, 0, 0.15);
+                z-index: 100;
+            }
+            
+            .sidebar-overlay.active {
+                display: block;
+                z-index: 99;
+            }
+            
+            /* Mobile spacing adjustments */
+            .stat-card {
+                padding: 1rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .stat-card .text-2xl {
+                font-size: 1.5rem;
+            }
+            
+            .property-image-container {
+                height: 180px;
+            }
+            
+            .enhanced-card {
+                padding: 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .filter-chip {
+                padding: 0.375rem 0.75rem;
+                font-size: 0.75rem;
+                margin-bottom: 0.25rem;
+            }
+            
+            .top-bar {
+                padding: 0.75rem 1rem;
+            }
+            
+            .top-bar h1 {
+                font-size: 1.25rem;
+            }
+            
+            .top-bar p {
+                font-size: 0.75rem;
+            }
+        }
+
+        /* Tablet spacing */
+        @media (min-width: 768px) and (max-width: 1023px) {
+            .main-content-wrapper {
+                padding: 1.25rem;
+            }
+            
+            .property-image-container {
+                height: 180px;
+            }
+            
+            .enhanced-card {
+                padding: 1.25rem;
+            }
+        }
+
+        /* Desktop spacing */
+        @media (min-width: 1024px) {
+            .main-content-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+            opacity: 0;
+            animation-fill-mode: forwards;
+        }
+
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        .stagger-4 { animation-delay: 0.4s; }
+
+        /* Line clamp utilities */
+        .line-clamp-1 {
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 1;
+        }
+
+        .line-clamp-2 {
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+        }
+
+        /* Price styling */
+        .price {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .price-unit {
+            font-size: 0.875rem;
+            font-weight: 400;
+            color: #6b7280;
+        }
+
+        /* Loading skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+            100% {
+                background-position: 200% 0;
+            }
+        }
+
+        /* Scrollbar fix for mobile */
+        @media (max-width: 767px) {
+            ::-webkit-scrollbar {
+                display: none;
+            }
+            
+            .sidebar-content {
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .main-content {
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Mobile Overlay -->
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- AI Assistant -->
+    <div class="ai-assistant" onclick="toggleAIChat()">
+        <i class="fas fa-robot"></i>
+    </div>
+
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+       <!-- Sidebar -->
+<aside id="sidebarContainer" class="sidebar-container z-sidebar">
+    <div class="sidebar-content">
+        <!-- Close button for mobile -->
+        <button class="mobile-menu-button absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition hover:scale-110 z-50" onclick="toggleSidebar()">
+            <i class="fas fa-times text-xl"></i>
+        </button>
+
+        <!-- Logo Section -->
+        <div class="logo-section">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 flex items-center justify-center shadow-lg">
+                    <i class="fas fa-home text-white text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="font-bold text-xl text-gray-900">BHOOSPARSH</h2>
+                    
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Section -->
+        <div class="profile-section">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="relative">
+                    <div class="profile-avatar">
+                        {% if request.user.profile.avatar %}
+                            <img src="{{ request.user.profile.avatar.url }}" 
+                                alt="Profile" 
+                                class="w-full h-full object-cover">
+                        {% else %}
+                            <div class="w-full h-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl">
+                                {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full border-2 border-white flex items-center justify-center">
+                        <i class="fas fa-check text-white text-xs"></i>
+                    </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-bold text-sm truncate text-gray-900">{{ request.user.get_full_name|default:request.user.username }}</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Buyer Account</p>
+                    <div class="flex items-center mt-1 space-x-1">
+                        <span class="badge badge-verified">Verified</span>
+                        <!--    <span class="badge badge-level">Level {{ buyer_profile.level|default:1 }}</span> -->
+                    </div>
+                </div>
+            </div>
+            
+           
+        </div>
+
+        <!-- Navigation -->
+        <nav class="px-4 py-2 space-y-1">
+            <!-- Navigation Group: Dashboard -->
+            <div class="mb-2">
+                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-2">Dashboard</p>
+                <a href="{% url 'buyer_dashboard' %}" 
+                   class="nav-item {% if request.resolver_match.url_name == 'buyer_dashboard' %}active{% endif %}">
+                    <div class="w-6 h-6 flex items-center justify-center mr-3">
+                        <i class="fas fa-tachometer-alt text-sm"></i>
+                    </div>
+                    <span class="nav-text text-sm font-medium">Overview</span>
+                </a>
+            </div>
+
+            <!-- Navigation Group: Property Search -->
+            <div class="mb-2">
+                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-2">Find Properties</p>
+                <a href="{% url 'buyer_properties' %}" 
+                   class="nav-item {% if request.resolver_match.url_name == 'buyer_properties' %}active{% endif %}">
+                    <div class="w-6 h-6 flex items-center justify-center mr-3">
+                        <i class="fas fa-search text-sm"></i>
+                    </div>
+                    <span class="nav-text text-sm font-medium">Smart Search</span>
+                    <!-- <span class="badge badge-premium ml-auto text-xs px-1.5 py-0.5">AI</span> -->
+                </a>
+                
+                <a href="{% url 'buyer_favorites' %}" 
+                   class="nav-item {% if request.resolver_match.url_name == 'buyer_favorites' %}active{% endif %}">
+                    <div class="w-6 h-6 flex items-center justify-center mr-3">
+                        <i class="fas fa-heart text-sm"></i>
+                    </div>
+                    <span class="nav-text text-sm font-medium">Saved Properties</span>
+                    {% if saved_count %}
+                    <span class="badge badge-premium ml-auto text-xs">{{ saved_count }}</span>
+                    {% endif %}
+                </a>
+                
+                <a href="{% url 'buyer_comparisons' %}" 
+                   class="nav-item {% if request.resolver_match.url_name == 'buyer_comparisons' %}active{% endif %}">
+                    <div class="w-6 h-6 flex items-center justify-center mr-3">
+                        <i class="fas fa-exchange-alt text-sm"></i>
+                    </div>
+                    <span class="nav-text text-sm font-medium">Compare</span>
+                </a>
+            </div>
+
+            <!-- Navigation Group: Activities -->
+            <div class="mb-2">
+                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-2">Activities</p>
+                <!-- <a href="{% url 'buyer_site_visits' %}" 
+                   class="nav-item {% if request.resolver_match.url_name == 'buyer_site_visits' %}active{% endif %}">
+                    <div class="w-6 h-6 flex items-center justify-center mr-3">
+                        <i class="fas fa-calendar-alt text-sm"></i>
+                    </div>
+                    <span class="nav-text text-sm font-medium">Site Visits</span>
+                </a> -->
+                
+                <a href="{% url 'buyer_inquiries' %}" 
+                   class="nav-item {% if request.resolver_match.url_name == 'buyer_inquiries' %}active{% endif %}">
+                    <div class="w-6 h-6 flex items-center justify-center mr-3">
+                        <i class="fas fa-inbox text-sm"></i>
+                    </div>
+                    <span class="nav-text text-sm font-medium">My Inquiries</span>
+                </a>
+            </div>
+
+            <!-- Navigation Group: Account -->
+            <div class="mb-2">
+                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-2">Account</p>
+                <a href="{% url 'buyer_profile' %}" 
+                   class="nav-item {% if request.resolver_match.url_name == 'buyer_profile' %}active{% endif %}">
+                    <div class="w-6 h-6 flex items-center justify-center mr-3">
+                        <i class="fas fa-user-cog text-sm"></i>
+                    </div>
+                    <span class="nav-text text-sm font-medium">Profile & Settings</span>
+                </a>
+                
+                
+            </div>
+        </nav>
+
+        <!-- Premium Upgrade Section -->
+        <div class="mt-4 mx-4 mb-2">
+            <div class="bg-gradient-to-r from-orange-500/10 to-yellow-500/10 border border-orange-200 rounded-xl p-4">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 flex items-center justify-center">
+                        <i class="fas fa-crown text-white"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm text-gray-900">Premium Features</h4>
+                        <p class="text-xs text-gray-600 mt-0.5">Unlock more benefits</p>
+                    </div>
+                </div>
+                <div class="flex items-center text-xs text-gray-700 mb-3">
+                    <i class="fas fa-check text-green-500 mr-2"></i>
+                    <span>Priority Support</span>
+                </div>
+                <div class="flex items-center text-xs text-gray-700 mb-3">
+                    <i class="fas fa-check text-green-500 mr-2"></i>
+                    <span>Advanced Analytics</span>
+                </div>
+                <button onclick="showToast('Premium upgrade feature coming soon!', 'info')" 
+                        class="w-full py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-semibold rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
+                    Upgrade Now
+                </button>
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="mt-auto pt-4 border-t border-gray-200">
+            <div class="px-4">
+                <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
+                    <span>Account Status</span>
+                    <span class="font-semibold text-green-600">Active</span>
+                </div>
+                <div class="flex items-center gap-2">
+                   
+                    <a href="{% url 'logout' %}" 
+                       class="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm text-red-500 hover:text-red-600 transition font-medium rounded-lg hover:bg-red-50">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span class="text-xs">Log Out</span>
+                    </a>
+                </div>
+                <div class="text-center mt-3">
+                    <p class="text-xs text-gray-400">v1.2.0 • BHOOSPARSH</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</aside>
+
+        <!-- Main Content -->
+        <main class="main-content z-content">
+            <!-- Top Bar -->
+            <div class="top-bar z-topbar">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <button class="mobile-menu-button text-gray-600 hover:text-orange-500 transition hover:scale-110" 
+                                onclick="toggleSidebar()">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+                        <div>
+                            {% block header_title %}
+                            <h1 class="text-2xl font-bold text-gray-900">
+                                <span class="gradient-text">Welcome back, {{ user.first_name|default:user.username }}!</span>
+                            </h1>
+                            <p class="text-sm text-gray-600 mt-1">
+                                <span id="greeting"></span>, {{ request.user.first_name|default:request.user.username }}!
+                                <span class="ml-2 text-xs px-2 py-0.5 bg-gradient-to-r from-orange-500 to-yellow-500 text-white rounded-full">Premium</span>
+                            </p>
+                            {% endblock %}
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        {% block header_buttons %}
+                        <button class="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:shadow-lg transition-all hover:scale-105" onclick="voiceSearch()">
+                            <i class="fas fa-microphone"></i>
+                            <span class="hidden lg:inline">Voice Search</span>
+                        </button>
+                        <button class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-xl hover:shadow-lg transition-all hover:scale-105" onclick="openQuickFilters()">
+                            <i class="fas fa-sliders-h"></i>
+                            <span class="hidden lg:inline">Smart Filters</span>
+                        </button>
+                        {% endblock %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Suggestions Bar -->
+            
+
+            <!-- Main Content Area -->
+            <div class="main-content-wrapper">
+                {% block content %}
+                <div class="dashboard-container content-spacing">
+                    <!-- Stats Overview -->
+                    <div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="stat-card fade-in-up stagger-1">
+                                <div class="flex items-center">
+                                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center mr-4">
+                                        <i class="fas fa-search text-xl text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-2xl font-bold text-gray-900">{{ stats.total_searches|default:"0" }}</h2>
+                                        <p class="text-sm text-gray-600">Total Searches</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="stat-card fade-in-up stagger-2">
+                                <div class="flex items-center">
+                                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center mr-4">
+                                        <i class="fas fa-eye text-xl text-green-600"></i>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-2xl font-bold text-gray-900">{{ stats.properties_viewed|default:"0" }}</h2>
+                                        <p class="text-sm text-gray-600">Properties Viewed</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="stat-card fade-in-up stagger-3">
+                                <div class="flex items-center">
+                                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center mr-4">
+                                        <i class="fas fa-heart text-xl text-red-600"></i>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-2xl font-bold text-gray-900">{{ stats.properties_saved|default:"0" }}</h2>
+                                        <p class="text-sm text-gray-600">Saved Properties</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="stat-card fade-in-up stagger-4">
+                                <div class="flex items-center">
+                                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center mr-4">
+                                        <i class="fas fa-calendar-check text-xl text-purple-600"></i>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-2xl font-bold text-gray-900">{{ stats.site_visits_completed|default:"0" }}</h2>
+                                        <p class="text-sm text-gray-600">Site Visits</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Content -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Left Column -->
+                        <div class="lg:col-span-2 space-y-6">
+                            <!-- Recommended Properties -->
+                            <div class="enhanced-card">
+                                <div class="section-header">
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                        <div>
+                                            <h3>AI Recommended Properties</h3>
+                                            <p>Personalized just for you based on your preferences</p>
+                                        </div>
+                                        <div class="flex items-center text-sm text-gray-600 bg-orange-50 px-4 py-2 rounded-xl">
+                                            <i class="fas fa-robot text-xl text-orange-500 mr-2"></i>
+                                            <span class="font-medium">Powered by AI</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {% if recommended_properties %}
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    {% for property in recommended_properties|slice:":4" %}
+                                    <div class="property-card">
+                                        <div class="property-image-container">
+                                            {% if property.primary_image %}
+                                            <img src="{{ property.primary_image.url }}" alt="{{ property.title }}">
+                                            {% else %}
+                                            <div class="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                                                <i class="fas fa-home text-4xl text-gray-400"></i>
+                                            </div>
+                                            {% endif %}
+                                            
+                                            <button class="heart-btn {% if property.id in user_favorites %}active{% endif %}" 
+                                                    onclick="toggleFavorite('{{ property.id }}', this)">
+                                                <i class="fas fa-heart"></i>
+                                            </button>
+                                            
+                                            {% if property.is_featured %}
+                                            <span class="absolute top-4 right-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                                                <i class="fas fa-star mr-1"></i> Featured
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="p-4">
+                                            <h4 class="font-bold text-gray-900 mb-2 line-clamp-1">{{ property.title }}</h4>
+                                            
+                                            <div class="flex items-center text-sm text-gray-600 mb-3">
+                                                <i class="fas fa-map-marker-alt mr-2"></i>
+                                                <span class="line-clamp-1">{{ property.city }}, {{ property.state }}</span>
+                                            </div>
+                                            
+                                            <div class="grid grid-cols-3 gap-2 mb-4">
+                                                {% if property.bedrooms %}
+                                                <div class="text-center">
+                                                    <div class="text-sm font-semibold text-gray-900">{{ property.bedrooms }}</div>
+                                                    <div class="text-xs text-gray-600">Beds</div>
+                                                </div>
+                                                {% endif %}
+                                                
+                                                {% if property.bathrooms %}
+                                                <div class="text-center">
+                                                    <div class="text-sm font-semibold text-gray-900">{{ property.bathrooms }}</div>
+                                                    <div class="text-xs text-gray-600">Baths</div>
+                                                </div>
+                                                {% endif %}
+                                                
+                                                <div class="text-center">
+                                                    <div class="text-sm font-semibold text-gray-900">{{ property.carpet_area|intcomma }}</div>
+                                                    <div class="text-xs text-gray-600">sq.ft</div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="flex items-center justify-between mt-4">
+                                                <div>
+                                                    <div class="price">₹{{ property.price|intcomma }}</div>
+                                                    {% if property.property_for in 'rent,pg' %}
+                                                    <div class="price-unit">/month</div>
+                                                    {% endif %}
+                                                </div>
+                                                
+                                                <a href="{% url 'buyer_property_detail' property.slug %}" 
+                                                   class="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors text-sm font-medium">
+                                                    View Details
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="empty-state mb-6">
+                                    <i class="fas fa-home"></i>
+                                    <h4 class="text-lg font-bold text-gray-900 mb-2">No recommendations yet</h4>
+                                    <p class="text-gray-600 mb-4 max-w-md mx-auto">Tell us about your preferences to get personalized property recommendations</p>
+                                    <a href="{% url 'buyer_profile' %}" class="btn-gradient inline-flex items-center gap-2">
+                                        <i class="fas fa-sliders-h"></i>
+                                        <span>Set Preferences</span>
+                                    </a>
+                                </div>
+                                {% endif %}
+                                
+                                <div class="text-center">
+                                    <a href="{% url 'buyer_properties' %}" 
+                                       class="px-6 py-3 border-2 border-blue-600 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all duration-300 font-medium inline-flex items-center gap-2">
+                                        <span>Explore All Properties</span>
+                                        <i class="fas fa-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Quick Search -->
+                            <div class="enhanced-card">
+                                <div class="section-header">
+                                    <h3>Quick Search</h3>
+                                    <p>Find properties with one click</p>
+                                </div>
+                                
+                                <div class="flex flex-wrap gap-2 mb-6">
+                                    <button class="filter-chip active" data-filter-type="all" data-filter-value="">All Properties</button>
+                                    <button class="filter-chip" data-filter-type="budget" data-filter-value="5000000">Under 50L</button>
+                                    <button class="filter-chip" data-filter-type="property_type" data-filter-value="apartment">Apartments</button>
+                                    <button class="filter-chip" data-filter-type="bedrooms" data-filter-value="3">3+ BHK</button>
+                                    <button class="filter-chip" data-filter-type="location" data-filter-value="Bangalore">Bangalore</button>
+                                </div>
+                                
+                                <form method="GET" action="{% url 'buyer_properties' %}" class="space-y-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Budget Range</label>
+                                            <div class="flex items-center gap-2">
+                                                <input type="number" name="min_price" placeholder="Min" class="form-input" value="{{ buyer_profile.min_budget|default:'0' }}">
+                                                <span class="text-gray-500">to</span>
+                                                <input type="number" name="max_price" placeholder="Max" class="form-input" value="{{ buyer_profile.max_budget|default:'100000000' }}">
+                                            </div>
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Bedrooms</label>
+                                            <select name="bedrooms" class="form-input">
+                                                <option value="">Any</option>
+                                                <option value="1">1 BHK</option>
+                                                <option value="2">2 BHK</option>
+                                                <option value="3">3 BHK</option>
+                                                <option value="4">4+ BHK</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">City</label>
+                                            <input type="text" name="city" placeholder="Enter city name" class="form-input">
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Property For</label>
+                                            <select name="property_for" class="form-input">
+                                                <option value="">Any</option>
+                                                <option value="sale">For Sale</option>
+                                                <option value="rent">For Rent</option>
+                                                <option value="pg">PG/Hostel</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex justify-end">
+                                        <button type="submit" class="btn-gradient flex items-center gap-2">
+                                            <i class="fas fa-search"></i>
+                                            <span>Search Properties</span>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Right Sidebar -->
+                        <div class="space-y-6">
+                            <!-- Upcoming Visits -->
+                            <div class="enhanced-card">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
+                                            <i class="fas fa-calendar-alt text-orange-600"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-gray-900">Upcoming Visits</h3>
+                                            <p class="text-sm text-gray-600">Your property tours</p>
+                                        </div>
+                                    </div>
+                                    <a href="{% url 'buyer_site_visits' %}" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                                        View All
+                                    </a>
+                                </div>
+                                
+                                {% if upcoming_visits %}
+                                <div class="space-y-3 mb-4">
+                                    {% for visit in upcoming_visits|slice:":3" %}
+                                    <div class="p-3 border border-gray-200 rounded-xl hover:border-orange-300 transition-colors {% if visit.is_today %}bg-orange-50 border-orange-200{% endif %}">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <h4 class="font-semibold text-gray-900 line-clamp-1">{{ visit.property.title }}</h4>
+                                            {% if visit.is_today %}
+                                            <span class="visit-badge">Today</span>
+                                            {% endif %}
+                                        </div>
+                                        <p class="text-sm text-gray-600 mb-2">
+                                            <i class="fas fa-calendar-alt mr-2"></i>
+                                            {{ visit.scheduled_date|date:"M d" }} at {{ visit.scheduled_time|time:"g:i A" }}
+                                        </p>
+                                        <div class="flex justify-between items-center text-sm">
+                                            <span class="text-gray-500">
+                                                <i class="fas fa-map-marker-alt mr-1"></i>{{ visit.property.city }}
+                                            </span>
+                                            <a href="{% url 'buyer_property_detail' visit.property.slug %}" 
+                                               class="text-blue-600 hover:text-blue-800 font-medium">
+                                                Details
+                                            </a>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="text-center py-4 mb-4">
+                                    <i class="fas fa-calendar-times text-3xl text-gray-400 mb-3"></i>
+                                    <p class="text-gray-600 mb-2">No upcoming visits</p>
+                                </div>
+                                {% endif %}
+                                
+                                <div>
+                                    <a href="{% url 'buyer_properties' %}" 
+                                       class="block w-full text-center px-4 py-2 border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-all font-medium">
+                                        <i class="fas fa-plus mr-2"></i>Schedule New Visit
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Saved Properties -->
+                            <div class="enhanced-card">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
+                                            <i class="fas fa-heart text-red-600"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-gray-900">Saved Properties</h3>
+                                            <p class="text-sm text-gray-600">Your favorites list</p>
+                                        </div>
+                                    </div>
+                                    <a href="{% url 'buyer_favorites' %}" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                                        {{ favorites|length }}/{{ saved_count }}
+                                    </a>
+                                </div>
+                                
+                                {% if favorites %}
+                                <div class="space-y-3 mb-4">
+                                    {% for favorite in favorites|slice:":3" %}
+                                    <div class="flex items-center p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                                        <div class="w-12 h-12 rounded-lg overflow-hidden mr-3 flex-shrink-0">
+                                            {% if favorite.property.primary_image %}
+                                            <img src="{{ favorite.property.primary_image.url }}" 
+                                                 alt="{{ favorite.property.title }}" 
+                                                 class="w-full h-full object-cover">
+                                            {% else %}
+                                            <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                                                <i class="fas fa-home text-gray-400"></i>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="flex-1 min-w-0">
+                                            <h4 class="font-semibold text-gray-900 line-clamp-1">{{ favorite.property.title }}</h4>
+                                            <div class="flex items-center text-xs text-gray-500 mt-1">
+                                                <span>{{ favorite.property.city }}</span>
+                                                <span class="mx-1">•</span>
+                                                <span class="font-bold text-orange-600">₹{{ favorite.property.price|intword }}</span>
+                                            </div>
+                                            <span class="status-badge status-{{ favorite.status }} mt-2">
+                                                {{ favorite.get_status_display }}
+                                            </span>
+                                        </div>
+                                        
+                                        <a href="{% url 'buyer_property_detail' favorite.property.slug %}" 
+                                           class="text-gray-400 hover:text-blue-600 ml-2">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </a>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="text-center py-4 mb-4">
+                                    <i class="far fa-heart text-3xl text-gray-400 mb-3"></i>
+                                    <p class="text-gray-600 mb-2">No saved properties</p>
+                                </div>
+                                {% endif %}
+                                
+                                <div>
+                                    <a href="{% url 'buyer_favorites' %}" 
+                                       class="block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium">
+                                        View All Favorites
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Market Insights -->
+                            <div class="enhanced-card">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                                        <i class="fas fa-chart-line text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-gray-900">Market Insights</h3>
+                                        <p class="text-sm text-gray-600">Real-time market trends</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-4 mb-4">
+                                    <div class="market-trend up">
+                                        <div class="flex justify-between items-center">
+                                            <div>
+                                                <p class="text-sm font-medium text-gray-600">Average Price</p>
+                                                <p class="text-2xl font-bold text-gray-900 mt-1">{{ market_insights.avg_price }}</p>
+                                            </div>
+                                            <div class="text-right">
+                                                <p class="text-lg font-bold text-green-600">
+                                                    <i class="fas fa-arrow-up mr-1"></i>
+                                                    {{ market_insights.trend.percentage }}%
+                                                </p>
+                                                <p class="text-sm text-gray-600 mt-1">{{ market_insights.trend.trend }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h4 class="text-sm font-semibold text-gray-900 mb-3">Hot Locations</h4>
+                                        <div class="space-y-2">
+                                            {% for location in market_insights.hot_locations|slice:":3" %}
+                                            <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                                                <span class="text-sm text-gray-600">{{ location.name }}</span>
+                                                <span class="text-sm font-bold text-green-600">+{{ location.growth }}</span>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h4 class="text-sm font-semibold text-gray-900 mb-3">Your Preferences</h4>
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
+                                                <span class="text-sm text-gray-600">Budget:</span>
+                                                <span class="text-sm font-bold text-gray-900">{{ buyer_profile.budget_range }}</span>
+                                            </div>
+                                            <div class="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
+                                                <span class="text-sm text-gray-600">Bedrooms:</span>
+                                                <span class="text-sm font-bold text-gray-900">{{ buyer_profile.min_bedrooms }}+</span>
+                                            </div>
+                                            <div class="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
+                                                <span class="text-sm text-gray-600">Area:</span>
+                                                <span class="text-sm font-bold text-gray-900">{{ buyer_profile.area_range }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <a href="{% url 'buyer_profile' %}" 
+                                       class="block w-full text-center px-4 py-2 border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-all font-medium">
+                                        <i class="fas fa-edit mr-2"></i>Update Preferences
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Recent Inquiries -->
+                            <div class="enhanced-card">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-yellow-100 flex items-center justify-center">
+                                            <i class="fas fa-inbox text-yellow-600"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-gray-900">Recent Inquiries</h3>
+                                            <p class="text-sm text-gray-600">Your property queries</p>
+                                        </div>
+                                    </div>
+                                    <a href="{% url 'buyer_inquiries' %}" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                                        View All
+                                    </a>
+                                </div>
+                                
+                                {% if recent_inquiries %}
+                                <div class="space-y-3 mb-4">
+                                    {% for inquiry in recent_inquiries|slice:":3" %}
+                                    <div class="p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <h4 class="font-semibold text-gray-900 line-clamp-1">{{ inquiry.property.title }}</h4>
+                                            <span class="status-badge status-{{ inquiry.status }} text-xs">
+                                                {{ inquiry.get_status_display }}
+                                            </span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 line-clamp-2 mb-2">{{ inquiry.message|truncatechars:50 }}</p>
+                                        <p class="text-xs text-gray-500">
+                                            <i class="fas fa-clock mr-1"></i>
+                                            {{ inquiry.created_at|timesince }} ago
+                                        </p>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="text-center py-4 mb-4">
+                                    <i class="fas fa-inbox text-3xl text-gray-400 mb-3"></i>
+                                    <p class="text-gray-600 mb-2">No inquiries yet</p>
+                                </div>
+                                {% endif %}
+                                
+                                <div>
+                                    <a href="{% url 'buyer_properties' %}" 
+                                       class="block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium">
+                                        <i class="fas fa-question-circle mr-2"></i>Make New Inquiry
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                        <a href="{% url 'buyer_profile' %}" class="quick-action-card">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center text-purple-600 text-xl mr-4">
+                                    <i class="fas fa-sliders-h"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-gray-900">Update Preferences</h4>
+                                    <p class="text-sm text-gray-600 mt-1">Get better recommendations</p>
+                                </div>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'buyer_site_visits' %}" class="quick-action-card">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 rounded-2xl bg-green-100 flex items-center justify-center text-green-600 text-xl mr-4">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-gray-900">Schedule Visits</h4>
+                                    <p class="text-sm text-gray-600 mt-1">Book property viewings</p>
+                                </div>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'buyer_favorites' %}" class="quick-action-card">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center text-red-600 text-xl mr-4">
+                                    <i class="fas fa-heart"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-gray-900">Manage Favorites</h4>
+                                    <p class="text-sm text-gray-600 mt-1">View saved properties</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                {% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="bg-white rounded-2xl p-8 shadow-2xl">
+            <div class="flex flex-col items-center gap-4">
+                <div class="loading-spinner">
+                    <div class="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+                <p class="text-gray-700 font-medium">Finding your perfect home...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- JavaScript -->
+    <script>
+        // Initialize on DOM loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set greeting based on time
+            setGreeting();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Initialize tooltips
+            initTooltips();
+            
+            // Update navigation active state
+            updateActiveNavigation();
+            
+            // Initialize dashboard animations
+            initDashboardAnimations();
+        });
+
+        function setGreeting() {
+            const hour = new Date().getHours();
+            let greeting = '';
+            
+            if (hour < 12) greeting = 'Good Morning';
+            else if (hour < 18) greeting = 'Good Afternoon';
+            else greeting = 'Good Evening';
+            
+            document.getElementById('greeting').textContent = greeting;
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebarContainer');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.toggle('mobile-open');
+            overlay.classList.toggle('active');
+            
+            // Prevent body scrolling when sidebar is open on mobile
+            if (window.innerWidth < 768) {
+                document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+            }
+        }
+
+        function setupEventListeners() {
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(event) {
+                const sidebar = document.getElementById('sidebarContainer');
+                const overlay = document.getElementById('sidebarOverlay');
+                const menuBtn = event.target.closest('.mobile-menu-button');
+                
+                if (window.innerWidth < 768 && 
+                    !sidebar.contains(event.target) && 
+                    menuBtn === null &&
+                    sidebar.classList.contains('mobile-open')) {
+                    toggleSidebar();
+                }
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                const sidebar = document.getElementById('sidebarContainer');
+                const overlay = document.getElementById('sidebarOverlay');
+                
+                if (window.innerWidth >= 768) {
+                    sidebar.classList.remove('mobile-open');
+                    overlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        }
+
+        function initTooltips() {
+            // Initialize tooltips
+            const tooltipElements = document.querySelectorAll('[title]');
+            tooltipElements.forEach(element => {
+                element.addEventListener('mouseenter', function(e) {
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'fixed z-50 px-3 py-2 text-xs font-medium text-white bg-gray-900 rounded-lg shadow-lg pointer-events-none';
+                    tooltip.textContent = this.title;
+                    
+                    const rect = this.getBoundingClientRect();
+                    tooltip.style.top = (rect.top - 40) + 'px';
+                    tooltip.style.left = (rect.left + (this.offsetWidth / 2)) + 'px';
+                    tooltip.style.transform = 'translateX(-50%)';
+                    
+                    document.body.appendChild(tooltip);
+                    this._tooltip = tooltip;
+                });
+                
+                element.addEventListener('mouseleave', function() {
+                    if (this._tooltip) {
+                        this._tooltip.remove();
+                    }
+                });
+            });
+        }
+
+        function updateActiveNavigation() {
+            const currentPath = window.location.pathname;
+            const navItems = document.querySelectorAll('.nav-item');
+            
+            navItems.forEach(item => {
+                if (item.href && currentPath.includes(item.href.split('/').pop())) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        function initDashboardAnimations() {
+            // Add animation class to stat cards
+            document.querySelectorAll('.fade-in-up').forEach((element, index) => {
+                setTimeout(() => {
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        }
+
+        function toggleAIChat() {
+            // Implement AI chat toggle
+            showToast('AI Chat feature coming soon!', 'info');
+        }
+
+        function voiceSearch() {
+            showToast('Voice search activated. Start speaking...', 'info');
+        }
+
+        function openQuickFilters() {
+            showToast('Opening smart filters...', 'info');
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            
+            const icons = {
+                info: 'fa-info-circle',
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                warning: 'fa-exclamation-triangle'
+            };
+            
+            toast.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                    <i class="fas ${icons[type]}"></i>
+                </div>
+                <div class="flex-1">
+                    <span class="font-medium">${message}</span>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-white/80 hover:text-white transition-colors flex-shrink-0">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Auto remove after 4 seconds
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 4000);
+        }
+
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+
+        // Utility function to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Dashboard specific functions
+        function initFilterChips() {
+            const chips = document.querySelectorAll('.filter-chip');
+            chips.forEach(chip => {
+                chip.addEventListener('click', function() {
+                    chips.forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const type = this.dataset.filterType;
+                    const value = this.dataset.filterValue;
+                    
+                    if (type && value) {
+                        performQuickSearch(type, value);
+                    }
+                });
+            });
+        }
+
+        function performQuickSearch(type, value) {
+            let url = "{% url 'buyer_properties' %}?";
+            
+            switch(type) {
+                case 'budget':
+                    url += `max_price=${value}`;
+                    break;
+                case 'property_type':
+                    url += `property_type=${value}`;
+                    break;
+                case 'bedrooms':
+                    url += `bedrooms=${value}`;
+                    break;
+                case 'location':
+                    url += `city=${value}`;
+                    break;
+                default:
+                    url = "{% url 'buyer_properties' %}";
+            }
+            
+            showToast('Searching properties...', 'info');
+            
+            setTimeout(() => {
+                window.location.href = url;
+            }, 500);
+        }
+
+        function toggleFavorite(propertyId, button) {
+            const icon = button.querySelector('i');
+            const isFavorited = button.classList.contains('active');
+            
+            if (isFavorited) {
+                button.classList.remove('active');
+                icon.className = 'fas fa-heart';
+                showToast('Removed from favorites', 'info');
+            } else {
+                button.classList.add('active');
+                icon.className = 'fas fa-heart text-red-500';
+                showToast('Added to favorites!', 'success');
+                
+                button.style.transform = 'scale(1.2)';
+                setTimeout(() => {
+                    button.style.transform = 'scale(1)';
+                }, 300);
+            }
+            
+            // Send AJAX request to update server
+            fetch('/buyer/ajax/toggle-favorite/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: JSON.stringify({
+                    property_id: propertyId,
+                    action: isFavorited ? 'remove' : 'add'
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    if (isFavorited) {
+                        button.classList.add('active');
+                        icon.className = 'fas fa-heart text-red-500';
+                        showToast('Failed to remove from favorites', 'error');
+                    } else {
+                        button.classList.remove('active');
+                        icon.className = 'fas fa-heart';
+                        showToast('Failed to add to favorites', 'error');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Network error. Please try again.', 'error');
+            });
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

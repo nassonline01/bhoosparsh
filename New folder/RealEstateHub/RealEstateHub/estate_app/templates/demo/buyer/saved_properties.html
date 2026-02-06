@@ -1,0 +1,1822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RealBuy - Saved Properties | 99acres Style</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Custom animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(255, 107, 53, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(255, 107, 53, 0.8);
+            }
+        }
+
+        .animate-fade-up {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .animate-pulse-glow {
+            animation: pulse-glow 2s infinite;
+        }
+
+        /* Glassmorphism */
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+        }
+
+        /* Hover effects */
+        .hover-lift {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(255, 107, 53, 0.2);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #e55a2e, #e87a4a);
+        }
+
+        /* Dashboard Cards */
+        .dashboard-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border-color: #FF6B35;
+        }
+
+        /* Property Card */
+        .property-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .property-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(255, 107, 53, 0.2);
+            border-color: #FF6B35;
+        }
+
+        .property-card .property-image {
+            position: relative;
+            overflow: hidden;
+            height: 200px;
+        }
+
+        .property-card .property-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+
+        .property-card:hover .property-image img {
+            transform: scale(1.1) rotate(1deg);
+        }
+
+        /* Button Styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #FF6B35 0%, #FF8B5A 100%);
+            color: white;
+            padding: 12px 28px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(255, 107, 53, 0.4);
+        }
+
+        /* Layout */
+        .main-container {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        /* Fixed Navigation */
+        .main-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        /* Fixed Sidebar */
+        .sidebar-container {
+            position: fixed;
+            top: 64px;
+            left: 0;
+            width: 256px;
+            height: calc(100vh - 64px);
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 90;
+        }
+
+        /* Main Content Area */
+        .content-wrapper {
+            margin-top: 64px;
+            margin-left: 256px;
+            flex: 1;
+            min-height: calc(100vh - 64px);
+            width: calc(100% - 256px);
+        }
+
+        /* Main Content Padding */
+        .main-content {
+            padding: 24px;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .sidebar-container {
+                width: 280px;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar-container.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .content-wrapper {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+            
+            .main-content {
+                padding: 16px;
+            }
+            
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 64px;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 89;
+                backdrop-filter: blur(3px);
+            }
+            
+            .sidebar-overlay.active {
+                display: block;
+            }
+        }
+
+        /* Saved Properties Specific Styles */
+        .saved-property-card {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .saved-property-card .property-image {
+            flex-shrink: 0;
+        }
+
+        .saved-property-card .property-details {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .property-status {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+            z-index: 10;
+        }
+
+        .status-sale {
+            background: #10b981;
+        }
+
+        .status-rent {
+            background: #3b82f6;
+        }
+
+        .status-sold {
+            background: #ef4444;
+        }
+
+        /* Heart Icon */
+        .heart-icon {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 36px;
+            height: 36px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            color: #ef4444;
+        }
+
+        .heart-icon:hover {
+            transform: scale(1.1);
+        }
+
+        /* Price Tag */
+        .price-tag {
+            font-size: 20px;
+            font-weight: 700;
+            color: #FF6B35;
+        }
+
+        .price-per-sqft {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        /* Location Badge */
+        .location-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            background: #f8fafc;
+            border-radius: 15px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        /* Property Features */
+        .property-features {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        /* Verified Badge */
+        .verified-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            background: #10b98110;
+            border: 1px solid #10b98130;
+            border-radius: 12px;
+            font-size: 11px;
+            color: #10b981;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: auto;
+            padding-top: 16px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 8px 16px;
+            text-align: center;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .contact-btn {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .contact-btn:hover {
+            background: #2563eb;
+        }
+
+        .remove-btn {
+            background: #f8fafc;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+        }
+
+        .remove-btn:hover {
+            background: #ef4444;
+            color: white;
+            border-color: #ef4444;
+        }
+
+        /* Compare Checkbox */
+        .compare-checkbox {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            width: 24px;
+            height: 24px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            cursor: pointer;
+            background: white;
+            z-index: 10;
+        }
+
+        .compare-checkbox:checked {
+            background-color: #FF6B35;
+            border-color: #FF6B35;
+        }
+
+        /* Saved Properties Header */
+        .saved-header {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Tab Navigation */
+        .saved-tabs {
+            display: flex;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 20px;
+        }
+
+        .saved-tab {
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.3s ease;
+        }
+
+        .saved-tab:hover {
+            color: #FF6B35;
+        }
+
+        .saved-tab.active {
+            color: #FF6B35;
+            border-bottom-color: #FF6B35;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .empty-icon {
+            width: 80px;
+            height: 80px;
+            background: #f8fafc;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: #94a3b8;
+            font-size: 32px;
+        }
+
+        /* Price Drop Alert */
+        .price-alert {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 1px solid #fbbf24;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+            position: relative;
+        }
+
+        .price-alert::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #f59e0b;
+            border-radius: 4px 0 0 4px;
+        }
+
+        .alert-text {
+            font-size: 13px;
+            color: #92400e;
+        }
+
+        .alert-price {
+            font-weight: 700;
+            color: #d97706;
+        }
+
+        /* New Update Badge */
+        .update-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 4px 8px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            z-index: 10;
+        }
+
+        /* Property Age */
+        .age-badge {
+            padding: 3px 8px;
+            background: #fef3c7;
+            color: #92400e;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        /* Property Owner */
+        .owner-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            background: #f0f9ff;
+            border: 1px solid #e0f2fe;
+            border-radius: 12px;
+            font-size: 11px;
+            color: #0369a1;
+        }
+
+        /* Property Grid */
+        .property-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            margin-top: 32px;
+        }
+
+        .page-item {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #e2e8f0;
+            background: white;
+        }
+
+        .page-item:hover {
+            border-color: #FF6B35;
+            color: #FF6B35;
+        }
+
+        .page-item.active {
+            background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+            color: white;
+            border-color: #FF6B35;
+        }
+
+        /* Compare Bar */
+        .compare-bar {
+            position: fixed;
+            bottom: 0;
+            left: 256px;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            padding: 16px 24px;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+            z-index: 80;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .compare-bar.active {
+            transform: translateY(0);
+        }
+
+        .compare-count {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .compare-count-badge {
+            background: #FF6B35;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Bulk Actions */
+        .bulk-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .bulk-btn {
+            padding: 8px 16px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .bulk-btn:hover {
+            border-color: #FF6B35;
+            color: #FF6B35;
+        }
+
+        /* Date Added */
+        .date-added {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        /* View Count */
+        .view-count {
+            font-size: 11px;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Property Label */
+        .property-label {
+            position: absolute;
+            top: 50px;
+            left: 12px;
+            padding: 4px 8px;
+            background: rgba(255, 107, 53, 0.9);
+            color: white;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 600;
+            z-index: 10;
+        }
+
+        /* Notes Section */
+        .property-notes {
+            margin-top: 12px;
+            padding: 8px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .notes-text {
+            font-size: 12px;
+            color: #64748b;
+            line-height: 1.4;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .compare-bar {
+                left: 0;
+            }
+            
+            .property-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+            
+            .saved-tabs {
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Navigation -->
+        <nav class="main-nav">
+            <div class="h-full px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <!-- Logo and Mobile Menu -->
+                    <div class="flex items-center space-x-3">
+                        <!-- Mobile Menu Button -->
+                        <button id="mobileMenuButton" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-100 transition" onclick="toggleMobileSidebar()">
+                            <i class="fas fa-bars text-lg"></i>
+                        </button>
+                        <!-- Logo -->
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-lg hover-lift hover-rotate">
+                                <i class="fas fa-home text-lg"></i>
+                            </div>
+                            <div>
+                                <h1 class="text-xl font-bold text-gray-900">RealBuy <span class="text-orange-500">Pro</span></h1>
+                                <p class="text-xs text-gray-500 hidden sm:block">Advanced Property Dashboard</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Menu -->
+                    <div class="flex items-center space-x-3">
+                        <!-- Notifications -->
+                        <div class="relative">
+                            <button class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 transition flex items-center justify-center relative hover-lift">
+                                <i class="fas fa-bell text-gray-600"></i>
+                                <span class="notification-dot animate-pulse-glow">3</span>
+                            </button>
+                        </div>
+
+                        <!-- Messages -->
+                        <div class="relative">
+                            <button class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 transition flex items-center justify-center relative hover-lift">
+                                <i class="fas fa-envelope text-gray-600"></i>
+                                <span class="notification-dot animate-pulse-glow" style="background: #3B82F6;">5</span>
+                            </button>
+                        </div>
+
+                        <!-- User Profile -->
+                        <div class="flex items-center space-x-3 p-2 rounded-full bg-white border border-gray-200 hover:shadow-md transition cursor-pointer hover-lift">
+                            <img src="https://i.pravatar.cc/40?img=1" alt="User" class="w-8 h-8 rounded-full ring-2 ring-orange-200" />
+                            <div class="hidden md:block">
+                                <p class="text-sm font-semibold text-gray-900">Alex Johnson</p>
+                                <p class="text-xs text-gray-500">Premium Buyer</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Sidebar - Always Expanded -->
+        <aside id="sidebarContainer" class="sidebar-container">
+  <div class="h-full py-6 px-3 flex flex-col">
+
+    <!-- Navigation Menu -->
+    <nav class="flex-1 space-y-2 animate-fade-up stagger-2">
+
+      <a href="{% url 'buyer_dashboard' %}"
+         class="flex items-center space-x-4 p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition hover-lift">
+        <i class="fas fa-tachometer-alt w-5 text-center"></i>
+        <span class="font-medium truncate">Dashboard</span>
+      </a>
+
+      <a href="{% url 'buyer_search' %}"
+         class="flex items-center space-x-4 p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition hover-lift">
+        <i class="fas fa-search w-5 text-center"></i>
+        <span class="font-medium truncate">Search Properties</span>
+      </a>
+
+      <a href="{% url 'saved_properties' %}"
+         class="flex items-center space-x-4 p-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white hover-lift hover-glow">
+        <i class="fas fa-heart w-5 text-center"></i>
+        <span class="font-medium truncate">Saved Properties</span>
+        <span class="ml-auto bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded-full min-w-[24px] text-center">
+          12
+        </span>
+      </a>
+
+      <a href="{% url 'recent_views' %}"
+         class="flex items-center space-x-4 p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition hover-lift">
+        <i class="fas fa-eye w-5 text-center"></i>
+        <span class="font-medium truncate">Recently Viewed</span>
+      </a>
+
+      <a href="{% url 'price_trends' %}"
+         class="flex items-center space-x-4 p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition hover-lift">
+        <i class="fas fa-chart-line w-5 text-center"></i>
+        <span class="font-medium truncate">Market Trends</span>
+      </a>
+
+      <a href="{% url 'compare_properties' %}"
+         class="flex items-center space-x-4 p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition hover-lift">
+        <i class="fas fa-exchange-alt w-5 text-center"></i>
+        <span class="font-medium truncate">Compare Properties</span>
+      </a>
+
+      <a href="{% url 'buyer_settings' %}"
+         class="flex items-center space-x-4 p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition hover-lift">
+        <i class="fas fa-cog w-5 text-center"></i>
+        <span class="font-medium truncate">Settings</span>
+      </a>
+
+    </nav>
+
+    <!-- Compare Section -->
+    <div class="mt-6 p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200 animate-fade-up hover-lift">
+      <p class="text-sm font-medium text-blue-800">Properties to Compare</p>
+
+      <div class="mt-2 space-y-2">
+        <div class="flex items-center justify-between text-xs">
+          <span class="truncate">Sea View Apartment</span>
+          <button class="text-red-500 hover:text-red-700">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="flex items-center justify-between text-xs">
+          <span class="truncate">Garden Villa</span>
+          <button class="text-red-500 hover:text-red-700">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+
+      <a href="{% url 'compare_properties' %}"
+         class="block w-full mt-3 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold text-center hover:bg-blue-700 transition">
+        Compare Now
+      </a>
+    </div>
+
+  </div>
+</aside>
+
+
+        <!-- Main Content Wrapper -->
+        <div id="contentWrapper" class="content-wrapper">
+            <!-- Main Content -->
+            <main class="main-content pb-8">
+                <!-- Saved Properties Header -->
+                <div class="saved-header animate-fade-up">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                        <div>
+                            <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Saved Properties</h2>
+                            <p class="text-gray-600 mt-2">Your collection of favorite properties</p>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="bg-orange-100 text-orange-600 text-sm px-4 py-2 rounded-full font-semibold">
+                                <i class="fas fa-heart mr-2"></i>12 Properties
+                            </div>
+                            <button class="btn-primary flex items-center space-x-2">
+                                <i class="fas fa-share-alt"></i>
+                                <span>Share List</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="saved-tabs">
+                        <div class="saved-tab active" data-tab="all">All Saved (12)</div>
+                        <div class="saved-tab" data-tab="recent">Recently Added (4)</div>
+                        <div class="saved-tab" data-tab="price-drop">Price Drops (2)</div>
+                        <div class="saved-tab" data-tab="sold">Sold/Removed (3)</div>
+                    </div>
+
+                    <!-- Bulk Actions -->
+                    <div class="bulk-actions">
+                        <button class="bulk-btn" id="selectAll">
+                            <i class="far fa-square"></i>
+                            <span>Select All</span>
+                        </button>
+                        <button class="bulk-btn" id="compareSelected">
+                            <i class="fas fa-compress-alt"></i>
+                            <span>Compare Selected</span>
+                        </button>
+                        <button class="bulk-btn" id="removeSelected">
+                            <i class="fas fa-trash-alt"></i>
+                            <span>Remove Selected</span>
+                        </button>
+                        <button class="bulk-btn" id="exportList">
+                            <i class="fas fa-download"></i>
+                            <span>Export List</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Property Grid -->
+                <div class="property-grid mb-8 animate-fade-up">
+                    <!-- Property 1 -->
+                    <div class="property-card saved-property-card">
+                        <div class="property-image">
+                            <img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop" alt="Luxury Apartment">
+                            <div class="property-status status-sale">FOR SALE</div>
+                            <div class="heart-icon">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <div class="compare-checkbox"></div>
+                            <div class="property-label">VIEWED 5 TIMES</div>
+                        </div>
+                        <div class="p-4 property-details">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="font-bold text-gray-900 mb-1 line-clamp-2">2 BHK Apartment in Lodha Bellagio</h4>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="location-badge">
+                                            <i class="fas fa-map-marker-alt text-orange-500 text-xs"></i>
+                                            Powai, Mumbai
+                                        </span>
+                                        <span class="verified-badge">
+                                            <i class="fas fa-check-circle"></i>
+                                            Verified
+                                        </span>
+                                    </div>
+                                </div>
+                                <span class="update-badge">NEW</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="price-tag">₹2.8 Cr</div>
+                                <div class="price-per-sqft">₹21,500/sq.ft</div>
+                            </div>
+                            
+                            <div class="property-features">
+                                <div class="feature-item">
+                                    <i class="fas fa-bed text-gray-400"></i>
+                                    <span>2 Beds</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-bath text-gray-400"></i>
+                                    <span>2 Baths</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-ruler-combined text-gray-400"></i>
+                                    <span>1,302 sq.ft</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Price Drop Alert -->
+                            <div class="price-alert">
+                                <div class="alert-text">
+                                    <i class="fas fa-arrow-down mr-1"></i>
+                                    Price dropped by <span class="alert-price">₹5 Lakhs</span> since you saved
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mt-4">
+                                <div class="flex items-center gap-2">
+                                    <div class="owner-badge">
+                                        <i class="fas fa-user-tie"></i>
+                                        Owner
+                                    </div>
+                                    <span class="age-badge">5-10 Years Old</span>
+                                </div>
+                                <div class="view-count">
+                                    <i class="fas fa-eye"></i>
+                                    245 views
+                                </div>
+                            </div>
+                            
+                            <!-- Notes -->
+                            <div class="property-notes">
+                                <div class="notes-text">
+                                    <strong>My Notes:</strong> Good location near school. Needs renovation.
+                                </div>
+                            </div>
+                            
+                            <div class="date-added">Added: 2 days ago</div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="action-buttons">
+                                <button class="action-btn contact-btn">
+                                    Contact Owner
+                                </button>
+                                <button class="action-btn remove-btn" data-property="1">
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Property 2 -->
+                    <div class="property-card saved-property-card">
+                        <div class="property-image">
+                            <img src="https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&h=300&fit=crop" alt="Modern Villa">
+                            <div class="property-status status-rent">FOR RENT</div>
+                            <div class="heart-icon">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <div class="compare-checkbox" checked></div>
+                        </div>
+                        <div class="p-4 property-details">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="font-bold text-gray-900 mb-1 line-clamp-2">3 BHK Independent Villa in Juhu</h4>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="location-badge">
+                                            <i class="fas fa-map-marker-alt text-orange-500 text-xs"></i>
+                                            Juhu, Mumbai
+                                        </span>
+                                        <span class="verified-badge">
+                                            <i class="fas fa-check-circle"></i>
+                                            Verified
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="price-tag">₹1.2 L/month</div>
+                                <div class="price-per-sqft">₹18,500/sq.ft</div>
+                            </div>
+                            
+                            <div class="property-features">
+                                <div class="feature-item">
+                                    <i class="fas fa-bed text-gray-400"></i>
+                                    <span>3 Beds</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-bath text-gray-400"></i>
+                                    <span>3 Baths</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-ruler-combined text-gray-400"></i>
+                                    <span>2,500 sq.ft</span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mt-4">
+                                <div class="flex items-center gap-2">
+                                    <div class="owner-badge">
+                                        <i class="fas fa-building"></i>
+                                        Builder
+                                    </div>
+                                </div>
+                                <div class="view-count">
+                                    <i class="fas fa-eye"></i>
+                                    189 views
+                                </div>
+                            </div>
+                            
+                            <!-- Notes -->
+                            <div class="property-notes">
+                                <div class="notes-text">
+                                    <strong>My Notes:</strong> Excellent sea view. Fully furnished. 
+                                </div>
+                            </div>
+                            
+                            <div class="date-added">Added: 1 week ago</div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="action-buttons">
+                                <button class="action-btn contact-btn">
+                                    Contact Builder
+                                </button>
+                                <button class="action-btn remove-btn" data-property="2">
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Property 3 -->
+                    <div class="property-card saved-property-card">
+                        <div class="property-image">
+                            <img src="https://images.unsplash.com/photo-1545324418-cc1a9a6fded0?w=400&h=300&fit=crop" alt="Penthouse">
+                            <div class="property-status status-sold">SOLD</div>
+                            <div class="heart-icon">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <div class="compare-checkbox"></div>
+                        </div>
+                        <div class="p-4 property-details">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="font-bold text-gray-900 mb-1 line-clamp-2">4 BHK Penthouse in Oberoi Sky City</h4>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="location-badge">
+                                            <i class="fas fa-map-marker-alt text-orange-500 text-xs"></i>
+                                            Goregaon East, Mumbai
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="price-tag">₹4.5 Cr</div>
+                                <div class="price-per-sqft">₹28,000/sq.ft</div>
+                            </div>
+                            
+                            <div class="property-features">
+                                <div class="feature-item">
+                                    <i class="fas fa-bed text-gray-400"></i>
+                                    <span>4 Beds</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-bath text-gray-400"></i>
+                                    <span>4 Baths</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-ruler-combined text-gray-400"></i>
+                                    <span>1,607 sq.ft</span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mt-4">
+                                <div class="flex items-center gap-2">
+                                    <div class="owner-badge">
+                                        <i class="fas fa-user-tie"></i>
+                                        Owner
+                                    </div>
+                                </div>
+                                <div class="view-count">
+                                    <i class="fas fa-eye"></i>
+                                    312 views
+                                </div>
+                            </div>
+                            
+                            <div class="property-notes">
+                                <div class="notes-text">
+                                    <strong>Status:</strong> Property sold 3 days ago
+                                </div>
+                            </div>
+                            
+                            <div class="date-added">Added: 2 weeks ago</div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="action-buttons">
+                                <button class="action-btn contact-btn" disabled>
+                                    Property Sold
+                                </button>
+                                <button class="action-btn remove-btn" data-property="3">
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Property 4 -->
+                    <div class="property-card saved-property-card">
+                        <div class="property-image">
+                            <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&h=300&fit=crop" alt="Studio">
+                            <div class="property-status status-sale">FOR SALE</div>
+                            <div class="heart-icon">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <div class="compare-checkbox" checked></div>
+                            <div class="property-label">PRICE DROP</div>
+                        </div>
+                        <div class="p-4 property-details">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="font-bold text-gray-900 mb-1 line-clamp-2">1 BHK in Raheja Vihar</h4>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="location-badge">
+                                            <i class="fas fa-map-marker-alt text-orange-500 text-xs"></i>
+                                            Chandivali, Mumbai
+                                        </span>
+                                        <span class="verified-badge">
+                                            <i class="fas fa-check-circle"></i>
+                                            Verified
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="price-tag">₹85 L</div>
+                                <div class="price-per-sqft">₹19,500/sq.ft</div>
+                            </div>
+                            
+                            <div class="property-features">
+                                <div class="feature-item">
+                                    <i class="fas fa-bed text-gray-400"></i>
+                                    <span>1 Bed</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-bath text-gray-400"></i>
+                                    <span>1 Bath</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-ruler-combined text-gray-400"></i>
+                                    <span>436 sq.ft</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Price Drop Alert -->
+                            <div class="price-alert">
+                                <div class="alert-text">
+                                    <i class="fas fa-arrow-down mr-1"></i>
+                                    Price dropped by <span class="alert-price">₹3 Lakhs</span> this week
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mt-4">
+                                <div class="flex items-center gap-2">
+                                    <div class="owner-badge">
+                                        <i class="fas fa-user-tie"></i>
+                                        Owner
+                                    </div>
+                                    <span class="age-badge">Less than 1 Year</span>
+                                </div>
+                                <div class="view-count">
+                                    <i class="fas fa-eye"></i>
+                                    167 views
+                                </div>
+                            </div>
+                            
+                            <!-- Notes -->
+                            <div class="property-notes">
+                                <div class="notes-text">
+                                    <strong>My Notes:</strong> Good for investment. High rental yield.
+                                </div>
+                            </div>
+                            
+                            <div class="date-added">Added: 3 days ago</div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="action-buttons">
+                                <button class="action-btn contact-btn">
+                                    Contact Owner
+                                </button>
+                                <button class="action-btn remove-btn" data-property="4">
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Property 5 -->
+                    <div class="property-card saved-property-card">
+                        <div class="property-image">
+                            <img src="https://images.unsplash.com/photo-1605146769289-440113cc3d00?w=400&h=300&fit=crop" alt="Builder Floor">
+                            <div class="property-status status-sale">FOR SALE</div>
+                            <div class="heart-icon">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <div class="compare-checkbox"></div>
+                        </div>
+                        <div class="p-4 property-details">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="font-bold text-gray-900 mb-1 line-clamp-2">2 BHK Builder Floor in Andheri</h4>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="location-badge">
+                                            <i class="fas fa-map-marker-alt text-orange-500 text-xs"></i>
+                                            Andheri West, Mumbai
+                                        </span>
+                                        <span class="verified-badge">
+                                            <i class="fas fa-check-circle"></i>
+                                            Verified
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="price-tag">₹1.4 Cr</div>
+                                <div class="price-per-sqft">₹16,800/sq.ft</div>
+                            </div>
+                            
+                            <div class="property-features">
+                                <div class="feature-item">
+                                    <i class="fas fa-bed text-gray-400"></i>
+                                    <span>2 Beds</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-bath text-gray-400"></i>
+                                    <span>2 Baths</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-ruler-combined text-gray-400"></i>
+                                    <span>833 sq.ft</span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mt-4">
+                                <div class="flex items-center gap-2">
+                                    <div class="owner-badge">
+                                        <i class="fas fa-building"></i>
+                                        Builder
+                                    </div>
+                                </div>
+                                <div class="view-count">
+                                    <i class="fas fa-eye"></i>
+                                    98 views
+                                </div>
+                            </div>
+                            
+                            <div class="date-added">Added: 1 week ago</div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="action-buttons">
+                                <button class="action-btn contact-btn">
+                                    Contact Builder
+                                </button>
+                                <button class="action-btn remove-btn" data-property="5">
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Property 6 -->
+                    <div class="property-card saved-property-card">
+                        <div class="property-image">
+                            <img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&h=300&fit=crop" alt="Plot">
+                            <div class="property-status status-sale">FOR SALE</div>
+                            <div class="heart-icon">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <div class="compare-checkbox" checked></div>
+                        </div>
+                        <div class="p-4 property-details">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="font-bold text-gray-900 mb-1 line-clamp-2">Residential Plot in Gated Society</h4>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="location-badge">
+                                            <i class="fas fa-map-marker-alt text-orange-500 text-xs"></i>
+                                            Thane West, Mumbai
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="price-tag">₹2.1 Cr</div>
+                                <div class="price-per-sqft">₹4,200/sq.ft</div>
+                            </div>
+                            
+                            <div class="property-features">
+                                <div class="feature-item">
+                                    <i class="fas fa-vector-square text-gray-400"></i>
+                                    <span>500 sq.yd</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-home text-gray-400"></i>
+                                    <span>Plot</span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mt-4">
+                                <div class="flex items-center gap-2">
+                                    <div class="owner-badge">
+                                        <i class="fas fa-user-tie"></i>
+                                        Owner
+                                    </div>
+                                </div>
+                                <div class="view-count">
+                                    <i class="fas fa-eye"></i>
+                                    76 views
+                                </div>
+                            </div>
+                            
+                            <!-- Notes -->
+                            <div class="property-notes">
+                                <div class="notes-text">
+                                    <strong>My Notes:</strong> Good location for future development.
+                                </div>
+                            </div>
+                            
+                            <div class="date-added">Added: 2 weeks ago</div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="action-buttons">
+                                <button class="action-btn contact-btn">
+                                    Contact Owner
+                                </button>
+                                <button class="action-btn remove-btn" data-property="6">
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State (Hidden by default) -->
+                <div class="empty-state hidden" id="emptyState">
+                    <div class="empty-icon">
+                        <i class="far fa-heart"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">No Saved Properties</h3>
+                    <p class="text-gray-600 mb-6">You haven't saved any properties yet. Start exploring and save your favorites!</p>
+                    <button class="btn-primary">
+                        <i class="fas fa-search mr-2"></i>
+                        Browse Properties
+                    </button>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination animate-fade-up">
+                    <button class="page-item">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="page-item active">1</button>
+                    <button class="page-item">2</button>
+                    <button class="page-item">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </main>
+
+            <!-- Compare Bar -->
+            <div class="compare-bar" id="compareBar">
+                <div class="compare-count">
+                    <span class="compare-count-badge" id="compareCount">0</span>
+                    <span class="text-gray-700 font-medium">properties selected for comparison</span>
+                </div>
+                <div class="flex gap-3">
+                    <button class="action-btn remove-btn" id="clearCompare">
+                        Clear All
+                    </button>
+                    <button class="btn-primary" id="compareNow">
+                        <i class="fas fa-compress-alt mr-2"></i>
+                        Compare Now
+                    </button>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer class="bg-gray-900 text-gray-300 py-8 border-t border-gray-800">
+                <div class="max-w-full px-4 sm:px-6 lg:px-8">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                        <div>
+                            <div class="flex items-center space-x-3 mb-4">
+                                <div class="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center text-white font-bold">RB</div>
+                                <span class="text-white font-bold text-lg">RealBuy Pro</span>
+                            </div>
+                            <p class="text-sm leading-relaxed">India's #1 property portal for buying, selling, and renting properties.</p>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold mb-4">Quick Links</h4>
+                            <ul class="space-y-2 text-sm">
+                                <li><a href="#" class="hover:text-white transition">Saved Properties</a></li>
+                                <li><a href="#" class="hover:text-white transition">Compare Properties</a></li>
+                                <li><a href="#" class="hover:text-white transition">Price Alerts</a></li>
+                                <li><a href="#" class="hover:text-white transition">Search History</a></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold mb-4">Resources</h4>
+                            <ul class="space-y-2 text-sm">
+                                <li><a href="#" class="hover:text-white transition">Property Investment Guide</a></li>
+                                <li><a href="#" class="hover:text-white transition">EMI Calculator</a></li>
+                                <li><a href="#" class="hover:text-white transition">Home Loan Assistance</a></li>
+                                <li><a href="#" class="hover:text-white transition">FAQ</a></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold mb-4">Need Help?</h4>
+                            <div class="space-y-3">
+                                <button class="w-full px-4 py-2 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition">
+                                    <i class="fas fa-headset mr-2"></i>Customer Support
+                                </button>
+                                <button class="w-full px-4 py-2 border border-orange-600 text-orange-600 rounded-lg font-semibold hover:bg-orange-600 hover:text-white transition">
+                                    <i class="fas fa-phone-alt mr-2"></i>1800-123-4567
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="border-t border-gray-800 pt-6 text-center text-sm">
+                        <p>© 2024 RealBuy Pro. All rights reserved. | <a href="#" class="text-orange-400 hover:text-orange-300 transition">Privacy Policy</a> | <a href="#" class="text-orange-400 hover:text-orange-300 transition">Terms of Service</a></p>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- JavaScript for Interactions -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile sidebar toggle
+            function toggleMobileSidebar() {
+                const sidebarContainer = document.getElementById('sidebarContainer');
+                const overlay = document.getElementById('sidebarOverlay');
+                
+                sidebarContainer.classList.toggle('mobile-open');
+                overlay.classList.toggle('active');
+                
+                if (window.innerWidth < 768) {
+                    document.body.style.overflow = sidebarContainer.classList.contains('mobile-open') ? 'hidden' : '';
+                }
+            }
+
+            // Attach mobile menu button event
+            document.getElementById('mobileMenuButton').addEventListener('click', toggleMobileSidebar);
+            document.getElementById('sidebarOverlay').addEventListener('click', toggleMobileSidebar);
+
+            // Tab functionality
+            const tabs = document.querySelectorAll('.saved-tab');
+            const properties = document.querySelectorAll('.property-card');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    const tabType = this.getAttribute('data-tab');
+                    
+                    // Filter properties based on tab
+                    properties.forEach(property => {
+                        if (tabType === 'all') {
+                            property.style.display = 'block';
+                        } else if (tabType === 'recent') {
+                            // Show only recent properties (added within 3 days)
+                            const dateText = property.querySelector('.date-added').textContent;
+                            if (dateText.includes('days') || dateText.includes('day') && !dateText.includes('week')) {
+                                property.style.display = 'block';
+                            } else {
+                                property.style.display = 'none';
+                            }
+                        } else if (tabType === 'price-drop') {
+                            // Show only properties with price drops
+                            const hasPriceAlert = property.querySelector('.price-alert');
+                            property.style.display = hasPriceAlert ? 'block' : 'none';
+                        } else if (tabType === 'sold') {
+                            // Show only sold properties
+                            const status = property.querySelector('.property-status');
+                            property.style.display = status && status.textContent === 'SOLD' ? 'block' : 'none';
+                        }
+                    });
+                    
+                    // Check if any properties are visible
+                    const visibleProperties = Array.from(properties).filter(p => p.style.display !== 'none');
+                    const emptyState = document.getElementById('emptyState');
+                    
+                    if (visibleProperties.length === 0 && tabType !== 'all') {
+                        emptyState.classList.remove('hidden');
+                    } else {
+                        emptyState.classList.add('hidden');
+                    }
+                });
+            });
+
+            // Heart icon click (remove from saved)
+            const heartIcons = document.querySelectorAll('.heart-icon');
+            
+            heartIcons.forEach(icon => {
+                icon.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    
+                    const propertyCard = this.closest('.property-card');
+                    const propertyId = propertyCard.querySelector('.remove-btn').getAttribute('data-property');
+                    
+                    // Show confirmation
+                    if (confirm('Remove this property from saved list?')) {
+                        propertyCard.style.animation = 'fadeOut 0.3s ease-out';
+                        setTimeout(() => {
+                            propertyCard.style.display = 'none';
+                            
+                            // Update saved count
+                            const savedCount = document.querySelector('.sidebar-container .bg-orange-100 .text-lg');
+                            const currentCount = parseInt(savedCount.textContent);
+                            savedCount.textContent = Math.max(0, currentCount - 1);
+                            
+                            // Update header count
+                            const headerCount = document.querySelector('.saved-header .bg-orange-100 span');
+                            if (headerCount) {
+                                const headerCountNum = parseInt(headerCount.textContent.match(/\d+/)[0]);
+                                headerCount.textContent = `${Math.max(0, headerCountNum - 1)} Properties`;
+                            }
+                            
+                            // Update all tabs count
+                            const allTab = document.querySelector('.saved-tab[data-tab="all"]');
+                            const allCount = parseInt(allTab.textContent.match(/\d+/)[0]);
+                            allTab.textContent = `All Saved (${Math.max(0, allCount - 1)})`;
+                            
+                            // Check if compare checkbox was checked
+                            const compareCheckbox = propertyCard.querySelector('.compare-checkbox');
+                            if (compareCheckbox.checked) {
+                                compareCheckbox.checked = false;
+                                updateCompareBar();
+                            }
+                            
+                            // Show success message
+                            showToast('Property removed from saved list');
+                        }, 300);
+                    }
+                });
+            });
+
+            // Compare checkbox functionality
+            const compareCheckboxes = document.querySelectorAll('.compare-checkbox');
+            const compareBar = document.getElementById('compareBar');
+            
+            function updateCompareBar() {
+                const checkedBoxes = document.querySelectorAll('.compare-checkbox:checked');
+                const compareCount = document.getElementById('compareCount');
+                
+                compareCount.textContent = checkedBoxes.length;
+                
+                if (checkedBoxes.length > 0) {
+                    compareBar.classList.add('active');
+                } else {
+                    compareBar.classList.remove('active');
+                }
+            }
+            
+            compareCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateCompareBar);
+            });
+
+            // Select All button
+            const selectAllBtn = document.getElementById('selectAll');
+            let allSelected = false;
+            
+            selectAllBtn.addEventListener('click', function() {
+                allSelected = !allSelected;
+                
+                compareCheckboxes.forEach(checkbox => {
+                    checkbox.checked = allSelected;
+                });
+                
+                this.innerHTML = allSelected ? 
+                    '<i class="fas fa-check-square"></i><span>Deselect All</span>' :
+                    '<i class="far fa-square"></i><span>Select All</span>';
+                
+                updateCompareBar();
+            });
+
+            // Compare Selected button
+            document.getElementById('compareSelected').addEventListener('click', function() {
+                const checkedBoxes = document.querySelectorAll('.compare-checkbox:checked');
+                
+                if (checkedBoxes.length === 0) {
+                    alert('Please select at least one property to compare.');
+                    return;
+                }
+                
+                if (checkedBoxes.length > 4) {
+                    alert('You can compare up to 4 properties at a time.');
+                    return;
+                }
+                
+                alert(`Comparing ${checkedBoxes.length} properties...`);
+                // In real app, this would redirect to compare page
+            });
+
+            // Compare Now button in bar
+            document.getElementById('compareNow').addEventListener('click', function() {
+                const checkedBoxes = document.querySelectorAll('.compare-checkbox:checked');
+                
+                if (checkedBoxes.length < 2) {
+                    alert('Please select at least 2 properties to compare.');
+                    return;
+                }
+                
+                if (checkedBoxes.length > 4) {
+                    alert('You can compare up to 4 properties at a time.');
+                    return;
+                }
+                
+                alert(`Opening comparison view for ${checkedBoxes.length} properties...`);
+                // In real app, this would redirect to compare page
+            });
+
+            // Clear Compare button
+            document.getElementById('clearCompare').addEventListener('click', function() {
+                compareCheckboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                
+                updateCompareBar();
+                selectAllBtn.innerHTML = '<i class="far fa-square"></i><span>Select All</span>';
+                allSelected = false;
+                
+                showToast('Comparison cleared');
+            });
+
+            // Remove Selected button
+            document.getElementById('removeSelected').addEventListener('click', function() {
+                const checkedBoxes = document.querySelectorAll('.compare-checkbox:checked');
+                
+                if (checkedBoxes.length === 0) {
+                    alert('Please select properties to remove.');
+                    return;
+                }
+                
+                if (confirm(`Remove ${checkedBoxes.length} selected properties from saved list?`)) {
+                    let removedCount = 0;
+                    
+                    checkedBoxes.forEach(checkbox => {
+                        const propertyCard = checkbox.closest('.property-card');
+                        const heartIcon = propertyCard.querySelector('.heart-icon');
+                        
+                        // Simulate click on heart icon
+                        heartIcon.click();
+                        removedCount++;
+                    });
+                    
+                    // Reset select all
+                    selectAllBtn.innerHTML = '<i class="far fa-square"></i><span>Select All</span>';
+                    allSelected = false;
+                    
+                    showToast(`${removedCount} properties removed`);
+                }
+            });
+
+            // Export List button
+            document.getElementById('exportList').addEventListener('click', function() {
+                alert('Exporting saved properties list...');
+                // In real app, this would generate a PDF/CSV file
+            });
+
+            // Share List button
+            document.querySelector('.btn-primary').addEventListener('click', function(e) {
+                if (e.target.textContent.includes('Share')) {
+                    e.preventDefault();
+                    alert('Sharing saved properties list...');
+                    // In real app, this would open share dialog
+                }
+            });
+
+            // Remove individual property button
+            const removeButtons = document.querySelectorAll('.remove-btn');
+            
+            removeButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const propertyId = this.getAttribute('data-property');
+                    const propertyCard = this.closest('.property-card');
+                    const heartIcon = propertyCard.querySelector('.heart-icon');
+                    
+                    // Simulate click on heart icon
+                    heartIcon.click();
+                });
+            });
+
+            // Contact buttons
+            const contactButtons = document.querySelectorAll('.contact-btn:not([disabled])');
+            
+            contactButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const propertyTitle = this.closest('.property-card').querySelector('h4').textContent;
+                    alert(`Contacting owner for: ${propertyTitle}`);
+                });
+            });
+
+            // Property card click (view details)
+            properties.forEach(card => {
+                card.addEventListener('click', function(e) {
+                    // Don't trigger if clicking on buttons, checkboxes, or heart icons
+                    if (!e.target.closest('button') && 
+                        !e.target.closest('.compare-checkbox') && 
+                        !e.target.closest('.heart-icon')) {
+                        console.log('View property details');
+                        // In real app: window.location.href = '/property-details';
+                    }
+                });
+            });
+
+            // Toast notification function
+            function showToast(message) {
+                const toast = document.createElement('div');
+                toast.className = 'fixed bottom-24 right-4 bg-gray-900 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-fade-up';
+                toast.textContent = message;
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }
+
+            // Initialize compare bar
+            updateCompareBar();
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                const sidebarContainer = document.getElementById('sidebarContainer');
+                const overlay = document.getElementById('sidebarOverlay');
+                
+                if (window.innerWidth >= 768) {
+                    sidebarContainer.classList.remove('mobile-open');
+                    overlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+
+            // Pagination
+            const pageItems = document.querySelectorAll('.page-item');
+            
+            pageItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    if (!this.querySelector('i')) { // Don't change active state for arrow buttons
+                        pageItems.forEach(page => page.classList.remove('active'));
+                        this.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

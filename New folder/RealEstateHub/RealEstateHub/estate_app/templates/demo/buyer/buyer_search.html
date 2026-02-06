@@ -1,0 +1,1745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RealBuy - Advanced Property Search | 99acres Style</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Custom animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(255, 107, 53, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(255, 107, 53, 0.8);
+            }
+        }
+
+        .animate-fade-up {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .animate-pulse-glow {
+            animation: pulse-glow 2s infinite;
+        }
+
+        /* Glassmorphism */
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+        }
+
+        /* Hover effects */
+        .hover-lift {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(255, 107, 53, 0.2);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #e55a2e, #e87a4a);
+        }
+
+        /* Dashboard Cards */
+        .dashboard-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border-color: #FF6B35;
+        }
+
+        /* Property Card */
+        .property-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .property-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(255, 107, 53, 0.2);
+            border-color: #FF6B35;
+        }
+
+        .property-card .property-image {
+            position: relative;
+            overflow: hidden;
+            height: 200px;
+        }
+
+        .property-card .property-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+
+        .property-card:hover .property-image img {
+            transform: scale(1.1) rotate(1deg);
+        }
+
+        /* Button Styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #FF6B35 0%, #FF8B5A 100%);
+            color: white;
+            padding: 12px 28px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(255, 107, 53, 0.4);
+        }
+
+        /* Filter Chips */
+        .filter-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .filter-chip:hover {
+            border-color: #FF6B35;
+            color: #FF6B35;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
+        }
+
+        .filter-chip.active {
+            background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+            color: white;
+            border-color: #FF6B35;
+            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .badge-premium {
+            background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+        }
+
+        .badge-new {
+            background: linear-gradient(135deg, #10B981, #34D399);
+            color: white;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .badge-featured {
+            background: linear-gradient(135deg, #3B82F6, #60A5FA);
+            color: white;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Layout */
+        .main-container {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        /* Fixed Navigation */
+        .main-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        /* Fixed Sidebar */
+        .sidebar-container {
+            position: fixed;
+            top: 64px;
+            left: 0;
+            width: 256px;
+            height: calc(100vh - 64px);
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 90;
+        }
+
+        /* Main Content Area */
+        .content-wrapper {
+            margin-top: 64px;
+            margin-left: 256px;
+            flex: 1;
+            min-height: calc(100vh - 64px);
+            width: calc(100% - 256px);
+        }
+
+        /* Main Content Padding */
+        .main-content {
+            padding: 24px;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .sidebar-container {
+                width: 280px;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar-container.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .content-wrapper {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+            
+            .main-content {
+                padding: 16px;
+            }
+            
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 64px;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 89;
+                backdrop-filter: blur(3px);
+            }
+            
+            .sidebar-overlay.active {
+                display: block;
+            }
+        }
+
+        /* Search Form */
+        .search-form {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: #FF6B35;
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .search-dropdown {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            outline: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 16px;
+        }
+
+        .search-dropdown:focus {
+            border-color: #FF6B35;
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        /* Property Grid */
+        .property-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .page-item {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #e2e8f0;
+            background: white;
+        }
+
+        .page-item:hover {
+            border-color: #FF6B35;
+            color: #FF6B35;
+        }
+
+        .page-item.active {
+            background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+            color: white;
+            border-color: #FF6B35;
+        }
+
+        /* Price Tag */
+        .price-tag {
+            font-size: 20px;
+            font-weight: 700;
+            color: #FF6B35;
+        }
+
+        /* Property Status */
+        .property-status {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+            z-index: 10;
+        }
+
+        .status-sale {
+            background: #10b981;
+        }
+
+        .status-rent {
+            background: #3b82f6;
+        }
+
+        /* Saved Properties Indicator */
+        .saved-indicator {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 36px;
+            height: 36px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .saved-indicator:hover {
+            transform: scale(1.1);
+        }
+
+        .saved-indicator.saved {
+            color: #ef4444;
+        }
+
+        /* Location Badge */
+        .location-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            background: #f8fafc;
+            border-radius: 15px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        /* Builder Logo */
+        .builder-logo {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1f5f9;
+        }
+
+        /* Property Features */
+        .property-features {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        /* Verified Badge */
+        .verified-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            background: #10b98110;
+            border: 1px solid #10b98130;
+            border-radius: 12px;
+            font-size: 11px;
+            color: #10b981;
+        }
+
+        /* Contact Agent Button */
+        .contact-agent {
+            padding: 8px 16px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .contact-agent:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        /* Price Per Sqft */
+        .price-per-sqft {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        /* Age of Property */
+        .age-badge {
+            padding: 3px 8px;
+            background: #fef3c7;
+            color: #92400e;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        /* Possession Status */
+        .possession-badge {
+            padding: 3px 8px;
+            background: #dbeafe;
+            color: #1e40af;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        /* View All Button */
+        .view-all-btn {
+            padding: 8px 20px;
+            border: 2px solid #FF6B35;
+            color: #FF6B35;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .view-all-btn:hover {
+            background: #FF6B35;
+            color: white;
+        }
+
+        /* 99acres Style Filter Section */
+        .filter-section {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .filter-group {
+            margin-bottom: 20px;
+        }
+
+        .filter-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .filter-group h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 12px;
+        }
+
+        .filter-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .filter-option {
+            padding: 6px 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #4b5563;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-option:hover {
+            border-color: #FF6B35;
+            color: #FF6B35;
+        }
+
+        .filter-option.selected {
+            background: #FF6B35;
+            color: white;
+            border-color: #FF6B35;
+        }
+
+        /* Price Slider */
+        .price-slider-container {
+            padding: 0 8px;
+        }
+
+        .price-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e2e8f0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .price-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #FF6B35;
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        /* Search Results Header */
+        .results-header {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Sort Options */
+        .sort-options {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .sort-option {
+            padding: 6px 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #4b5563;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .sort-option:hover {
+            border-color: #FF6B35;
+            color: #FF6B35;
+        }
+
+        .sort-option.active {
+            background: #FF6B35;
+            color: white;
+            border-color: #FF6B35;
+        }
+
+        /* Property Owner Badge */
+        .owner-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            background: #f0f9ff;
+            border: 1px solid #e0f2fe;
+            border-radius: 12px;
+            font-size: 11px;
+            color: #0369a1;
+        }
+
+        /* Construction Status */
+        .construction-badge {
+            padding: 3px 8px;
+            background: #fef3c7;
+            color: #92400e;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        /* Area Dropdown */
+        .area-dropdown {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #4b5563;
+            cursor: pointer;
+        }
+
+        /* Map View Button */
+        .map-view-btn {
+            padding: 8px 16px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #4b5563;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .map-view-btn:hover {
+            border-color: #FF6B35;
+            color: #FF6B35;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Navigation -->
+        <nav class="main-nav">
+            <div class="h-full px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <!-- Logo and Mobile Menu -->
+                    <div class="flex items-center space-x-3">
+                        <!-- Mobile Menu Button -->
+                        <button id="mobileMenuButton" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-100 transition" onclick="toggleMobileSidebar()">
+                            <i class="fas fa-bars text-lg"></i>
+                        </button>
+                        <!-- Logo -->
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-lg hover-lift hover-rotate">
+                                <i class="fas fa-home text-lg"></i>
+                            </div>
+                            <div>
+                                <h1 class="text-xl font-bold text-gray-900">RealBuy <span class="text-orange-500">Pro</span></h1>
+                                <p class="text-xs text-gray-500 hidden sm:block">Advanced Property Dashboard</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Menu -->
+                    <div class="flex items-center space-x-3">
+                        <!-- Notifications -->
+                        <div class="relative">
+                            <button class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 transition flex items-center justify-center relative hover-lift">
+                                <i class="fas fa-bell text-gray-600"></i>
+                                <span class="notification-dot animate-pulse-glow">3</span>
+                            </button>
+                        </div>
+
+                        <!-- Messages -->
+                        <div class="relative">
+                            <button class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 transition flex items-center justify-center relative hover-lift">
+                                <i class="fas fa-envelope text-gray-600"></i>
+                                <span class="notification-dot animate-pulse-glow" style="background: #3B82F6;">5</span>
+                            </button>
+                        </div>
+
+                        <!-- User Profile -->
+                        <div class="flex items-center space-x-3 p-2 rounded-full bg-white border border-gray-200 hover:shadow-md transition cursor-pointer hover-lift">
+                            <img src="https://i.pravatar.cc/40?img=1" alt="User" class="w-8 h-8 rounded-full ring-2 ring-orange-200" />
+                            <div class="hidden md:block">
+                                <p class="text-sm font-semibold text-gray-900">Alex Johnson</p>
+                                <p class="text-xs text-gray-500">Premium Buyer</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Sidebar - Always Expanded -->
+<aside id="sidebarContainer" class="sidebar-container">
+  <div class="h-full py-6 px-3 flex flex-col">
+
+    <!-- Quick Stats -->
+    <div class="mb-6 p-3 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl border border-orange-200 animate-fade-up">
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
+          <i class="fas fa-search text-white text-sm"></i>
+        </div>
+        <div>
+          <p class="text-xs text-gray-600">Active Filters</p>
+          <p class="text-lg font-bold text-orange-600" id="activeFiltersCount">6</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="flex-1 space-y-2 animate-fade-up stagger-2">
+
+      <a href="{% url 'buyer_dashboard' %}"
+         class="flex items-center space-x-4 p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition hover-lift">
+        <i class="fas fa-tachometer-alt w-5 text-center"></i>
+        <span class="font-medium truncate">Dashboard</span>
+      </a>
+
+      <a href="{% url 'buyer_search' %}"
+         class="flex items-center space-x-4 p-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white hover-lift hover-glow">
+        <i class="fas fa-search w-5 text-center"></i>
+        <span class="font-medium truncate">Search Properties</span>
+      </a>
+
+      <a href="{% url 'saved_properties' %}"
+         class="flex items-center space-x-4 p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition hover-lift">
+        <i class="fas fa-heart w-5 text-center"></i>
+        <span class="font-medium truncate">Saved Properties</span>
+        <span class="ml-auto bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded-full min-w-[24px] text-center">
+          12
+        </span>
+      </a>
+
+      <a href="{% url 'recent_views' %}"
+         class="flex items-center space-x-4 p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition hover-lift">
+        <i class="fas fa-eye w-5 text-center"></i>
+        <span class="font-medium truncate">Recently Viewed</span>
+      </a>
+
+      <a href="{% url 'price_trends' %}"
+         class="flex items-center space-x-4 p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition hover-lift">
+        <i class="fas fa-chart-line w-5 text-center"></i>
+        <span class="font-medium truncate">Market Trends</span>
+      </a>
+
+      <a href="{% url 'compare_properties' %}"
+         class="flex items-center space-x-4 p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition hover-lift">
+        <i class="fas fa-exchange-alt w-5 text-center"></i>
+        <span class="font-medium truncate">Compare Properties</span>
+      </a>
+
+      <a href="{% url 'buyer_settings' %}"
+         class="flex items-center space-x-4 p-3 rounded-xl text-gray-700 hover:bg-gray-100 transition hover-lift">
+        <i class="fas fa-cog w-5 text-center"></i>
+        <span class="font-medium truncate">Settings</span>
+      </a>
+
+    </nav>
+
+    <!-- Upgrade Banner -->
+    <div class="mt-6 p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl text-white animate-fade-up hover-lift">
+      <p class="text-xs font-medium">UPGRADE TO PRO</p>
+      <p class="text-sm mt-1">Get premium features</p>
+      <button
+        class="w-full mt-3 px-3 py-2 bg-white text-blue-600 rounded-lg text-sm font-semibold hover:bg-blue-50 transition">
+        Upgrade Now
+      </button>
+    </div>
+
+  </div>
+</aside>
+
+
+        <!-- Main Content Wrapper -->
+        <div id="contentWrapper" class="content-wrapper">
+            <!-- Main Content -->
+            <main class="main-content pb-8">
+                <!-- Search Header -->
+                <div class="mb-6 animate-fade-up">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-4">
+                        <div>
+                            <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Property Search</h2>
+                            <p class="text-gray-600 mt-2">Find your perfect property across India</p>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="bg-orange-100 text-orange-600 text-sm px-4 py-2 rounded-full font-semibold">
+                                <i class="fas fa-map-marker-alt mr-2"></i>Mumbai, Maharashtra
+                            </div>
+                            <button class="btn-primary flex items-center space-x-2">
+                                <i class="fas fa-save"></i>
+                                <span>Save Search</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Search Form -->
+                <div class="search-form mb-6 animate-fade-up">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <!-- Location -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                            <div class="relative">
+                                <input type="text" class="search-input" placeholder="Enter locality, city or project">
+                                <i class="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            </div>
+                        </div>
+
+                        <!-- Property Type -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Property Type</label>
+                            <select class="search-dropdown">
+                                <option value="">Any</option>
+                                <option value="apartment">Apartments</option>
+                                <option value="villa">Independent House/Villa</option>
+                                <option value="plot">Plot/Land</option>
+                                <option value="builder-floor">Builder Floor</option>
+                                <option value="farm-house">Farm House</option>
+                            </select>
+                        </div>
+
+                        <!-- Budget -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Budget</label>
+                            <select class="search-dropdown">
+                                <option value="">Any</option>
+                                <option value="0-50">₹0 - ₹50 Lakhs</option>
+                                <option value="50-100">₹50 L - ₹1 Cr</option>
+                                <option value="100-200">₹1 Cr - ₹2 Cr</option>
+                                <option value="200-500">₹2 Cr - ₹5 Cr</option>
+                                <option value="500+">₹5 Cr+</option>
+                            </select>
+                        </div>
+
+                        <!-- Search Button -->
+                        <div class="flex items-end">
+                            <button class="btn-primary w-full h-[42px] flex items-center justify-center space-x-2">
+                                <i class="fas fa-search"></i>
+                                <span>Search</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Filters Toggle -->
+                    <div class="mt-4 pt-4 border-t border-gray-100">
+                        <button class="text-orange-500 text-sm font-medium hover:text-orange-600 transition">
+                            <i class="fas fa-sliders-h mr-2"></i>Show Advanced Filters
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Advanced Filters Section -->
+                <div class="filter-section mb-6 animate-fade-up">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <!-- BHK Type -->
+                        <div class="filter-group">
+                            <h4>BHK Type</h4>
+                            <div class="filter-options">
+                                <div class="filter-option selected">1 RK</div>
+                                <div class="filter-option selected">1 BHK</div>
+                                <div class="filter-option">2 BHK</div>
+                                <div class="filter-option">3 BHK</div>
+                                <div class="filter-option">4 BHK</div>
+                                <div class="filter-option">4+ BHK</div>
+                            </div>
+                        </div>
+
+                        <!-- Furnishing -->
+                        <div class="filter-group">
+                            <h4>Furnishing</h4>
+                            <div class="filter-options">
+                                <div class="filter-option">Furnished</div>
+                                <div class="filter-option selected">Semi-Furnished</div>
+                                <div class="filter-option">Unfurnished</div>
+                            </div>
+                        </div>
+
+                        <!-- Listed By -->
+                        <div class="filter-group">
+                            <h4>Listed By</h4>
+                            <div class="filter-options">
+                                <div class="filter-option">Owner</div>
+                                <div class="filter-option selected">Builder</div>
+                                <div class="filter-option">Dealer</div>
+                            </div>
+                        </div>
+
+                        <!-- Super Built-up Area -->
+                        <div class="filter-group">
+                            <h4>Super Built-up Area</h4>
+                            <div class="flex items-center space-x-2">
+                                <input type="number" class="search-input w-24" placeholder="Min">
+                                <span class="text-gray-500">to</span>
+                                <input type="number" class="search-input w-24" placeholder="Max">
+                                <span class="text-gray-500 text-sm">sq.ft</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Filters -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-4">
+                        <!-- Construction Status -->
+                        <div class="filter-group">
+                            <h4>Construction Status</h4>
+                            <div class="filter-options">
+                                <div class="filter-option selected">Ready to Move</div>
+                                <div class="filter-option">Under Construction</div>
+                                <div class="filter-option">New Launch</div>
+                            </div>
+                        </div>
+
+                        <!-- Age of Property -->
+                        <div class="filter-group">
+                            <h4>Age of Property</h4>
+                            <div class="filter-options">
+                                <div class="filter-option">Less than 1 Year</div>
+                                <div class="filter-option selected">1-5 Years</div>
+                                <div class="filter-option">5-10 Years</div>
+                                <div class="filter-option">10+ Years</div>
+                            </div>
+                        </div>
+
+                        <!-- Amenities -->
+                        <div class="filter-group">
+                            <h4>Amenities</h4>
+                            <div class="filter-options">
+                                <div class="filter-option">Lift</div>
+                                <div class="filter-option selected">Parking</div>
+                                <div class="filter-option">Power Backup</div>
+                                <div class="filter-option">Swimming Pool</div>
+                            </div>
+                        </div>
+
+                        <!-- Reset Button -->
+                        <div class="filter-group flex items-end">
+                            <button class="text-gray-600 text-sm font-medium hover:text-orange-500 transition">
+                                <i class="fas fa-redo mr-2"></i>Reset All Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Header -->
+                <div class="results-header mb-6 animate-fade-up">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">Properties for Sale in Mumbai</h3>
+                            <p class="text-gray-600 text-sm mt-1">Showing <span class="font-semibold">1-20</span> of <span class="font-semibold">1,248</span> properties</p>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <!-- Sort Options -->
+                            <div class="sort-options">
+                                <div class="sort-option active">Relevance</div>
+                                <div class="sort-option">Price: Low to High</div>
+                                <div class="sort-option">Price: High to Low</div>
+                                <div class="sort-option">Newest First</div>
+                            </div>
+                            <!-- Map View -->
+                            <button class="map-view-btn">
+                                <i class="fas fa-map"></i>
+                                <span class="hidden md:inline">Map View</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Property Results Grid -->
+                <div class="property-grid mb-8 animate-fade-up">
+                    <!-- Property 1 -->
+                    <div class="property-card">
+                        <div class="property-image">
+                            <img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop" alt="Luxury Apartment">
+                            <div class="property-status status-sale">FOR SALE</div>
+                            <div class="saved-indicator">
+                                <i class="far fa-heart"></i>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="font-bold text-gray-900 mb-1 line-clamp-2">2 BHK Apartment in Lodha Bellagio</h4>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="location-badge">
+                                            <i class="fas fa-map-marker-alt text-orange-500 text-xs"></i>
+                                            Powai, Mumbai
+                                        </span>
+                                        <span class="verified-badge">
+                                            <i class="fas fa-check-circle"></i>
+                                            Verified
+                                        </span>
+                                    </div>
+                                </div>
+                                <span class="badge badge-premium">PREMIUM</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="price-tag">₹2.8 Cr</div>
+                                <div class="price-per-sqft">₹21,500/sq.ft</div>
+                            </div>
+                            
+                            <div class="property-features">
+                                <div class="feature-item">
+                                    <i class="fas fa-bed text-gray-400"></i>
+                                    <span>2 Beds</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-bath text-gray-400"></i>
+                                    <span>2 Baths</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-ruler-combined text-gray-400"></i>
+                                    <span>1,302 sq.ft</span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mt-4">
+                                <div class="flex items-center gap-2">
+                                    <div class="owner-badge">
+                                        <i class="fas fa-user-tie"></i>
+                                        Owner
+                                    </div>
+                                    <span class="age-badge">5-10 Years Old</span>
+                                </div>
+                                <button class="contact-agent">
+                                    Contact
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Property 2 -->
+                    <div class="property-card">
+                        <div class="property-image">
+                            <img src="https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400&h=300&fit=crop" alt="Modern Villa">
+                            <div class="property-status status-rent">FOR RENT</div>
+                            <div class="saved-indicator saved">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="font-bold text-gray-900 mb-1 line-clamp-2">3 BHK Independent Villa</h4>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="location-badge">
+                                            <i class="fas fa-map-marker-alt text-orange-500 text-xs"></i>
+                                            Juhu, Mumbai
+                                        </span>
+                                        <span class="verified-badge">
+                                            <i class="fas fa-check-circle"></i>
+                                            Verified
+                                        </span>
+                                    </div>
+                                </div>
+                                <span class="badge badge-featured">FEATURED</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="price-tag">₹1.2 L/month</div>
+                                <div class="price-per-sqft">₹18,500/sq.ft</div>
+                            </div>
+                            
+                            <div class="property-features">
+                                <div class="feature-item">
+                                    <i class="fas fa-bed text-gray-400"></i>
+                                    <span>3 Beds</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-bath text-gray-400"></i>
+                                    <span>3 Baths</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-ruler-combined text-gray-400"></i>
+                                    <span>2,500 sq.ft</span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mt-4">
+                                <div class="flex items-center gap-2">
+                                    <div class="owner-badge">
+                                        <i class="fas fa-building"></i>
+                                        Builder
+                                    </div>
+                                    <span class="possession-badge">Ready to Move</span>
+                                </div>
+                                <button class="contact-agent">
+                                    Contact
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Property 3 -->
+                    <div class="property-card">
+                        <div class="property-image">
+                            <img src="https://images.unsplash.com/photo-1545324418-cc1a9a6fded0?w=400&h=300&fit=crop" alt="Penthouse">
+                            <div class="property-status status-sale">FOR SALE</div>
+                            <div class="saved-indicator">
+                                <i class="far fa-heart"></i>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="font-bold text-gray-900 mb-1 line-clamp-2">4 BHK Penthouse in Oberoi Sky City</h4>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="location-badge">
+                                            <i class="fas fa-map-marker-alt text-orange-500 text-xs"></i>
+                                            Goregaon East, Mumbai
+                                        </span>
+                                    </div>
+                                </div>
+                                <span class="badge badge-new">NEW</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="price-tag">₹4.5 Cr</div>
+                                <div class="price-per-sqft">₹28,000/sq.ft</div>
+                            </div>
+                            
+                            <div class="property-features">
+                                <div class="feature-item">
+                                    <i class="fas fa-bed text-gray-400"></i>
+                                    <span>4 Beds</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-bath text-gray-400"></i>
+                                    <span>4 Baths</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-ruler-combined text-gray-400"></i>
+                                    <span>1,607 sq.ft</span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mt-4">
+                                <div class="flex items-center gap-2">
+                                    <div class="owner-badge">
+                                        <i class="fas fa-user-tie"></i>
+                                        Owner
+                                    </div>
+                                    <span class="construction-badge">Under Construction</span>
+                                </div>
+                                <button class="contact-agent">
+                                    Contact
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Property 4 -->
+                    <div class="property-card">
+                        <div class="property-image">
+                            <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&h=300&fit=crop" alt="Studio">
+                            <div class="property-status status-sale">FOR SALE</div>
+                            <div class="saved-indicator">
+                                <i class="far fa-heart"></i>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="font-bold text-gray-900 mb-1 line-clamp-2">1 BHK in Raheja Vihar</h4>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="location-badge">
+                                            <i class="fas fa-map-marker-alt text-orange-500 text-xs"></i>
+                                            Chandivali, Mumbai
+                                        </span>
+                                        <span class="verified-badge">
+                                            <i class="fas fa-check-circle"></i>
+                                            Verified
+                                        </span>
+                                    </div>
+                                </div>
+                                <span class="badge badge-premium">PREMIUM</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="price-tag">₹85 L</div>
+                                <div class="price-per-sqft">₹19,500/sq.ft</div>
+                            </div>
+                            
+                            <div class="property-features">
+                                <div class="feature-item">
+                                    <i class="fas fa-bed text-gray-400"></i>
+                                    <span>1 Bed</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-bath text-gray-400"></i>
+                                    <span>1 Bath</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-ruler-combined text-gray-400"></i>
+                                    <span>436 sq.ft</span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mt-4">
+                                <div class="flex items-center gap-2">
+                                    <div class="owner-badge">
+                                        <i class="fas fa-user-tie"></i>
+                                        Owner
+                                    </div>
+                                    <span class="age-badge">Less than 1 Year</span>
+                                </div>
+                                <button class="contact-agent">
+                                    Contact
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Property 5 -->
+                    <div class="property-card">
+                        <div class="property-image">
+                            <img src="https://images.unsplash.com/photo-1605146769289-440113cc3d00?w=400&h=300&fit=crop" alt="Builder Floor">
+                            <div class="property-status status-sale">FOR SALE</div>
+                            <div class="saved-indicator saved">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="font-bold text-gray-900 mb-1 line-clamp-2">2 BHK Builder Floor</h4>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="location-badge">
+                                            <i class="fas fa-map-marker-alt text-orange-500 text-xs"></i>
+                                            Andheri West, Mumbai
+                                        </span>
+                                        <span class="verified-badge">
+                                            <i class="fas fa-check-circle"></i>
+                                            Verified
+                                        </span>
+                                    </div>
+                                </div>
+                                <span class="badge badge-featured">FEATURED</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="price-tag">₹1.4 Cr</div>
+                                <div class="price-per-sqft">₹16,800/sq.ft</div>
+                            </div>
+                            
+                            <div class="property-features">
+                                <div class="feature-item">
+                                    <i class="fas fa-bed text-gray-400"></i>
+                                    <span>2 Beds</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-bath text-gray-400"></i>
+                                    <span>2 Baths</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-ruler-combined text-gray-400"></i>
+                                    <span>833 sq.ft</span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mt-4">
+                                <div class="flex items-center gap-2">
+                                    <div class="owner-badge">
+                                        <i class="fas fa-building"></i>
+                                        Builder
+                                    </div>
+                                    <span class="possession-badge">Ready to Move</span>
+                                </div>
+                                <button class="contact-agent">
+                                    Contact
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Property 6 -->
+                    <div class="property-card">
+                        <div class="property-image">
+                            <img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&h=300&fit=crop" alt="Plot">
+                            <div class="property-status status-sale">FOR SALE</div>
+                            <div class="saved-indicator">
+                                <i class="far fa-heart"></i>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="font-bold text-gray-900 mb-1 line-clamp-2">Residential Plot in Gated Society</h4>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="location-badge">
+                                            <i class="fas fa-map-marker-alt text-orange-500 text-xs"></i>
+                                            Thane West, Mumbai
+                                        </span>
+                                    </div>
+                                </div>
+                                <span class="badge badge-new">NEW</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="price-tag">₹2.1 Cr</div>
+                                <div class="price-per-sqft">₹4,200/sq.ft</div>
+                            </div>
+                            
+                            <div class="property-features">
+                                <div class="feature-item">
+                                    <i class="fas fa-vector-square text-gray-400"></i>
+                                    <span>500 sq.yd</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-home text-gray-400"></i>
+                                    <span>Plot</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-tree text-gray-400"></i>
+                                    <span>Garden View</span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between mt-4">
+                                <div class="flex items-center gap-2">
+                                    <div class="owner-badge">
+                                        <i class="fas fa-user-tie"></i>
+                                        Owner
+                                    </div>
+                                    <span class="possession-badge">Freehold</span>
+                                </div>
+                                <button class="contact-agent">
+                                    Contact
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination mb-8 animate-fade-up">
+                    <button class="page-item">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="page-item active">1</button>
+                    <button class="page-item">2</button>
+                    <button class="page-item">3</button>
+                    <button class="page-item">4</button>
+                    <button class="page-item">5</button>
+                    <span class="text-gray-400 px-2">...</span>
+                    <button class="page-item">20</button>
+                    <button class="page-item">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+
+                <!-- Load More -->
+                <div class="text-center mb-8 animate-fade-up">
+                    <button class="view-all-btn px-8 py-3">
+                        <i class="fas fa-sync-alt mr-2"></i>
+                        Load More Properties
+                    </button>
+                </div>
+
+                <!-- Search Tips -->
+                <div class="dashboard-card p-6 mb-8 animate-fade-up">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Search Tips for Better Results</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="p-4 bg-orange-50 rounded-lg">
+                            <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 mb-3">
+                                <i class="fas fa-filter"></i>
+                            </div>
+                            <h4 class="font-bold text-gray-900 mb-2">Use Multiple Filters</h4>
+                            <p class="text-sm text-gray-600">Combine BHK type, budget, and locality for precise results</p>
+                        </div>
+                        <div class="p-4 bg-blue-50 rounded-lg">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mb-3">
+                                <i class="fas fa-save"></i>
+                            </div>
+                            <h4 class="font-bold text-gray-900 mb-2">Save Your Search</h4>
+                            <p class="text-sm text-gray-600">Get email alerts when new properties match your criteria</p>
+                        </div>
+                        <div class="p-4 bg-green-50 rounded-lg">
+                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center text-green-600 mb-3">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <h4 class="font-bold text-gray-900 mb-2">Look for Verified Properties</h4>
+                            <p class="text-sm text-gray-600">Verified properties have been checked for accuracy</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Footer -->
+            <footer class="bg-gray-900 text-gray-300 py-8 border-t border-gray-800">
+                <div class="max-w-full px-4 sm:px-6 lg:px-8">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                        <div>
+                            <div class="flex items-center space-x-3 mb-4">
+                                <div class="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center text-white font-bold">RB</div>
+                                <span class="text-white font-bold text-lg">RealBuy Pro</span>
+                            </div>
+                            <p class="text-sm leading-relaxed">India's #1 property portal for buying, selling, and renting properties.</p>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold mb-4">Quick Links</h4>
+                            <ul class="space-y-2 text-sm">
+                                <li><a href="#" class="hover:text-white transition">Buy Properties</a></li>
+                                <li><a href="#" class="hover:text-white transition">Rent Properties</a></li>
+                                <li><a href="#" class="hover:text-white transition">New Projects</a></li>
+                                <li><a href="#" class="hover:text-white transition">Post Property Free</a></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold mb-4">Resources</h4>
+                            <ul class="space-y-2 text-sm">
+                                <li><a href="#" class="hover:text-white transition">Property Guides</a></li>
+                                <li><a href="#" class="hover:text-white transition">EMI Calculator</a></li>
+                                <li><a href="#" class="hover:text-white transition">Home Loan</a></li>
+                                <li><a href="#" class="hover:text-white transition">FAQ</a></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold mb-4">Need Help?</h4>
+                            <div class="space-y-3">
+                                <button class="w-full px-4 py-2 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition">
+                                    <i class="fas fa-headset mr-2"></i>Customer Support
+                                </button>
+                                <button class="w-full px-4 py-2 border border-orange-600 text-orange-600 rounded-lg font-semibold hover:bg-orange-600 hover:text-white transition">
+                                    <i class="fas fa-phone-alt mr-2"></i>1800-123-4567
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="border-t border-gray-800 pt-6 text-center text-sm">
+                        <p>© 2024 RealBuy Pro. All rights reserved. | <a href="#" class="text-orange-400 hover:text-orange-300 transition">Privacy Policy</a> | <a href="#" class="text-orange-400 hover:text-orange-300 transition">Terms of Service</a></p>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- JavaScript for Interactions -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile sidebar toggle
+            function toggleMobileSidebar() {
+                const sidebarContainer = document.getElementById('sidebarContainer');
+                const overlay = document.getElementById('sidebarOverlay');
+                
+                sidebarContainer.classList.toggle('mobile-open');
+                overlay.classList.toggle('active');
+                
+                if (window.innerWidth < 768) {
+                    document.body.style.overflow = sidebarContainer.classList.contains('mobile-open') ? 'hidden' : '';
+                }
+            }
+
+            // Attach mobile menu button event
+            document.getElementById('mobileMenuButton').addEventListener('click', toggleMobileSidebar);
+            document.getElementById('sidebarOverlay').addEventListener('click', toggleMobileSidebar);
+
+            // Filter option selection
+            const filterOptions = document.querySelectorAll('.filter-option');
+            
+            filterOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    if (this.classList.contains('selected')) {
+                        this.classList.remove('selected');
+                    } else {
+                        this.classList.add('selected');
+                    }
+                    
+                    // Update active filters count
+                    const selectedFilters = document.querySelectorAll('.filter-option.selected').length;
+                    const baseFilters = 2; // Location and property type
+                    document.getElementById('activeFiltersCount').textContent = selectedFilters + baseFilters;
+                });
+            });
+
+            // Sort option selection
+            const sortOptions = document.querySelectorAll('.sort-option');
+            
+            sortOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    sortOptions.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            // Heart button functionality for saved properties
+            const savedIndicators = document.querySelectorAll('.saved-indicator');
+            
+            savedIndicators.forEach(indicator => {
+                indicator.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const icon = this.querySelector('i');
+                    
+                    if (icon.classList.contains('far')) {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                        this.classList.add('saved');
+                        this.style.animation = 'scaleIn 0.3s ease-out';
+                        setTimeout(() => {
+                            this.style.animation = '';
+                        }, 300);
+                        
+                        // Update saved count in sidebar
+                        const savedCount = document.querySelector('.sidebar-container nav a:nth-child(3) span');
+                        const currentCount = parseInt(savedCount.textContent);
+                        savedCount.textContent = currentCount + 1;
+                    } else {
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                        this.classList.remove('saved');
+                        
+                        // Update saved count in sidebar
+                        const savedCount = document.querySelector('.sidebar-container nav a:nth-child(3) span');
+                        const currentCount = parseInt(savedCount.textContent);
+                        savedCount.textContent = Math.max(0, currentCount - 1);
+                    }
+                });
+            });
+
+            // Property card click for details
+            const propertyCards = document.querySelectorAll('.property-card');
+            
+            propertyCards.forEach(card => {
+                card.addEventListener('click', function(e) {
+                    // Don't trigger if clicking on buttons or heart icons
+                    if (!e.target.closest('.contact-agent') && !e.target.closest('.saved-indicator')) {
+                        console.log('View property details');
+                        // In real app: window.location.href = '/property-details';
+                    }
+                });
+            });
+
+            // Contact agent button
+            const contactButtons = document.querySelectorAll('.contact-agent');
+            
+            contactButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const propertyTitle = this.closest('.property-card').querySelector('h4').textContent;
+                    alert(`Contacting agent for: ${propertyTitle}`);
+                });
+            });
+
+            // Pagination
+            const pageItems = document.querySelectorAll('.page-item');
+            
+            pageItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    if (!this.querySelector('i')) { // Don't change active state for arrow buttons
+                        pageItems.forEach(page => page.classList.remove('active'));
+                        this.classList.add('active');
+                    }
+                });
+            });
+
+            // Load more button
+            const loadMoreBtn = document.querySelector('.view-all-btn');
+            if (loadMoreBtn && loadMoreBtn.textContent.includes('Load More')) {
+                loadMoreBtn.addEventListener('click', function() {
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Loading...';
+                    this.disabled = true;
+                    
+                    setTimeout(() => {
+                        this.innerHTML = originalText;
+                        this.disabled = false;
+                        alert('More properties loaded!');
+                    }, 1500);
+                });
+            }
+
+            // Save search button
+            const saveSearchBtn = document.querySelector('.btn-primary');
+            if (saveSearchBtn && saveSearchBtn.textContent.includes('Save Search')) {
+                saveSearchBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-check mr-2"></i> Saved';
+                    this.disabled = true;
+                    
+                    setTimeout(() => {
+                        this.innerHTML = originalText;
+                        this.disabled = false;
+                    }, 2000);
+                    
+                    alert('Search saved! You will receive email alerts for new matching properties.');
+                });
+            }
+
+            // Search button
+            const searchBtn = document.querySelector('.btn-primary:last-child');
+            if (searchBtn && searchBtn.textContent.includes('Search')) {
+                searchBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Searching...';
+                    this.disabled = true;
+                    
+                    setTimeout(() => {
+                        this.innerHTML = originalText;
+                        this.disabled = false;
+                        alert('Searching properties... Results updated.');
+                    }, 1500);
+                });
+            }
+
+            // Map view button
+            const mapViewBtn = document.querySelector('.map-view-btn');
+            if (mapViewBtn) {
+                mapViewBtn.addEventListener('click', function() {
+                    alert('Switching to map view...');
+                });
+            }
+
+            // Reset filters button
+            const resetBtn = document.querySelector('.filter-group:last-child button');
+            if (resetBtn && resetBtn.textContent.includes('Reset')) {
+                resetBtn.addEventListener('click', function() {
+                    filterOptions.forEach(option => {
+                        option.classList.remove('selected');
+                    });
+                    
+                    // Reset search inputs
+                    document.querySelectorAll('.search-input[type="number"]').forEach(input => {
+                        input.value = '';
+                    });
+                    
+                    // Reset active filters count
+                    document.getElementById('activeFiltersCount').textContent = '2';
+                    
+                    alert('All filters have been reset.');
+                });
+            }
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                const sidebarContainer = document.getElementById('sidebarContainer');
+                const overlay = document.getElementById('sidebarOverlay');
+                
+                if (window.innerWidth >= 768) {
+                    sidebarContainer.classList.remove('mobile-open');
+                    overlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

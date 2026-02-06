@@ -1,0 +1,804 @@
+<!-- templates/dashboard/seller/settings.html -->
+{% extends 'dashboard/seller/base.html' %}
+{% load static %}
+
+{% block title %}Settings - BHOOSPARSH Seller{% endblock %}
+
+{% block extra_css %}
+<style>
+    .settings-tab {
+        padding: 12px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-left: 3px solid transparent;
+    }
+
+    .settings-tab:hover {
+        background-color: rgba(14, 104, 185, 0.05);
+    }
+
+    .settings-tab.active {
+        background-color: rgba(14, 104, 185, 0.1);
+        border-left-color: #0E68B9;
+        color: #0E68B9;
+        font-weight: 500;
+    }
+
+    .form-section {
+        animation: slideIn 0.3s ease-out;
+    }
+
+    .danger-zone {
+        border: 2px solid #EF4444;
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, transparent 100%);
+    }
+
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 30px;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 22px;
+        width: 22px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+    input:checked + .toggle-slider {
+        background-color: #0E68B9;
+    }
+
+    input:checked + .toggle-slider:before {
+        transform: translateX(30px);
+    }
+</style>
+{% endblock %}
+
+{% block header_title %}
+<h1 class="text-xl font-bold text-gray-900 dark:text-white">Account Settings</h1>
+<p class="text-sm text-gray-600 dark:text-gray-400">Manage your account preferences and security</p>
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col lg:flex-row gap-6">
+    <!-- Sidebar Tabs -->
+    <div class="lg:w-1/4">
+        <div class="bg-white dark:bg-gray-800 text-white rounded-xl shadow-sm p-4">
+            <nav class="space-y-1">
+                <a href="?tab=profile" 
+                   class="settings-tab block {% if active_tab == 'profile' %}active{% endif %}">
+                    <i class="fas fa-user mr-3"></i>
+                    <span>Profile</span>
+                </a>
+                
+                <a href="?tab=privacy" 
+                   class="settings-tab block {% if active_tab == 'privacy' %}active{% endif %}">
+                    <i class="fas fa-lock mr-3"></i>
+                    <span>Privacy & Security</span>
+                </a>
+                
+                
+                
+                <a href="?tab=password" 
+                   class="settings-tab block {% if active_tab == 'password' %}active{% endif %}">
+                    <i class="fas fa-key mr-3"></i>
+                    <span>Password</span>
+                </a>
+                
+                
+                
+                <a href="?tab=danger" 
+                   class="settings-tab block text-red-600 hover:text-red-700 {% if active_tab == 'danger' %}active{% endif %}">
+                    <i class="fas fa-exclamation-triangle mr-3"></i>
+                    <span>Danger Zone</span>
+                </a>
+            </nav>
+            
+            <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <div class="text-center">
+                    <div class="text-xs text-gray-500 mb-2">Account Status</div>
+                    <div class="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        <span class="text-sm font-medium">Active</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-3">
+                        Member since {{ user.date_joined|date:"M d, Y" }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="lg:w-3/4">
+        <!-- Profile Tab -->
+        {% if active_tab == 'profile' %}
+        <div class="form-section">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Profile Settings</h2>
+                <p class="text-gray-600 dark:text-gray-400 mb-6">
+                    Your profile settings are managed in the <a href="{% url 'seller_profile' %}" class="text-bhoosparsh-blue hover:text-blue-700">Profile Page</a>.
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                        <h3 class="font-medium text-gray-900 dark:text-white mb-2">Personal Information</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            Update your name, contact details, and professional information.
+                        </p>
+                        <a href="{% url 'seller_profile' %}" class="mt-3 inline-flex items-center text-sm text-bhoosparsh-blue hover:text-blue-700">
+                            Edit Profile
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                        <h3 class="font-medium text-gray-900 dark:text-white mb-2">Verification Status</h3>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">Email</span>
+                                <span class="text-green-600">
+                                    <i class="fas fa-check-circle"></i> Verified
+                                </span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">Phone</span>
+                                {% if user.phone %}
+                                <span class="text-green-600">
+                                    <i class="fas fa-check-circle"></i> Verified
+                                </span>
+                                {% else %}
+                                <span class="text-yellow-600">
+                                    <i class="fas fa-exclamation-circle"></i> Not Verified
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Privacy & Security Tab -->
+        {% if active_tab == 'privacy' %}
+        <div class="form-section">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Privacy & Security</h2>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="tab" value="privacy">
+                    
+                    <div class="space-y-6">
+                        <!-- Contact Visibility -->
+                        <div>
+                            <h3 class="font-medium text-gray-900 dark:text-white mb-4">Contact Information Visibility</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Who can see your phone number?
+                                    </label>
+                                    {% for choice in privacy_form.show_phone_to.field.choices %}
+                                    <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition mb-2">
+                                        <input type="radio" name="show_phone_to" value="{{ choice.0 }}" 
+                                               class="w-4 h-4 text-bhoosparsh-blue" 
+                                               {% if privacy_form.show_phone_to.value == choice.0 %}checked{% endif %}>
+                                        <span class="ml-3 text-sm text-gray-700 dark:text-gray-300">{{ choice.1 }}</span>
+                                    </label>
+                                    {% endfor %}
+                                    {% if privacy_form.show_phone_to.errors %}
+                                    <p class="mt-1 text-sm text-red-600">{{ privacy_form.show_phone_to.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                                
+                                <div>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="show_email" 
+                                               {% if privacy_form.show_email.value %}checked{% endif %}
+                                               class="w-4 h-4 text-bhoosparsh-blue rounded border-gray-300 focus:ring-bhoosparsh-blue">
+                                        <span class="ml-3 text-sm text-gray-700 dark:text-gray-300">
+                                            Show my email address to visitors
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Call Preferences -->
+                        <div>
+                            <h3 class="font-medium text-gray-900 dark:text-white mb-4">Call Preferences</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                Set your preferred calling hours. Visitors will be informed about these timings.
+                            </p>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Allow calls from
+                                    </label>
+                                    {{ privacy_form.allow_calls_from }}
+                                    {% if privacy_form.allow_calls_from.errors %}
+                                    <p class="mt-1 text-sm text-red-600">{{ privacy_form.allow_calls_from.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Allow calls until
+                                    </label>
+                                    {{ privacy_form.allow_calls_to }}
+                                    {% if privacy_form.allow_calls_to.errors %}
+                                    <p class="mt-1 text-sm text-red-600">{{ privacy_form.allow_calls_to.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Data Privacy -->
+                        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-shield-alt text-blue-500 mt-1"></i>
+                                <div>
+                                    <h4 class="font-medium text-gray-900 dark:text-white">Data Privacy</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                        Your personal information is protected by our 
+                                        <a href="#" class="text-bhoosparsh-blue hover:text-blue-700">Privacy Policy</a>. 
+                                        We never share your contact details with third parties without your consent.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end mt-8">
+                        <button type="submit" 
+                                class="px-6 py-3 bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg hover:opacity-90 transition font-medium">
+                            <i class="fas fa-save mr-2"></i>Save Privacy Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Notifications Tab -->
+        {% if active_tab == 'notifications' %}
+        <div class="form-section">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Notification Settings</h2>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="tab" value="notifications">
+                    
+                    <div class="space-y-6">
+                        <!-- Email Notifications -->
+                        <div>
+                            <h3 class="font-medium text-gray-900 dark:text-white mb-4">Email Notifications</h3>
+                            <div class="space-y-3">
+                                <label class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                                    <div>
+                                        <div class="font-medium text-gray-900 dark:text-white">New Lead Alerts</div>
+                                        <div class="text-sm text-gray-600 dark:text-gray-400">
+                                            Get notified when someone shows interest in your properties
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" name="email_leads" 
+                                               {% if notification_form.email_leads.value %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </label>
+                                
+                                <label class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                                    <div>
+                                        <div class="font-medium text-gray-900 dark:text-white">New Messages</div>
+                                        <div class="text-sm text-gray-600 dark:text-gray-400">
+                                            Receive email when you get new messages from buyers
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" name="email_messages" 
+                                               {% if notification_form.email_messages.value %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </label>
+                                
+                                <label class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                                    <div>
+                                        <div class="font-medium text-gray-900 dark:text-white">Newsletter & Updates</div>
+                                        <div class="text-sm text-gray-600 dark:text-gray-400">
+                                            Get tips, market insights, and platform updates
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" name="newsletter" 
+                                               {% if notification_form.newsletter.value %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Mobile Notifications -->
+                        <div>
+                            <h3 class="font-medium text-gray-900 dark:text-white mb-4">Mobile Notifications</h3>
+                            <div class="space-y-3">
+                                <label class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                                    <div>
+                                        <div class="font-medium text-gray-900 dark:text-white">WhatsApp Alerts</div>
+                                        <div class="text-sm text-gray-600 dark:text-gray-400">
+                                            Instant WhatsApp notifications for new leads
+                                        </div>
+                                        {% if user.profile.whatsapp_number %}
+                                        <div class="text-xs text-green-600 mt-1">
+                                            <i class="fas fa-check-circle"></i>
+                                            Connected: {{ user.profile.whatsapp_number }}
+                                        </div>
+                                        {% else %}
+                                        <div class="text-xs text-yellow-600 mt-1">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            Add WhatsApp number in profile to enable
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" name="whatsapp_leads" 
+                                               {% if notification_form.whatsapp_leads.value %}checked{% endif %}
+                                               {% if not user.profile.whatsapp_number %}disabled{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </label>
+                                
+                                <label class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                                    <div>
+                                        <div class="font-medium text-gray-900 dark:text-white">SMS Alerts</div>
+                                        <div class="text-sm text-gray-600 dark:text-gray-400">
+                                            SMS notifications for important updates
+                                        </div>
+                                        <div class="text-xs text-gray-500 mt-1">
+                                            Standard carrier charges may apply
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" name="sms_leads" 
+                                               {% if notification_form.sms_leads.value %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Display Settings -->
+                        <div>
+                            <h3 class="font-medium text-gray-900 dark:text-white mb-4">Display Settings</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Dashboard Theme
+                                    </label>
+                                    <select name="dashboard_theme" 
+                                            class="w-full p-3 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                                        {% for choice in notification_form.dashboard_theme.field.choices %}
+                                        <option value="{{ choice.0 }}" 
+                                                {% if notification_form.dashboard_theme.value == choice.0 %}selected{% endif %}>
+                                            {{ choice.1 }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end mt-8">
+                        <button type="submit" 
+                                class="px-6 py-3 bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg hover:opacity-90 transition font-medium">
+                            <i class="fas fa-save mr-2"></i>Save Notification Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Password Tab -->
+        {% if active_tab == 'password' %}
+        <div class="form-section">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Change Password</h2>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="tab" value="password">
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Current Password
+                            </label>
+                            {{ password_form.current_password }}
+                            {% if password_form.current_password.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ password_form.current_password.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                New Password
+                            </label>
+                            {{ password_form.new_password }}
+                            {% if password_form.new_password.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ password_form.new_password.errors.0 }}</p>
+                            {% endif %}
+                            <p class="mt-1 text-xs text-gray-500">
+                                Must be at least 8 characters long
+                            </p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Confirm New Password
+                            </label>
+                            {{ password_form.confirm_password }}
+                            {% if password_form.confirm_password.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ password_form.confirm_password.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-lightbulb text-green-500 mt-1"></i>
+                                <div>
+                                    <h4 class="font-medium text-gray-900 dark:text-white">Password Tips</h4>
+                                    <ul class="text-sm text-gray-600 dark:text-gray-400 mt-2 space-y-1">
+                                        <li>• Use a combination of letters, numbers, and symbols</li>
+                                        <li>• Avoid using personal information like birthdays</li>
+                                        <li>• Don't reuse passwords from other sites</li>
+                                        <li>• Consider using a password manager</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end mt-8">
+                        <button type="submit" 
+                                class="px-6 py-3 bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg hover:opacity-90 transition font-medium">
+                            <i class="fas fa-key mr-2"></i>Change Password
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Billing Tab -->
+        {% if active_tab == 'billing' %}
+        <div class="form-section">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Billing & Plans</h2>
+                
+                <div class="space-y-6">
+                    <!-- Current Plan -->
+                    <div class="bg-gradient-to-r from-bhoosparsh-blue to-blue-600 rounded-xl p-6 text-white">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between">
+                            <div>
+                                <h3 class="font-bold text-lg">{{ user_plan }}</h3>
+                                <p class="text-blue-100 text-sm mt-1">
+                                    {% if plan_days_left > 0 %}
+                                    Renews in: <strong>{{ plan_days_left }} days</strong>
+                                    {% else %}
+                                    <strong>Active</strong>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <a href="{% url 'seller_packages' %}" 
+                               class="mt-4 md:mt-0 px-4 py-2 bg-white text-bhoosparsh-blue rounded-lg font-medium hover:bg-gray-100 transition inline-flex items-center gap-2">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>Upgrade Plan</span>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Usage -->
+                    <div>
+                        <h3 class="font-medium text-gray-900 dark:text-white mb-4">Plan Usage</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">Active Listings</span>
+                                    <span class="font-medium">{{ stats.listings_used|default:"0" }}/{{ membership.plan.max_listings|default:"1" }}</span>
+                                </div>
+                                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                    {% with used=stats.listings_used|default:0 total=membership.plan.max_listings|default:1 %}
+                                    <div class="bg-bhoosparsh-blue h-2 rounded-full" style="width: {% widthratio used total 100 %}%"></div>
+                                    {% endwith %}
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">Featured Listings</span>
+                                    <span class="font-medium">{{ stats.featured_used|default:"0" }}/{{ membership.plan.max_featured|default:"0" }}</span>
+                                </div>
+                                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                    {% with used=stats.featured_used|default:0 total=membership.plan.max_featured|default:1 %}
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: {% widthratio used total 100 %}%"></div>
+                                    {% endwith %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Payment Methods -->
+                    <div>
+                        <h3 class="font-medium text-gray-900 dark:text-white mb-4">Payment Methods</h3>
+                        <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                No payment methods saved.
+                            </p>
+                            <button class="mt-3 text-sm text-bhoosparsh-blue hover:text-blue-700 flex items-center gap-1">
+                                <i class="fas fa-plus"></i>
+                                <span>Add Payment Method</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Billing History -->
+                    <div>
+                        <h3 class="font-medium text-gray-900 dark:text-white mb-4">Billing History</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b border-gray-200 dark:border-gray-700">
+                                        <th class="text-left py-3 px-4 text-gray-600 dark:text-gray-400">Date</th>
+                                        <th class="text-left py-3 px-4 text-gray-600 dark:text-gray-400">Description</th>
+                                        <th class="text-left py-3 px-4 text-gray-600 dark:text-gray-400">Amount</th>
+                                        <th class="text-left py-3 px-4 text-gray-600 dark:text-gray-400">Status</th>
+                                        <th class="text-left py-3 px-4 text-gray-600 dark:text-gray-400">Invoice</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b border-gray-100 dark:border-gray-800">
+                                        <td class="py-3 px-4">Jan 20, 2026</td>
+                                        <td class="py-3 px-4">Professional Plan</td>
+                                        <td class="py-3 px-4 text-green-600 font-medium">₹2,499.00</td>
+                                        <td class="py-3 px-4">
+                                            <span class="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full text-xs">
+                                                Paid
+                                            </span>
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <a href="#" class="text-bhoosparsh-blue hover:text-blue-700">
+                                                <i class="fas fa-download mr-1"></i> Download
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Danger Zone Tab -->
+        {% if active_tab == 'danger' %}
+        <div class="form-section">
+            <div class="danger-zone rounded-xl shadow-sm p-6">
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Danger Zone</h2>
+                
+                <div class="space-y-6">
+                    <!-- Account Deletion -->
+                    <div>
+                        <h3 class="font-medium text-red-600 mb-4">Delete Account</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                            Once you delete your account, there is no going back. This action cannot be undone.
+                            All your data including properties, leads, and payment history will be permanently deleted.
+                        </p>
+                        
+                        <form method="POST" id="deleteAccountForm">
+                            {% csrf_token %}
+                            <input type="hidden" name="tab" value="danger">
+                            
+                            <div class="space-y-4">
+                                <label class="flex items-start">
+                                    {{ deletion_form.confirm }}
+                                    <span class="ml-3 text-sm text-gray-700 dark:text-gray-300">
+                                        I understand that this action cannot be undone and all my data will be permanently deleted
+                                    </span>
+                                </label>
+                                {% if deletion_form.confirm.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ deletion_form.confirm.errors.0 }}</p>
+                                {% endif %}
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Confirm Password
+                                    </label>
+                                    {{ deletion_form.password }}
+                                    {% if deletion_form.password.errors %}
+                                    <p class="mt-1 text-sm text-red-600">{{ deletion_form.password.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="bg-red-50 dark:bg-red-900/20 rounded-lg p-4">
+                                    <div class="flex items-start gap-3">
+                                        <i class="fas fa-exclamation-triangle text-red-500 mt-1"></i>
+                                        <div>
+                                            <h4 class="font-medium text-red-600">Warning</h4>
+                                            <ul class="text-sm text-red-600 dark:text-red-400 mt-2 space-y-1">
+                                                <li>• All your properties will be removed from the platform</li>
+                                                <li>• All leads and conversations will be deleted</li>
+                                                <li>• Your subscription will be cancelled immediately</li>
+                                                <li>• This action cannot be reversed</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex justify-end mt-8">
+                                <button type="button" onclick="confirmAccountDeletion()" 
+                                        class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium">
+                                    <i class="fas fa-trash mr-2"></i>Delete My Account
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Account Deletion Confirmation Modal -->
+<div id="deleteAccountModal" class="modal-overlay">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full mx-4">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-red-600">Confirm Account Deletion</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">This action cannot be undone</p>
+                </div>
+                <button onclick="closeModal('deleteAccountModal')" 
+                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <div class="flex items-center justify-center text-red-500 text-5xl mb-4">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <p class="text-center text-gray-600 dark:text-gray-400 mb-4">
+                Are you absolutely sure you want to delete your account?
+            </p>
+            <p class="text-center text-sm text-gray-500">
+                Type "DELETE" to confirm
+            </p>
+            <input type="text" id="deleteConfirmation" 
+                   placeholder="Type DELETE here" 
+                   class="w-full p-3 border border-red-300 rounded-lg mt-4 text-center"
+                   oninput="validateDeleteConfirmation(this)">
+        </div>
+
+        <div class="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+            <button onclick="closeModal('deleteAccountModal')" 
+                    class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                Cancel
+            </button>
+            <button id="confirmDeleteBtn" disabled
+                    class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium opacity-50 cursor-not-allowed">
+                <i class="fas fa-trash mr-2"></i>Delete Account Permanently
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function confirmAccountDeletion() {
+        // Check if confirmation checkbox is checked
+        const confirmCheckbox = document.querySelector('input[name="confirm"]');
+        const passwordField = document.querySelector('input[name="password"]');
+        
+        if (!confirmCheckbox.checked) {
+            showToast('Please confirm that you understand the consequences', 'warning');
+            return;
+        }
+        
+        if (!passwordField.value) {
+            showToast('Please enter your password to confirm', 'warning');
+            passwordField.focus();
+            return;
+        }
+        
+        openModal('deleteAccountModal');
+    }
+    
+    function validateDeleteConfirmation(input) {
+        const deleteBtn = document.getElementById('confirmDeleteBtn');
+        if (input.value === 'DELETE') {
+            deleteBtn.disabled = false;
+            deleteBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        } else {
+            deleteBtn.disabled = true;
+            deleteBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+    }
+    
+    function exportAllData() {
+        showToast('Preparing your data export...', 'info');
+        // In real app, this would trigger a data export process
+        setTimeout(() => {
+            showToast('Data export has started. You will receive an email when ready.', 'success');
+        }, 1000);
+    }
+    
+    // Handle form submissions
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add event listeners for form submissions
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                // Show loading state
+                const submitBtn = this.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processing...';
+                    submitBtn.disabled = true;
+                    
+                    // Revert after 3 seconds
+                    setTimeout(() => {
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    }, 3000);
+                }
+            });
+        });
+        
+        // Handle delete account confirmation
+        const deleteConfirmBtn = document.getElementById('confirmDeleteBtn');
+        if (deleteConfirmBtn) {
+            deleteConfirmBtn.addEventListener('click', function() {
+                document.getElementById('deleteAccountForm').submit();
+            });
+        }
+    });
+</script>
+{% endblock %}

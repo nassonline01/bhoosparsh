@@ -1,0 +1,1130 @@
+{% extends 'properties/base.html' %}
+{% load static %}
+
+{% block title %}Browse Properties - RealEstatePro{% endblock %}
+
+{% block extra_css %}
+<style>
+    .search-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 4rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .search-hero:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+        opacity: 0.1;
+    }
+    
+    .search-container {
+        position: relative;
+        z-index: 2;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .quick-search-form {
+        background: white;
+        border-radius: 1.5rem;
+        padding: 2rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    
+    .filters-sidebar {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        position: sticky;
+        top: 2rem;
+        max-height: calc(100vh - 4rem);
+        overflow-y: auto;
+    }
+    
+    .property-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    @media (max-width: 768px) {
+        .property-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .view-toggle {
+        display: flex;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        overflow: hidden;
+    }
+    
+    .view-toggle-btn {
+        padding: 0.75rem 1.5rem;
+        background: white;
+        color: #64748b;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .view-toggle-btn.active {
+        background: #3b82f6;
+        color: white;
+    }
+    
+    .view-toggle-btn:not(:last-child) {
+        border-right: 1px solid #e2e8f0;
+    }
+    
+    .list-view {
+        display: none;
+    }
+    
+    .list-view.active {
+        display: block;
+    }
+    
+    .grid-view.active {
+        display: grid;
+    }
+    
+    .property-list-item {
+        background: white;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
+        display: flex;
+    }
+    
+    .property-list-item:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .list-item-image {
+        width: 300px;
+        height: 200px;
+        flex-shrink: 0;
+    }
+    
+    .list-item-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .list-item-content {
+        flex: 1;
+        padding: 1.5rem;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+    
+    .empty-state-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 2rem;
+    }
+    
+    .empty-state-icon i {
+        font-size: 2rem;
+        color: white;
+    }
+    
+    .search-suggestions {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 0.75rem;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        max-height: 300px;
+        overflow-y: auto;
+        display: none;
+    }
+    
+    .suggestion-item {
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .suggestion-item:hover {
+        background-color: #f8fafc;
+    }
+    
+    .filter-group {
+        border-bottom: 1px solid #e2e8f0;
+        padding: 1.5rem 0;
+    }
+    
+    .filter-group:last-child {
+        border-bottom: none;
+    }
+    
+    .price-slider {
+        padding: 0 0.5rem;
+    }
+    
+    .noUi-target {
+        background: #e2e8f0;
+        border: none;
+        box-shadow: none;
+        height: 4px;
+    }
+    
+    .noUi-connect {
+        background: #3b82f6;
+    }
+    
+    .noUi-handle {
+        width: 20px;
+        height: 20px;
+        right: -10px;
+        top: -8px;
+        border: 2px solid #3b82f6;
+        background: white;
+        border-radius: 50%;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+    }
+    
+    .noUi-handle:before, .noUi-handle:after {
+        display: none;
+    }
+    
+    .pagination-container {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+    
+    .results-stats {
+        color: #64748b;
+        font-size: 0.875rem;
+    }
+    
+    .sort-dropdown {
+        position: relative;
+    }
+    
+    .sort-button {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+    }
+    
+    .sort-menu {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: white;
+        border-radius: 0.75rem;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        z-index: 100;
+        min-width: 200px;
+        display: none;
+    }
+    
+    .sort-menu.active {
+        display: block;
+    }
+    
+    .sort-option {
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .sort-option:hover {
+        background-color: #f8fafc;
+    }
+    
+    .sort-option.active {
+        color: #3b82f6;
+        font-weight: 600;
+    }
+    
+    .map-container {
+        height: 600px;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+    
+    .map-view {
+        display: none;
+    }
+    
+    .map-view.active {
+        display: block;
+    }
+    
+    .property-marker {
+        width: 40px;
+        height: 40px;
+        background: white;
+        border: 2px solid #3b82f6;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: #3b82f6;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .property-marker:hover {
+        transform: scale(1.2);
+        background: #3b82f6;
+        color: white;
+    }
+    
+    .cluster-marker {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 1.25rem;
+        box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Search Section -->
+<div class="search-hero">
+    <div class="container mx-auto px-4">
+        <div class="search-container">
+            <div class="text-center mb-8">
+                <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">Find Your Dream Property</h1>
+                <p class="text-xl text-blue-100 max-w-3xl mx-auto">
+                    Browse thousands of properties for sale and rent. Find the perfect home that matches your lifestyle.
+                </p>
+            </div>
+            
+            <!-- Quick Search Form -->
+            <div class="quick-search-form">
+                <form method="GET" action="{% url 'properties:search' %}" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <!-- Location Search -->
+                        <div class="md:col-span-2 relative">
+                            <div class="flex items-center border border-gray-300 rounded-lg px-4 py-3 bg-white">
+                                <i class="fas fa-map-marker-alt text-gray-400 mr-3"></i>
+                                <input type="text" 
+                                       name="q" 
+                                       value="{{ request.GET.q }}"
+                                       placeholder="Search by location, city, or landmark..."
+                                       class="flex-1 focus:outline-none"
+                                       hx-get="{% url 'properties:search_suggestions' %}"
+                                       hx-target="#search-suggestions"
+                                       hx-trigger="keyup changed delay:500ms">
+                            </div>
+                            <div id="search-suggestions" class="search-suggestions"></div>
+                        </div>
+                        
+                        <!-- Property Type -->
+                        <div>
+                            <select name="property_type" 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+                                <option value="">All Types</option>
+                                {% for type in property_types %}
+                                    <option value="{{ type.0 }}" {% if request.GET.property_type == type.0 %}selected{% endif %}>
+                                        {{ type.1 }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- Price Range -->
+                        <div>
+                            <select name="status" 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+                                <option value="">For Sale/Rent</option>
+                                {% for status in status_choices %}
+                                    <option value="{{ status.0 }}" {% if request.GET.status == status.0 %}selected{% endif %}>
+                                        {{ status.1 }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Advanced Filters (Collapsible) -->
+                    <div class="border-t border-gray-200 pt-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-semibold text-gray-700">Advanced Filters</h3>
+                            <button type="button" 
+                                    class="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                    id="toggle-advanced-filters">
+                                <span>Show Filters</span>
+                                <i class="fas fa-chevron-down ml-1"></i>
+                            </button>
+                        </div>
+                        
+                        <div id="advanced-filters" class="hidden">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <!-- Bedrooms -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Bedrooms</label>
+                                    <select name="bedrooms" 
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="">Any</option>
+                                        {% for i in "123456" %}
+                                            <option value="{{ forloop.counter }}" {% if request.GET.bedrooms == forloop.counter|stringformat:"s" %}selected{% endif %}>
+                                                {{ forloop.counter }}+
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <!-- Bathrooms -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Bathrooms</label>
+                                    <select name="bathrooms" 
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="">Any</option>
+                                        {% for i in "123" %}
+                                            <option value="{{ forloop.counter }}" {% if request.GET.bathrooms == forloop.counter|stringformat:"s" %}selected{% endif %}>
+                                                {{ forloop.counter }}+
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <!-- Furnishing -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Furnishing</label>
+                                    <select name="furnishing" 
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="">Any</option>
+                                        {% for furn in furnishing_choices %}
+                                            <option value="{{ furn.0 }}" {% if request.GET.furnishing == furn.0 %}selected{% endif %}>
+                                                {{ furn.1 }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <!-- Featured/Verified -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Special</label>
+                                    <select name="special" 
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="">All Properties</option>
+                                        <option value="featured" {% if request.GET.special == 'featured' %}selected{% endif %}>Featured Only</option>
+                                        <option value="verified" {% if request.GET.special == 'verified' %}selected{% endif %}>Verified Only</option>
+                                        <option value="rera" {% if request.GET.special == 'rera' %}selected{% endif %}>RERA Registered</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Search Button -->
+                    <div class="flex justify-center">
+                        <button type="submit" 
+                                class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg">
+                            <i class="fas fa-search mr-2"></i> Search Properties
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <!-- Filters Sidebar -->
+        <div class="lg:col-span-1">
+            <div class="filters-sidebar p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-900">Filters</h2>
+                    <a href="{% url 'properties:list' %}" class="text-sm text-blue-600 hover:text-blue-800">
+                        Clear All
+                    </a>
+                </div>
+                
+                <!-- Price Range Filter -->
+                <div class="filter-group">
+                    <h3 class="font-semibold text-gray-800 mb-4">Price Range</h3>
+                    <div class="space-y-4">
+                        <div class="price-slider" id="price-slider"></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">Min Price</label>
+                                <input type="number" 
+                                       name="min_price" 
+                                       value="{{ request.GET.min_price|default:'' }}"
+                                       placeholder="$0"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">Max Price</label>
+                                <input type="number" 
+                                       name="max_price" 
+                                       value="{{ request.GET.max_price|default:'' }}"
+                                       placeholder="$10,000,000"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Area Range Filter -->
+                <div class="filter-group">
+                    <h3 class="font-semibold text-gray-800 mb-4">Area (Sq Ft)</h3>
+                    <div class="space-y-4">
+                        <div class="price-slider" id="area-slider"></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">Min Area</label>
+                                <input type="number" 
+                                       name="min_area" 
+                                       value="{{ request.GET.min_area|default:'' }}"
+                                       placeholder="0"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">Max Area</label>
+                                <input type="number" 
+                                       name="max_area" 
+                                       value="{{ request.GET.max_area|default:'' }}"
+                                       placeholder="10,000"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Property Type Filter -->
+                <div class="filter-group">
+                    <h3 class="font-semibold text-gray-800 mb-4">Property Type</h3>
+                    <div class="space-y-2">
+                        {% for category in categories %}
+                            <label class="flex items-center">
+                                <input type="checkbox" 
+                                       name="category" 
+                                       value="{{ category.id }}"
+                                       class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                       {% if category.id|stringformat:"s" in request.GET.category %}checked{% endif %}>
+                                <span class="ml-3 text-gray-700">{{ category.name }}</span>
+                                <span class="ml-auto text-sm text-gray-500">({{ category.property_count }})</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Amenities Filter -->
+                <div class="filter-group">
+                    <h3 class="font-semibold text-gray-800 mb-4">Amenities</h3>
+                    <div class="space-y-2 max-h-48 overflow-y-auto">
+                        {% for amenity in amenities %}
+                            <label class="flex items-center">
+                                <input type="checkbox" 
+                                       name="amenities" 
+                                       value="{{ amenity.id }}"
+                                       class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                       {% if amenity.id|stringformat:"s" in request.GET.amenities %}checked{% endif %}>
+                                <span class="ml-3 text-gray-700">{{ amenity.name }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- City Filter -->
+                <div class="filter-group">
+                    <h3 class="font-semibold text-gray-800 mb-4">City</h3>
+                    <select name="city" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">All Cities</option>
+                        {% for city in cities %}
+                            <option value="{{ city }}" {% if request.GET.city == city %}selected{% endif %}>
+                                {{ city }} ({{ city.property_count }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Apply Filters Button -->
+                <button type="button" 
+                        onclick="applyFilters()"
+                        class="w-full mt-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all">
+                    <i class="fas fa-filter mr-2"></i> Apply Filters
+                </button>
+            </div>
+            
+            <!-- Stats Card -->
+            <div class="mt-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+                <h3 class="font-semibold text-gray-900 mb-4">Market Insights</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Avg Price:</span>
+                        <span class="font-semibold">${{ price_stats.avg_price|floatformat:0|default:"0" }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Properties Found:</span>
+                        <span class="font-semibold">{{ pagination_info.total }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Featured:</span>
+                        <span class="font-semibold">{{ featured_count|default:"0" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Properties List -->
+        <div class="lg:col-span-3">
+            <!-- Results Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between mb-8">
+                <div class="mb-4 md:mb-0">
+                    <h2 class="text-2xl font-bold text-gray-900">
+                        {% if request.GET.q %}
+                            Search Results for "{{ request.GET.q }}"
+                        {% else %}
+                            Available Properties
+                        {% endif %}
+                    </h2>
+                    <p class="text-gray-600 results-stats">
+                        Showing {{ properties|length }} of {{ pagination_info.total }} properties
+                        {% if price_stats.min_price and price_stats.max_price %}
+                            • Price range: ${{ price_stats.min_price|floatformat:0 }} - ${{ price_stats.max_price|floatformat:0 }}
+                        {% endif %}
+                    </p>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- View Toggle -->
+                    <div class="view-toggle">
+                        <button class="view-toggle-btn active" data-view="grid">
+                            <i class="fas fa-th-large"></i>
+                        </button>
+                        <button class="view-toggle-btn" data-view="list">
+                            <i class="fas fa-list"></i>
+                        </button>
+                        <button class="view-toggle-btn" data-view="map">
+                            <i class="fas fa-map"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Sort Dropdown -->
+                    <div class="sort-dropdown">
+                        <button class="sort-button" id="sort-button">
+                            <span>Sort by: {{ sort_label|default:"Newest" }}</span>
+                            <i class="fas fa-chevron-down ml-2"></i>
+                        </button>
+                        <div class="sort-menu" id="sort-menu">
+                            {% for option in sort_options %}
+                                <div class="sort-option {% if option.value == request.GET.sort_by %}active{% endif %}" 
+                                     data-value="{{ option.value }}">
+                                    {{ option.label }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Grid View -->
+            <div class="property-grid grid-view active">
+                {% for property in properties %}
+                    {% include 'properties/includes/property_card.html' with property=property %}
+                {% empty %}
+                    <div class="col-span-full">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2">No Properties Found</h3>
+                            <p class="text-gray-600 mb-6 max-w-md mx-auto">
+                                Try adjusting your search filters or browse our featured properties.
+                            </p>
+                            <a href="{% url 'properties:list' %}" 
+                               class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all">
+                                <i class="fas fa-home mr-2"></i> Browse All Properties
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <!-- List View -->
+            <div class="list-view">
+                {% for property in properties %}
+                    <div class="property-list-item mb-6">
+                        <div class="list-item-image">
+                            {% if property.primary_image %}
+                                <img src="{{ property.primary_image.url }}" alt="{{ property.title }}">
+                            {% else %}
+                                <div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                                    <i class="fas fa-home text-gray-400 text-3xl"></i>
+                                </div>
+                            {% endif %}
+                            {% if property.is_featured %}
+                                <div class="absolute top-4 left-4">
+                                    <span class="px-3 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-full text-sm font-semibold">
+                                        <i class="fas fa-star mr-1"></i> Featured
+                                    </span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="list-item-content">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-900 mb-1">
+                                        <a href="{% url 'properties:detail' property.slug %}" class="hover:text-blue-600">
+                                            {{ property.title }}
+                                        </a>
+                                    </h3>
+                                    <div class="flex items-center text-gray-600 mb-2">
+                                        <i class="fas fa-map-marker-alt mr-2"></i>
+                                        {{ property.locality }}, {{ property.city }}
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-2xl font-bold text-gray-900">${{ property.price|floatformat:0 }}</div>
+                                    {% if property.status == 'for_rent' %}
+                                        <div class="text-gray-600 text-sm">per month</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                <div class="flex items-center">
+                                    <i class="fas fa-bed text-blue-600 mr-2"></i>
+                                    <span>{{ property.bedrooms }} Bed</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-bath text-blue-600 mr-2"></i>
+                                    <span>{{ property.bathrooms }} Bath</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-vector-square text-blue-600 mr-2"></i>
+                                    <span>{{ property.area }} {{ property.get_area_unit_display }}</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-calendar text-blue-600 mr-2"></i>
+                                    <span>{{ property.created_at|date:"M d, Y" }}</span>
+                                </div>
+                            </div>
+                            
+                            <p class="text-gray-600 line-clamp-2 mb-4">
+                                {{ property.description|truncatechars:150 }}
+                            </p>
+                            
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center space-x-2">
+                                    {% if property.is_verified %}
+                                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                                            <i class="fas fa-check-circle mr-1"></i> Verified
+                                        </span>
+                                    {% endif %}
+                                    {% if property.rera_registered %}
+                                        <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                                            <i class="fas fa-file-certificate mr-1"></i> RERA
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <a href="{% url 'properties:detail' property.slug %}" 
+                                   class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Map View -->
+            <div class="map-view" id="map-view">
+                <div class="map-container" id="properties-map"></div>
+            </div>
+            
+            <!-- Pagination -->
+            {% if properties %}
+                <div class="pagination-container mt-8">
+                    {% include 'properties/includes/pagination.html' %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Featured Properties Section -->
+    {% if featured_properties %}
+        <div class="mt-16">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-3xl font-bold text-gray-900">Featured Properties</h2>
+                <a href="{% url 'properties:list' %}?special=featured" class="text-blue-600 hover:text-blue-800 font-medium">
+                    View All <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+            
+            <div class="property-grid">
+                {% for property in featured_properties %}
+                    {% include 'properties/includes/property_card.html' with property=property %}
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+    
+    <!-- Recently Added -->
+    {% if recent_properties %}
+        <div class="mt-16">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-3xl font-bold text-gray-900">Recently Added</h2>
+                <a href="{% url 'properties:list' %}?sort_by=-created_at" class="text-blue-600 hover:text-blue-800 font-medium">
+                    View All <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+            
+            <div class="property-grid">
+                {% for property in recent_properties %}
+                    {% include 'properties/includes/property_card.html' with property=property %}
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/nouislider@15.6.1/dist/nouislider.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.6.1/dist/nouislider.min.css">
+<script>
+    // View Toggle
+    const viewToggleBtns = document.querySelectorAll('.view-toggle-btn');
+    const gridView = document.querySelector('.grid-view');
+    const listView = document.querySelector('.list-view');
+    const mapView = document.getElementById('map-view');
+    
+    viewToggleBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const view = btn.getAttribute('data-view');
+            
+            // Update active button
+            viewToggleBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // Show selected view
+            gridView.classList.remove('active');
+            listView.classList.remove('active');
+            mapView.classList.remove('active');
+            
+            if (view === 'grid') {
+                gridView.classList.add('active');
+            } else if (view === 'list') {
+                listView.classList.add('active');
+            } else if (view === 'map') {
+                mapView.classList.add('active');
+                initializeMap();
+            }
+        });
+    });
+    
+    // Sort Dropdown
+    const sortButton = document.getElementById('sort-button');
+    const sortMenu = document.getElementById('sort-menu');
+    
+    sortButton.addEventListener('click', () => {
+        sortMenu.classList.toggle('active');
+    });
+    
+    document.addEventListener('click', (e) => {
+        if (!sortButton.contains(e.target) && !sortMenu.contains(e.target)) {
+            sortMenu.classList.remove('active');
+        }
+    });
+    
+    // Sort option selection
+    document.querySelectorAll('.sort-option').forEach(option => {
+        option.addEventListener('click', () => {
+            const sortValue = option.getAttribute('data-value');
+            const url = new URL(window.location.href);
+            url.searchParams.set('sort_by', sortValue);
+            window.location.href = url.toString();
+        });
+    });
+    
+    // Price Slider
+    const priceSlider = document.getElementById('price-slider');
+    if (priceSlider) {
+        const minPrice = {{ price_stats.min_price|default:"0" }};
+        const maxPrice = {{ price_stats.max_price|default:"10000000" }};
+        const currentMin = {{ request.GET.min_price|default:"0" }};
+        const currentMax = {{ request.GET.max_price|default:"10000000" }};
+        
+        noUiSlider.create(priceSlider, {
+            start: [currentMin || minPrice, currentMax || maxPrice],
+            connect: true,
+            range: {
+                'min': minPrice,
+                'max': maxPrice
+            },
+            format: {
+                to: function(value) {
+                    return '$' + parseInt(value).toLocaleString();
+                },
+                from: function(value) {
+                    return Number(value.replace(/[^0-9.-]+/g, ''));
+                }
+            }
+        });
+        
+        priceSlider.noUiSlider.on('update', function(values) {
+            const [min, max] = values.map(v => parseInt(v.replace(/[^0-9]/g, '')));
+            document.querySelector('input[name="min_price"]').value = min;
+            document.querySelector('input[name="max_price"]').value = max;
+        });
+    }
+    
+    // Area Slider
+    const areaSlider = document.getElementById('area-slider');
+    if (areaSlider) {
+        const minArea = {{ area_stats.min_area|default:"0" }};
+        const maxArea = {{ area_stats.max_area|default:"10000" }};
+        const currentMinArea = {{ request.GET.min_area|default:"0" }};
+        const currentMaxArea = {{ request.GET.max_area|default:"10000" }};
+        
+        noUiSlider.create(areaSlider, {
+            start: [currentMinArea || minArea, currentMaxArea || maxArea],
+            connect: true,
+            range: {
+                'min': minArea,
+                'max': maxArea
+            },
+            format: {
+                to: function(value) {
+                    return parseInt(value).toLocaleString() + ' sq ft';
+                },
+                from: function(value) {
+                    return Number(value.replace(/[^0-9.-]+/g, ''));
+                }
+            }
+        });
+        
+        areaSlider.noUiSlider.on('update', function(values) {
+            const [min, max] = values.map(v => parseInt(v.replace(/[^0-9]/g, '')));
+            document.querySelector('input[name="min_area"]').value = min;
+            document.querySelector('input[name="max_area"]').value = max;
+        });
+    }
+    
+    // Apply Filters
+    function applyFilters() {
+        const form = document.createElement('form');
+        form.method = 'GET';
+        form.action = window.location.pathname;
+        
+        // Collect all filter values
+        const filters = {
+            q: document.querySelector('input[name="q"]')?.value,
+            property_type: document.querySelector('select[name="property_type"]')?.value,
+            status: document.querySelector('select[name="status"]')?.value,
+            min_price: document.querySelector('input[name="min_price"]')?.value,
+            max_price: document.querySelector('input[name="max_price"]')?.value,
+            min_area: document.querySelector('input[name="min_area"]')?.value,
+            max_area: document.querySelector('input[name="max_area"]')?.value,
+            city: document.querySelector('select[name="city"]')?.value,
+            bedrooms: document.querySelector('select[name="bedrooms"]')?.value,
+            bathrooms: document.querySelector('select[name="bathrooms"]')?.value,
+            furnishing: document.querySelector('select[name="furnishing"]')?.value,
+            special: document.querySelector('select[name="special"]')?.value,
+        };
+        
+        // Add checkboxes
+        document.querySelectorAll('input[name="category"]:checked').forEach(cb => {
+            form.appendChild(createHiddenInput('category', cb.value));
+        });
+        
+        document.querySelectorAll('input[name="amenities"]:checked').forEach(cb => {
+            form.appendChild(createHiddenInput('amenities', cb.value));
+        });
+        
+        // Add other filters
+        Object.entries(filters).forEach(([name, value]) => {
+            if (value) {
+                form.appendChild(createHiddenInput(name, value));
+            }
+        });
+        
+        // Preserve sort
+        const sortBy = new URLSearchParams(window.location.search).get('sort_by');
+        if (sortBy) {
+            form.appendChild(createHiddenInput('sort_by', sortBy));
+        }
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+    
+    function createHiddenInput(name, value) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = value;
+        return input;
+    }
+    
+    // Toggle Advanced Filters
+    const toggleBtn = document.getElementById('toggle-advanced-filters');
+    const advancedFilters = document.getElementById('advanced-filters');
+    
+    toggleBtn.addEventListener('click', () => {
+        const isHidden = advancedFilters.classList.contains('hidden');
+        advancedFilters.classList.toggle('hidden');
+        toggleBtn.innerHTML = isHidden ? 
+            '<span>Hide Filters</span><i class="fas fa-chevron-up ml-1"></i>' :
+            '<span>Show Filters</span><i class="fas fa-chevron-down ml-1"></i>';
+    });
+    
+    // Search Suggestions
+    let searchTimeout;
+    const searchInput = document.querySelector('input[name="q"]');
+    const suggestionsContainer = document.getElementById('search-suggestions');
+    
+    searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        const query = searchInput.value.trim();
+        
+        if (query.length < 2) {
+            suggestionsContainer.style.display = 'none';
+            return;
+        }
+        
+        searchTimeout = setTimeout(async () => {
+            try {
+                const response = await fetch(`{% url 'properties:search_suggestions' %}?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                if (data.suggestions) {
+                    let html = '';
+                    
+                    if (data.suggestions.properties?.length) {
+                        html += '<div class="px-4 py-2 text-xs font-semibold text-gray-500 border-b">Properties</div>';
+                        data.suggestions.properties.forEach(prop => {
+                            html += `<div class="suggestion-item" onclick="selectSuggestion('${prop}')">${prop}</div>`;
+                        });
+                    }
+                    
+                    if (data.suggestions.cities?.length) {
+                        html += '<div class="px-4 py-2 text-xs font-semibold text-gray-500 border-b">Cities</div>';
+                        data.suggestions.cities.forEach(city => {
+                            html += `<div class="suggestion-item" onclick="selectSuggestion('${city}')">${city}</div>`;
+                        });
+                    }
+                    
+                    if (data.suggestions.localities?.length) {
+                        html += '<div class="px-4 py-2 text-xs font-semibold text-gray-500 border-b">Localities</div>';
+                        data.suggestions.localities.forEach(locality => {
+                            html += `<div class="suggestion-item" onclick="selectSuggestion('${locality}')">${locality}</div>`;
+                        });
+                    }
+                    
+                    suggestionsContainer.innerHTML = html;
+                    suggestionsContainer.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error fetching suggestions:', error);
+            }
+        }, 300);
+    });
+    
+    function selectSuggestion(text) {
+        searchInput.value = text;
+        suggestionsContainer.style.display = 'none';
+        searchInput.focus();
+    }
+    
+    // Close suggestions when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+            suggestionsContainer.style.display = 'none';
+        }
+    });
+    
+    // Map functionality
+    let propertiesMap;
+    let markers = [];
+    
+    function initializeMap() {
+        if (!propertiesMap) {
+            // Default center (can be based on user location or first property)
+            propertiesMap = L.map('properties-map').setView([20.5937, 78.9629], 5); // India center
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(propertiesMap);
+            
+            // Add properties as markers
+            {% for property in properties %}
+                {% if property.latitude and property.longitude %}
+                    const marker{{ forloop.counter }} = L.marker([{{ property.latitude }}, {{ property.longitude }}])
+                        .bindPopup(`
+                            <div class="p-2">
+                                <h4 class="font-bold text-gray-900">{{ property.title }}</h4>
+                                <p class="text-sm text-gray-600">{{ property.locality }}, {{ property.city }}</p>
+                                <p class="text-lg font-bold text-blue-600 mt-2">${{ property.price|floatformat:0 }}</p>
+                                <a href="{% url 'properties:detail' property.slug %}" 
+                                   class="inline-block mt-2 px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+                                    View Details
+                                </a>
+                            </div>
+                        `)
+                        .addTo(propertiesMap);
+                    markers.push(marker{{ forloop.counter }});
+                {% endif %}
+            {% endfor %}
+            
+            // Fit bounds to show all markers
+            if (markers.length > 0) {
+                const group = new L.featureGroup(markers);
+                propertiesMap.fitBounds(group.getBounds().pad(0.1));
+            }
+        }
+    }
+    
+    // Load map when map view is selected
+    document.querySelector('[data-view="map"]').addEventListener('click', () => {
+        setTimeout(initializeMap, 100); // Small delay to ensure DOM is ready
+    });
+</script>
+{% endblock %}

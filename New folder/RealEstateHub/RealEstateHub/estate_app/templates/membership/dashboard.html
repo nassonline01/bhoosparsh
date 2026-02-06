@@ -1,0 +1,475 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Membership Dashboard - RealEstatePro{% endblock %}
+
+{% block extra_css %}
+<style>
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .status-active {
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+    .status-trialing {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+    .status-canceled {
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+    .progress-bar {
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .progress-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+    .feature-card {
+        transition: all 0.3s ease;
+    }
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Membership Dashboard</h1>
+                <p class="text-gray-600">Manage your subscription and track usage</p>
+            </div>
+            {% if subscription %}
+            <div class="text-right">
+                <div class="status-badge {% if subscription.status == 'active' %}status-active{% elif subscription.status == 'trialing' %}status-trialing{% else %}status-canceled{% endif %}">
+                    {{ subscription.status|title }}
+                </div>
+                <div class="text-sm text-gray-600 mt-1">
+                    {% if subscription.days_remaining %}
+                    {{ subscription.days_remaining }} days remaining
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column: Subscription Details -->
+        <div class="lg:col-span-2">
+            <!-- Current Plan Card -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold mb-2">Current Plan</h2>
+                        {% if subscription %}
+                        <div class="flex items-center">
+                            <div class="text-3xl font-bold text-gray-900">{{ subscription.plan.name }}</div>
+                            <div class="ml-4 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-semibold">
+                                {{ subscription.plan.tier|title }}
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="text-lg text-gray-600">No active subscription</div>
+                        {% endif %}
+                    </div>
+                    {% if subscription %}
+                    <div class="text-right">
+                        <div class="text-2xl font-bold">₹{{ subscription.plan.monthly_price|floatformat:0 }}</div>
+                        <div class="text-gray-600">per month</div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if subscription %}
+                <!-- Plan Details -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="text-center p-4 bg-gray-50 rounded-lg">
+                        <div class="text-2xl font-bold text-gray-900">{{ subscription.listings_used }}</div>
+                        <div class="text-sm text-gray-600">Listings Used</div>
+                    </div>
+                    <div class="text-center p-4 bg-gray-50 rounded-lg">
+                        <div class="text-2xl font-bold text-gray-900">{{ subscription.featured_used_this_month }}</div>
+                        <div class="text-sm text-gray-600">Featured Used</div>
+                    </div>
+                    <div class="text-center p-4 bg-gray-50 rounded-lg">
+                        <div class="text-2xl font-bold text-gray-900">
+                            {% if subscription.plan.max_active_listings == 0 %}
+                            Unlimited
+                            {% else %}
+                            {{ subscription.plan.max_active_listings }}
+                            {% endif %}
+                        </div>
+                        <div class="text-sm text-gray-600">Listings Limit</div>
+                    </div>
+                    <div class="text-center p-4 bg-gray-50 rounded-lg">
+                        <div class="text-2xl font-bold text-gray-900">{{ subscription.plan.max_featured_listings }}</div>
+                        <div class="text-sm text-gray-600">Featured Limit</div>
+                    </div>
+                </div>
+
+                <!-- Usage Progress Bars -->
+                <div class="space-y-4 mb-6">
+                    <!-- Listings Progress -->
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium">Listings Usage</span>
+                            <span>
+                                {% if subscription.plan.max_active_listings == 0 %}
+                                Unlimited
+                                {% else %}
+                                {{ subscription.listings_used }}/{{ subscription.plan.max_active_listings }}
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="progress-bar bg-gray-200">
+                            <div class="progress-fill bg-purple-600" 
+                                 style="width: {% if subscription.plan.max_active_listings == 0 %}100%{% else %}{{ subscription.listings_used|div:subscription.plan.max_active_listings|multiply:100 }}%{% endif %}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Featured Progress -->
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium">Featured Listings (This Month)</span>
+                            <span>{{ subscription.featured_used_this_month }}/{{ subscription.plan.max_featured_listings }}</span>
+                        </div>
+                        <div class="progress-bar bg-gray-200">
+                            <div class="progress-fill bg-green-500" 
+                                 style="width: {{ subscription.featured_used_this_month|div:subscription.plan.max_featured_listings|multiply:100 }}%">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-wrap gap-3">
+                    {% if subscription.status == 'active' %}
+                    <a href="{% url 'membership:upgrade' %}" 
+                       class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                        <i class="fas fa-arrow-up mr-2"></i> Upgrade Plan
+                    </a>
+                    <a href="{% url 'membership:cancel' %}" 
+                       class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">
+                        <i class="fas fa-times mr-2"></i> Cancel Subscription
+                    </a>
+                    {% elif subscription.status == 'trialing' %}
+                    <a href="{% url 'membership:upgrade' %}" 
+                       class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                        <i class="fas fa-credit-card mr-2"></i> Upgrade Now
+                    </a>
+                    <div class="text-sm text-gray-600 mt-2">
+                        Trial ends in {{ subscription.trial_days_remaining }} days
+                    </div>
+                    {% else %}
+                    <a href="{% url 'membership:pricing' %}" 
+                       class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                        <i class="fas fa-sync mr-2"></i> Renew Subscription
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{% url 'membership:billing_history' %}" 
+                       class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+                        <i class="fas fa-receipt mr-2"></i> Billing History
+                    </a>
+                </div>
+                {% else %}
+                <!-- No Subscription -->
+                <div class="text-center py-8">
+                    <div class="text-5xl text-gray-300 mb-4">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">No Active Subscription</h3>
+                    <p class="text-gray-600 mb-6">Subscribe to a plan to start listing properties</p>
+                    <a href="{% url 'membership:pricing' %}" 
+                       class="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-semibold">
+                        View Plans & Pricing
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Features Grid -->
+            {% if subscription %}
+            <div class="mb-6">
+                <h2 class="text-xl font-bold mb-4">Your Plan Features</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for feature in subscription.plan.features_list %}
+                    <div class="feature-card bg-white p-4 rounded-lg shadow border border-gray-100">
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                                <i class="fas fa-check text-purple-600"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium">{{ feature }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recent Properties -->
+            {% if user_properties %}
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold mb-4">Recent Properties</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b">
+                                <th class="py-3 text-left font-medium text-gray-700">Property</th>
+                                <th class="py-3 text-left font-medium text-gray-700">Status</th>
+                                <th class="py-3 text-left font-medium text-gray-700">Views</th>
+                                <th class="py-3 text-left font-medium text-gray-700">Inquiries</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for property in user_properties %}
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="py-3">
+                                    <a href="{% url 'properties:detail' property.slug %}" class="font-medium hover:text-purple-600">
+                                        {{ property.title|truncatechars:30 }}
+                                    </a>
+                                </td>
+                                <td class="py-3">
+                                    <span class="px-2 py-1 text-xs rounded-full 
+                                        {% if property.status == 'for_sale' %}bg-blue-100 text-blue-800
+                                        {% elif property.status == 'for_rent' %}bg-green-100 text-green-800
+                                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                        {{ property.get_status_display }}
+                                    </span>
+                                </td>
+                                <td class="py-3">{{ property.view_count }}</td>
+                                <td class="py-3">{{ property.inquiry_count }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4 text-center">
+                    <a href="{% url 'properties:my_properties' %}" class="text-purple-600 hover:underline">
+                        View All Properties →
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Column: Analytics & Credits -->
+        <div class="lg:col-span-1">
+            <!-- Analytics Summary -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <h2 class="text-xl font-bold mb-4">Performance Analytics</h2>
+                
+                {% if analytics.performance %}
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium">Monthly Views</span>
+                            <span>{{ analytics.performance.monthly_views }}</span>
+                        </div>
+                        <div class="progress-bar bg-gray-200">
+                            <div class="progress-fill bg-blue-500" 
+                                 style="width: {% widthratio analytics.performance.monthly_views 1000 100 %}%">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium">Monthly Inquiries</span>
+                            <span>{{ analytics.performance.monthly_inquiries }}</span>
+                        </div>
+                        <div class="progress-bar bg-gray-200">
+                            <div class="progress-fill bg-green-500" 
+                                 style="width: {% widthratio analytics.performance.monthly_inquiries 100 100 %}%">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium">Conversion Rate</span>
+                            <span>{{ analytics.performance.conversion_rate|floatformat:1 }}%</span>
+                        </div>
+                        <div class="progress-bar bg-gray-200">
+                            <div class="progress-fill bg-purple-600" 
+                                 style="width: {{ analytics.performance.conversion_rate }}%">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold">₹{{ analytics.performance.average_price|floatformat:0 }}</div>
+                            <div class="text-sm text-gray-600">Average Property Price</div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-chart-bar text-4xl mb-4"></i>
+                    <p>No analytics data available yet</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Credit Balance -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold">Credits Balance</h2>
+                    <a href="{% url 'membership:credit_purchase' %}" class="text-sm text-purple-600 hover:underline">
+                        Buy More
+                    </a>
+                </div>
+                
+                {% if credit_balance %}
+                <div class="space-y-4">
+                    <div class="p-4 bg-purple-50 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <div class="text-sm text-gray-600">Featured Listings</div>
+                                <div class="text-2xl font-bold">{{ credit_balance.featured_listing_credits }}</div>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-star text-purple-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-blue-50 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <div class="text-sm text-gray-600">Bump Up Credits</div>
+                                <div class="text-2xl font-bold">{{ credit_balance.bump_up_credits }}</div>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-arrow-up text-blue-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-yellow-50 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <div class="text-sm text-gray-600">Highlight Credits</div>
+                                <div class="text-2xl font-bold">{{ credit_balance.highlight_credits }}</div>
+                            </div>
+                            <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-highlighter text-yellow-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center py-6">
+                    <div class="text-4xl text-gray-300 mb-3">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <p class="text-gray-600 mb-4">No credits available</p>
+                    <a href="{% url 'membership:credit_purchase' %}" 
+                       class="inline-block px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition text-sm">
+                        Purchase Credits
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Upgrade Suggestions -->
+            {% if upgrade_plans %}
+            <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold mb-2">Ready to Upgrade?</h2>
+                <p class="text-purple-100 mb-4">Get more features and higher limits</p>
+                
+                {% for plan in upgrade_plans|slice:":2" %}
+                <div class="bg-white bg-opacity-10 p-4 rounded-lg mb-3">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div class="font-bold">{{ plan.name }}</div>
+                            <div class="text-sm text-purple-200">From ₹{{ plan.monthly_price|floatformat:0 }}/month</div>
+                        </div>
+                        <a href="{% url 'membership:upgrade' %}?plan={{ plan.slug }}" 
+                           class="px-3 py-1 bg-white text-purple-600 rounded text-sm font-semibold hover:bg-opacity-90">
+                            Upgrade
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <div class="text-center mt-4">
+                    <a href="{% url 'membership:pricing' %}" class="text-white hover:text-purple-200 text-sm">
+                        Compare all plans →
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    {% if recent_transactions %}
+    <div class="mt-8">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold">Recent Transactions</h2>
+            <a href="{% url 'membership:billing_history' %}" class="text-purple-600 hover:underline">
+                View All
+            </a>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="py-3 px-6 text-left font-medium text-gray-700">Date</th>
+                            <th class="py-3 px-6 text-left font-medium text-gray-700">Description</th>
+                            <th class="py-3 px-6 text-left font-medium text-gray-700">Amount</th>
+                            <th class="py-3 px-6 text-left font-medium text-gray-700">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for transaction in recent_transactions %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 px-6">
+                                {{ transaction.created_at|date:"M d, Y" }}
+                            </td>
+                            <td class="py-3 px-6">
+                                {{ transaction.description|truncatechars:40 }}
+                            </td>
+                            <td class="py-3 px-6 font-medium">
+                                ₹{{ transaction.amount|floatformat:2 }}
+                            </td>
+                            <td class="py-3 px-6">
+                                <span class="px-2 py-1 text-xs rounded-full 
+                                    {% if transaction.status == 'captured' %}bg-green-100 text-green-800
+                                    {% elif transaction.status == 'failed' %}bg-red-100 text-red-800
+                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    {{ transaction.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

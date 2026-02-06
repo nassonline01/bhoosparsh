@@ -1,0 +1,1258 @@
+
+{% extends 'dashboard/buyer/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Smart Property Search - BHOOSPARSH Buyer{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Properties page specific styles */
+    .filters-section {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 242, 0.95));
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 107, 53, 0.1);
+        box-shadow: 0 4px 20px rgba(255, 107, 53, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .filter-group {
+        margin-bottom: 1rem;
+    }
+
+    .filter-group label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    .filter-group .form-input {
+        width: 100%;
+        padding: 0.625rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+    }
+
+    .filter-group .form-input:focus {
+        outline: none;
+        border-color: #FF6B35;
+        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    }
+
+    .search-input-group {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+
+    .search-input-group input {
+        width: 100%;
+        padding: 0.875rem 1rem 0.875rem 3rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+    }
+
+    .search-input-group input:focus {
+        outline: none;
+        border-color: #FF6B35;
+        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    }
+
+    .search-input-group .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+    }
+
+    .sort-options {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .sort-btn {
+        padding: 0.5rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        background: white;
+        color: #4b5563;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .sort-btn:hover {
+        border-color: #FF6B35;
+        color: #FF6B35;
+    }
+
+    .sort-btn.active {
+        background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+        color: white;
+        border-color: #FF6B35;
+    }
+
+    .properties-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .property-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .property-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 25px -5px rgba(255, 107, 53, 0.1), 0 10px 10px -5px rgba(255, 107, 53, 0.04);
+        border-color: rgba(255, 107, 53, 0.3);
+    }
+
+    .property-image-container {
+        position: relative;
+        height: 220px;
+        overflow: hidden;
+    }
+
+    .property-image-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s ease;
+    }
+
+    .property-card:hover .property-image-container img {
+        transform: scale(1.1);
+    }
+
+    .heart-btn {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        width: 2.5rem;
+        height: 2.5rem;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        z-index: 10;
+    }
+
+    .heart-btn:hover {
+        transform: scale(1.1);
+        background: #fef2f2;
+    }
+
+    .heart-btn.active i {
+        color: #ef4444;
+    }
+
+    .property-badges {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: flex-end;
+    }
+
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-weight: 600;
+    }
+
+    .badge-featured {
+        background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+        color: white;
+    }
+
+    .badge-urgent {
+        background: linear-gradient(135deg, #ef4444, #f87171);
+        color: white;
+    }
+
+    .badge-verified {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+    }
+
+    .property-content {
+        padding: 1.5rem;
+    }
+
+    .property-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+
+    .property-location {
+        display: flex;
+        align-items: center;
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin-bottom: 1rem;
+    }
+
+    .property-location i {
+        margin-right: 0.5rem;
+    }
+
+    .property-features {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .feature-item {
+        text-align: center;
+    }
+
+    .feature-value {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #111827;
+        display: block;
+    }
+
+    .feature-label {
+        font-size: 0.75rem;
+        color: #6b7280;
+        display: block;
+    }
+
+    .property-price {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.25rem;
+    }
+
+    .price-unit {
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+
+    .property-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+    }
+
+    .btn-primary {
+        flex: 1;
+        padding: 0.75rem;
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        border-radius: 10px;
+        font-weight: 600;
+        text-align: center;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-secondary {
+        flex: 1;
+        padding: 0.75rem;
+        background: #f3f4f6;
+        color: #374151;
+        border-radius: 10px;
+        font-weight: 600;
+        text-align: center;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+        background: #e5e7eb;
+        transform: translateY(-2px);
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .pagination a,
+    .pagination span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 2.5rem;
+        height: 2.5rem;
+        padding: 0 0.75rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .pagination a {
+        background: white;
+        border: 1px solid #e5e7eb;
+        color: #4b5563;
+    }
+
+    .pagination a:hover {
+        background: #f3f4f6;
+        border-color: #d1d5db;
+        transform: translateY(-1px);
+    }
+
+    .pagination .current {
+        background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+        color: white;
+        border: none;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 1rem;
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-radius: 16px;
+        border: 2px dashed #d1d5db;
+    }
+
+    .empty-state i {
+        font-size: 1rem;
+        color: #9ca3af;
+        margin-top: 1rem;
+    }
+
+    .empty-state h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        color: #6b7280;
+        max-width: 400px;
+        margin: 0 auto 2rem;
+    }
+
+    .loading-skeleton {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .skeleton-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+        height: 420px;
+    }
+
+    .skeleton-image {
+        height: 220px;
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+    }
+
+    .skeleton-content {
+        padding: 1.5rem;
+    }
+
+    .skeleton-line {
+        height: 1rem;
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 4px;
+        margin-bottom: 0.75rem;
+    }
+
+    .skeleton-line.short {
+        width: 60%;
+    }
+
+    .skeleton-line.medium {
+        width: 80%;
+    }
+
+    @keyframes shimmer {
+        0% {
+            background-position: -200% 0;
+        }
+        100% {
+            background-position: 200% 0;
+        }
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 767px) {
+        .filters-section {
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .properties-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .property-image-container {
+            height: 200px;
+        }
+
+        .property-content {
+            padding: 1rem;
+        }
+
+        .property-features {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .property-actions {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .loading-skeleton {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .sort-options {
+            justify-content: center;
+        }
+    }
+
+    /* Tablet Responsive */
+    @media (min-width: 768px) and (max-width: 1023px) {
+        .properties-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block header_title %}
+<h1 class="text-2xl font-bold text-gray-900">
+    <span class="gradient-text">Smart Property Search</span>
+</h1>
+<p class="text-sm text-gray-600 mt-2">
+    <i class="fas fa-filter text-orange-500 mr-2"></i>
+    Find your perfect property with AI-powered filters
+</p>
+{% endblock %}
+
+{% block header_buttons %}
+<div class="flex flex-wrap gap-3">
+    <button onclick="window.history.back()" 
+            class="px-4 py-2 border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-all duration-300 flex items-center gap-2 font-medium">
+        <i class="fas fa-arrow-left"></i>
+        <span class="hidden sm:inline">Back</span>
+    </button>
+    
+    <button onclick="resetFilters()" 
+            class="px-4 py-2 border-2 border-orange-300 rounded-xl text-orange-600 hover:bg-orange-50 transition-all duration-300 flex items-center gap-2 font-medium">
+        <i class="fas fa-redo"></i>
+        <span class="hidden sm:inline">Reset</span>
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="content-spacing">
+    <!-- Filters Section -->
+    <div class="filters-section">
+        <form method="GET" action="{% url 'buyer_properties' %}" id="propertySearchForm" class="space-y-4">
+            <!-- Search Bar -->
+            <div class="search-input-group">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" 
+                       name="q" 
+                       value="{{ search_query|default:'' }}"
+                       placeholder="Search by property name, location, keyword..."
+                       class="w-full">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Category & Type -->
+                <div class="filter-group">
+                    <label for="category">Category</label>
+                    <select name="category" id="category" class="form-input">
+                        <option value="">All Categories</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.slug }}" {% if category_filter == cat.slug %}selected{% endif %}>
+                            {{ cat.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="property_type">Property Type</label>
+                    <select name="property_type" id="property_type" class="form-input">
+                        <option value="">All Types</option>
+                        {% for type in property_types %}
+                        <option value="{{ type.slug }}" {% if property_type_filter == type.slug %}selected{% endif %}>
+                            {{ type.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="city">Location</label>
+                    <input type="text" 
+                           name="city" 
+                           id="city" 
+                           value="{{ city_filter|default:'' }}"
+                           placeholder="Enter city..."
+                           class="form-input">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Price Range -->
+                <div class="filter-group">
+                    <label for="min_price">Min Price (₹)</label>
+                    <input type="number" 
+                           name="min_price" 
+                           id="min_price" 
+                           value="{{ min_price_filter|default:'' }}"
+                           placeholder="Min"
+                           class="form-input">
+                </div>
+
+                <div class="filter-group">
+                    <label for="max_price">Max Price (₹)</label>
+                    <input type="number" 
+                           name="max_price" 
+                           id="max_price" 
+                           value="{{ max_price_filter|default:'' }}"
+                           placeholder="Max"
+                           class="form-input">
+                </div>
+
+                <!-- Bedrooms & Bathrooms -->
+                <div class="filter-group">
+                    <label for="bedrooms">Bedrooms</label>
+                    <select name="bedrooms" id="bedrooms" class="form-input">
+                        <option value="">Any</option>
+                        <option value="1" {% if bedrooms_filter == "1" %}selected{% endif %}>1 BHK</option>
+                        <option value="2" {% if bedrooms_filter == "2" %}selected{% endif %}>2 BHK</option>
+                        <option value="3" {% if bedrooms_filter == "3" %}selected{% endif %}>3 BHK</option>
+                        <option value="4" {% if bedrooms_filter == "4" %}selected{% endif %}>4+ BHK</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="bathrooms">Bathrooms</label>
+                    <select name="bathrooms" id="bathrooms" class="form-input">
+                        <option value="">Any</option>
+                        <option value="1" {% if bathrooms_filter == "1" %}selected{% endif %}>1</option>
+                        <option value="2" {% if bathrooms_filter == "2" %}selected{% endif %}>2</option>
+                        <option value="3" {% if bathrooms_filter == "3" %}selected{% endif %}>3+</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Area Range -->
+                <div class="filter-group">
+                    <label for="min_area">Min Area (sq.ft.)</label>
+                    <input type="number" 
+                           name="min_area" 
+                           id="min_area" 
+                           value="{{ min_area_filter|default:'' }}"
+                           placeholder="Min"
+                           class="form-input">
+                </div>
+
+                <div class="filter-group">
+                    <label for="max_area">Max Area (sq.ft.)</label>
+                    <input type="number" 
+                           name="max_area" 
+                           id="max_area" 
+                           value="{{ max_area_filter|default:'' }}"
+                           placeholder="Max"
+                           class="form-input">
+                </div>
+
+                <!-- Property For -->
+                <div class="filter-group">
+                    <label for="property_for">Property For</label>
+                    <select name="property_for" id="property_for" class="form-input">
+                        <option value="">All</option>
+                        <option value="sale" {% if property_for_filter == "sale" %}selected{% endif %}>For Sale</option>
+                        <option value="rent" {% if property_for_filter == "rent" %}selected{% endif %}>For Rent</option>
+                        <option value="pg" {% if property_for_filter == "pg" %}selected{% endif %}>PG/Hostel</option>
+                    </select>
+                </div>
+
+                <!-- Furnishing -->
+                <div class="filter-group">
+                    <label for="furnishing">Furnishing</label>
+                    <select name="furnishing" id="furnishing" class="form-input">
+                        <option value="">Any</option>
+                        <option value="furnished">Fully Furnished</option>
+                        <option value="semi_furnished">Semi Furnished</option>
+                        <option value="unfurnished">Unfurnished</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-gray-200">
+                <!-- Sort Options -->
+                <div class="sort-options">
+                    <button type="button" 
+                            class="sort-btn {% if sort_by == '-created_at' %}active{% endif %}"
+                            onclick="setSort('-created_at')">
+                        Newest First
+                    </button>
+                    <button type="button" 
+                            class="sort-btn {% if sort_by == 'price' %}active{% endif %}"
+                            onclick="setSort('price')">
+                        Price: Low to High
+                    </button>
+                    <button type="button" 
+                            class="sort-btn {% if sort_by == '-price' %}active{% endif %}"
+                            onclick="setSort('-price')">
+                        Price: High to Low
+                    </button>
+                    <button type="button" 
+                            class="sort-btn {% if sort_by == '-view_count' %}active{% endif %}"
+                            onclick="setSort('-view_count')">
+                        Most Viewed
+                    </button>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" 
+                        class="btn-gradient flex items-center gap-2 px-6 py-3">
+                    <i class="fas fa-search"></i>
+                    <span>Search Properties</span>
+                </button>
+            </div>
+
+            <!-- Hidden sort input -->
+            <input type="hidden" name="sort" id="sortInput" value="{{ sort_by|default:'-created_at' }}">
+        </form>
+    </div>
+
+    <!-- Results Count -->
+    <div class="flex flex-col sm:flex-row justify-between items-center mb-6">
+        <div>
+            <h3 class="text-lg font-bold text-gray-900">
+                Found <span class="text-orange-600">{{ page_obj.paginator.count }}</span> properties
+            </h3>
+            <p class="text-sm text-gray-600 mt-1">
+                {% if search_query %}Search results for "{{ search_query }}"{% endif %}
+            </p>
+        </div>
+        
+       
+    </div>
+
+    <!-- Properties Grid -->
+    {% if page_obj %}
+    <div class="properties-grid">
+        {% for property in page_obj %}
+        <div class="property-card">
+            <div class="property-image-container">
+                {% if property.primary_image %}
+                <img src="{{ property.primary_image.url }}" alt="{{ property.title }}">
+                {% else %}
+                <div class="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                    <i class="fas fa-home text-4xl text-gray-400"></i>
+                </div>
+                {% endif %}
+                
+                <button class="heart-btn {% if property.id in user_favorites %}active{% endif %}" 
+                        onclick="toggleFavorite('{{ property.id }}', this)">
+                    <i class="fas fa-heart"></i>
+                </button>
+                
+                <div class="property-badges">
+                    {% if property.is_featured %}
+                    <span class="badge badge-featured">
+                        <i class="fas fa-star mr-1"></i> Featured
+                    </span>
+                    {% endif %}
+                    
+                    {% if property.is_urgent %}
+                    <span class="badge badge-urgent">
+                        <i class="fas fa-bolt mr-1"></i> Urgent
+                    </span>
+                    {% endif %}
+                    
+                    {% if property.is_verified %}
+                    <span class="badge badge-verified">
+                        <i class="fas fa-check mr-1"></i> Verified
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="property-content">
+                <h3 class="property-title line-clamp-2">{{ property.title }}</h3>
+                
+                <div class="property-location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span class="line-clamp-1">{{ property.city }}, {{ property.state }}</span>
+                </div>
+                
+                <div class="property-features">
+                    {% if property.bedrooms %}
+                    <div class="feature-item">
+                        <span class="feature-value">{{ property.bedrooms }}</span>
+                        <span class="feature-label">Beds</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if property.bathrooms %}
+                    <div class="feature-item">
+                        <span class="feature-value">{{ property.bathrooms }}</span>
+                        <span class="feature-label">Baths</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="feature-item">
+                        <span class="feature-value">{{ property.carpet_area|intcomma }}</span>
+                        <span class="feature-label">Sq.ft</span>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <span class="feature-value">
+                            {% if property.property_for == 'rent' or property.property_for == 'pg' %}
+                            Rent
+                            {% else %}
+                            Sale
+                            {% endif %}
+                        </span>
+                        <span class="feature-label">Type</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="property-price">₹{{ property.price|intcomma }}</div>
+                        {% if property.property_for in 'rent,pg' %}
+                        <div class="price-unit">/month</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="text-sm text-gray-600">
+                        <i class="fas fa-eye mr-1"></i>{{ property.view_count }}
+                    </div>
+                </div>
+                
+                <div class="property-actions">
+                    <a href="{% url 'buyer_property_detail' property.slug %}" 
+                       class="btn-primary">
+                        View Details
+                    </a>
+                    
+                    <button onclick="openInquiryModal('{{ property.id }}')" 
+                            class="btn-secondary">
+                        <i class="fas fa-envelope mr-2"></i>Inquire
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="empty-state">
+        <i class="fas fa-search"></i>
+        <h3>No Properties Found</h3>
+        <p>We couldn't find any properties matching your search criteria. Try adjusting your filters or search terms.</p>
+        
+        <div class="flex flex-wrap gap-3 justify-center mt-6">
+            <button onclick="resetFilters()" 
+                    class="px-6 py-3 border-2 border-blue-600 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all duration-300 font-medium flex items-center gap-2">
+                <i class="fas fa-redo"></i>
+                <span>Reset Filters</span>
+            </button>
+            
+            <a href="{% url 'buyer_properties' %}" 
+               class="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium flex items-center gap-2">
+                <i class="fas fa-home"></i>
+                <span>Browse All Properties</span>
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+        <a href="?page=1{% if request.GET.urlencode %}&{{ request.GET.urlencode|cut:'page=' }}{% endif %}"
+           class="first" title="First Page">
+            <i class="fas fa-angle-double-left"></i>
+        </a>
+        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode|cut:'page=' }}{% endif %}"
+           class="prev" title="Previous Page">
+            <i class="fas fa-chevron-left"></i>
+        </a>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <span class="current">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a href="?page={{ num }}{% if request.GET.urlencode %}&{{ request.GET.urlencode|cut:'page=' }}{% endif %}">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode|cut:'page=' }}{% endif %}"
+           class="next" title="Next Page">
+            <i class="fas fa-chevron-right"></i>
+        </a>
+        <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.urlencode %}&{{ request.GET.urlencode|cut:'page=' }}{% endif %}"
+           class="last" title="Last Page">
+            <i class="fas fa-angle-double-right"></i>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Inquiry Modal -->
+<div id="inquiryModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl w-full max-w-md">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-900">Send Inquiry</h3>
+                <button onclick="closeInquiryModal()" 
+                        class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="inquiryForm" class="space-y-4">
+                <div class="hidden">
+                    <input type="hidden" name="property_id" id="inquiryPropertyId">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Your Name</label>
+                    <input type="text" 
+                           name="name" 
+                           required
+                           value="{{ user.get_full_name|default:'' }}"
+                           class="w-full p-3 border border-gray-300 rounded-lg">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Your Email</label>
+                    <input type="email" 
+                           name="email" 
+                           required
+                           value="{{ user.email|default:'' }}"
+                           class="w-full p-3 border border-gray-300 rounded-lg">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Your Phone</label>
+                    <input type="tel" 
+                           name="phone" 
+                           required
+                           value="{{ user.phone|default:'' }}"
+                           class="w-full p-3 border border-gray-300 rounded-lg">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                    <textarea name="message" 
+                              rows="4"
+                              placeholder="I'm interested in this property. Please provide more details..."
+                              class="w-full p-3 border border-gray-300 rounded-lg"></textarea>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Preferred Date</label>
+                        <input type="date" 
+                               name="preferred_date"
+                               class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Preferred Time</label>
+                        <input type="time" 
+                               name="preferred_time"
+                               class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                </div>
+                
+                <div class="pt-4 border-t border-gray-200">
+                    <button type="submit" 
+                            class="w-full btn-gradient py-3">
+                        <i class="fas fa-paper-plane mr-2"></i>
+                        Send Inquiry
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize filters
+        initializeFilters();
+        
+        // Initialize favorite toggles
+        initializeFavorites();
+        
+        // Initialize inquiry modal
+        initializeInquiryModal();
+    });
+
+    function initializeFilters() {
+        // Price range validation
+        const minPriceInput = document.getElementById('min_price');
+        const maxPriceInput = document.getElementById('max_price');
+        
+        if (minPriceInput && maxPriceInput) {
+            minPriceInput.addEventListener('change', function() {
+                const min = parseFloat(this.value);
+                const max = parseFloat(maxPriceInput.value);
+                
+                if (min && max && min > max) {
+                    showToast('Minimum price cannot be greater than maximum price', 'error');
+                    this.value = '';
+                }
+            });
+            
+            maxPriceInput.addEventListener('change', function() {
+                const min = parseFloat(minPriceInput.value);
+                const max = parseFloat(this.value);
+                
+                if (min && max && max < min) {
+                    showToast('Maximum price cannot be less than minimum price', 'error');
+                    this.value = '';
+                }
+            });
+        }
+        
+        // Area range validation
+        const minAreaInput = document.getElementById('min_area');
+        const maxAreaInput = document.getElementById('max_area');
+        
+        if (minAreaInput && maxAreaInput) {
+            minAreaInput.addEventListener('change', function() {
+                const min = parseFloat(this.value);
+                const max = parseFloat(maxAreaInput.value);
+                
+                if (min && max && min > max) {
+                    showToast('Minimum area cannot be greater than maximum area', 'error');
+                    this.value = '';
+                }
+            });
+            
+            maxAreaInput.addEventListener('change', function() {
+                const min = parseFloat(minAreaInput.value);
+                const max = parseFloat(this.value);
+                
+                if (min && max && max < min) {
+                    showToast('Maximum area cannot be less than minimum area', 'error');
+                    this.value = '';
+                }
+            });
+        }
+    }
+
+    function setSort(sortValue) {
+        // Update active sort button
+        document.querySelectorAll('.sort-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        
+        // Update hidden input
+        document.getElementById('sortInput').value = sortValue;
+        
+        // Submit form
+        document.getElementById('propertySearchForm').submit();
+    }
+
+    function resetFilters() {
+        // Reset all form fields
+        const form = document.getElementById('propertySearchForm');
+        form.reset();
+        
+        // Reset hidden inputs
+        document.getElementById('sortInput').value = '-created_at';
+        
+        // Reset active sort buttons
+        document.querySelectorAll('.sort-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Set first sort button as active
+        document.querySelector('.sort-btn').classList.add('active');
+        
+        // Submit form
+        form.submit();
+    }
+
+    function initializeFavorites() {
+        document.querySelectorAll('.heart-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const propertyId = this.dataset.propertyId || this.closest('.property-card').dataset.propertyId;
+                if (propertyId) {
+                    toggleFavorite(propertyId, this);
+                }
+            });
+        });
+    }
+
+    function toggleFavorite(propertyId, button) {
+        const icon = button.querySelector('i');
+        const isFavorited = button.classList.contains('active');
+        
+        // Update UI immediately for better UX
+        if (isFavorited) {
+            button.classList.remove('active');
+            icon.className = 'fas fa-heart';
+            showToast('Removed from favorites', 'info');
+        } else {
+            button.classList.add('active');
+            icon.className = 'fas fa-heart text-red-500';
+            showToast('Added to favorites!', 'success');
+            
+            // Add animation effect
+            button.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                button.style.transform = 'scale(1)';
+            }, 300);
+        }
+        
+        // Send AJAX request to update server
+        fetch('/buyer/ajax/toggle-favorite/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify({
+                property_id: propertyId,
+                action: isFavorited ? 'remove' : 'add'
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                // Revert UI if server request failed
+                if (isFavorited) {
+                    button.classList.add('active');
+                    icon.className = 'fas fa-heart text-red-500';
+                    showToast('Failed to remove from favorites', 'error');
+                } else {
+                    button.classList.remove('active');
+                    icon.className = 'fas fa-heart';
+                    showToast('Failed to add to favorites', 'error');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Network error. Please try again.', 'error');
+        });
+    }
+
+    function initializeInquiryModal() {
+        const modal = document.getElementById('inquiryModal');
+        const form = document.getElementById('inquiryForm');
+        
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                sendInquiry();
+            });
+        }
+    }
+
+    function openInquiryModal(propertyId) {
+        const modal = document.getElementById('inquiryModal');
+        const propertyIdInput = document.getElementById('inquiryPropertyId');
+        
+        propertyIdInput.value = propertyId;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        
+        // Prevent body scrolling
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeInquiryModal() {
+        const modal = document.getElementById('inquiryModal');
+        modal.classList.remove('flex');
+        modal.classList.add('hidden');
+        
+        // Restore body scrolling
+        document.body.style.overflow = '';
+    }
+
+    function sendInquiry() {
+        const form = document.getElementById('inquiryForm');
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        
+        // Show loading
+        showLoading();
+        
+        fetch('/buyer/ajax/send-inquiry/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify(data),
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            
+            if (data.success) {
+                showToast('Inquiry sent successfully!', 'success');
+                closeInquiryModal();
+                form.reset();
+            } else {
+                showToast(data.error || 'Failed to send inquiry', 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            showToast('Network error. Please try again.', 'error');
+        });
+    }
+
+    function showLoading() {
+        const loadingOverlay = document.createElement('div');
+        loadingOverlay.id = 'formLoading';
+        loadingOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        loadingOverlay.innerHTML = `
+            <div class="bg-white rounded-2xl p-8 shadow-2xl">
+                <div class="flex flex-col items-center gap-4">
+                    <div class="loading-spinner">
+                        <div class="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                    <p class="text-gray-700 font-medium">Sending inquiry...</p>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(loadingOverlay);
+    }
+
+    function hideLoading() {
+        const loadingOverlay = document.getElementById('formLoading');
+        if (loadingOverlay) {
+            loadingOverlay.remove();
+        }
+    }
+
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        if (!container) {
+            const toastContainer = document.createElement('div');
+            toastContainer.id = 'toastContainer';
+            toastContainer.className = 'toast-container';
+            document.body.appendChild(toastContainer);
+            container = toastContainer;
+        }
+        
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        
+        const icons = {
+            info: 'fa-info-circle',
+            success: 'fa-check-circle',
+            error: 'fa-exclamation-circle',
+            warning: 'fa-exclamation-triangle'
+        };
+        
+        toast.innerHTML = `
+            <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                <i class="fas ${icons[type]}"></i>
+            </div>
+            <div class="flex-1">
+                <span class="font-medium">${message}</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-white/80 hover:text-white transition-colors flex-shrink-0">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        container.appendChild(toast);
+        
+        // Auto remove after 4 seconds
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 4000);
+    }
+
+    // Utility function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}
