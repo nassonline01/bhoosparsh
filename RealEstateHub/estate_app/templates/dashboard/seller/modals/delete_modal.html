@@ -1,0 +1,33 @@
+<div id="deleteModal" class="modal-overlay">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full mx-4">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Delete Property</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Are you sure you want to delete this property?</p>
+                </div>
+                <button onclick="closeModal('deleteModal')" 
+                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <p class="text-gray-600 dark:text-gray-400">
+                This action cannot be undone. All property data, images, and leads will be permanently deleted.
+            </p>
+        </div>
+
+        <div class="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+            <button onclick="closeModal('deleteModal')" 
+                    class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                Cancel
+            </button>
+            <button id="confirmDeleteBtn" 
+                    class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium">
+                <i class="fas fa-trash mr-2"></i>Delete Property
+            </button>
+        </div>
+    </div>
+</div>

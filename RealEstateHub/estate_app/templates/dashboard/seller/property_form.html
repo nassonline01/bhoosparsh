@@ -60,7 +60,12 @@
     }
 
     .dynamic-section {
+        display: none;
         animation: slideIn 0.3s ease-out;
+    }
+
+    .dynamic-section.active {
+        display: block;
     }
 
     @keyframes slideIn {
@@ -129,16 +134,49 @@
 
     .error-field {
         border-color: #EF4444 !important;
+        background-color: #fef2f2;
     }
 
     .error-message {
         color: #EF4444;
         font-size: 12px;
         margin-top: 4px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
     }
 
     /* Toast notifications */
-    @keyframes slide-in {
+    .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        animation: slideInRight 0.3s ease-out;
+    }
+
+    .toast.success {
+        background: linear-gradient(135deg, #10B981, #34D399);
+    }
+
+    .toast.error {
+        background: linear-gradient(135deg, #EF4444, #F87171);
+    }
+
+    .toast.warning {
+        background: linear-gradient(135deg, #F59E0B, #FBBF24);
+    }
+
+    .toast.info {
+        background: linear-gradient(135deg, #0E68B9, #1E90FF);
+    }
+
+    @keyframes slideInRight {
         from {
             transform: translateX(100%);
             opacity: 0;
@@ -149,7 +187,7 @@
         }
     }
 
-    @keyframes slide-out {
+    @keyframes slideOutRight {
         from {
             transform: translateX(0);
             opacity: 1;
@@ -158,10 +196,6 @@
             transform: translateX(100%);
             opacity: 0;
         }
-    }
-
-    .animate-slide-in {
-        animation: slide-in 0.3s ease-out;
     }
 
     /* Modal styles */
@@ -173,21 +207,168 @@
         right: 0;
         bottom: 0;
         background-color: rgba(0, 0, 0, 0.5);
-        z-index: 9999;
+        z-index: 1000;
         align-items: center;
         justify-content: center;
     }
 
-    .form-step input:invalid,
-    .form-step select:invalid,
-    .form-step textarea:invalid {
-        border-color: #EF4444;
+    /* Property type styles */
+    .property-type-option {
+        padding: 16px;
+        border: 2px solid #E5E7EB;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        min-height: 120px;
     }
 
-    .form-step input:valid,
-    .form-step select:valid,
-    .form-step textarea:valid {
-        border-color: #10B981;
+    .property-type-option:hover {
+        border-color: #0E68B9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(14, 104, 185, 0.1);
+    }
+
+    .property-type-option.selected {
+        border-color: #0E68B9;
+        background: linear-gradient(135deg, rgba(14, 104, 185, 0.05), rgba(30, 144, 255, 0.05));
+        box-shadow: 0 4px 12px rgba(14, 104, 185, 0.15);
+    }
+
+    .property-type-option .type-icon {
+        font-size: 32px;
+        color: #6B7280;
+        margin-bottom: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .property-type-option.selected .type-icon {
+        color: #0E68B9;
+    }
+
+    .property-type-option .type-name {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 4px;
+    }
+
+    .property-type-option.selected .type-name {
+        color: #0E68B9;
+    }
+
+    /* Property for styles */
+    .property-for-option {
+        padding: 16px;
+        border: 2px solid #E5E7EB;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .property-for-option:hover {
+        border-color: #0E68B9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(14, 104, 185, 0.1);
+    }
+
+    .property-for-option.selected {
+        border-color: #0E68B9;
+        background: linear-gradient(135deg, rgba(14, 104, 185, 0.05), rgba(30, 144, 255, 0.05));
+        box-shadow: 0 4px 12px rgba(14, 104, 185, 0.15);
+    }
+
+    .property-for-option .for-icon {
+        font-size: 24px;
+        color: #6B7280;
+        margin-bottom: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .property-for-option.selected .for-icon {
+        color: #0E68B9;
+    }
+
+    .property-for-option .for-name {
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .property-for-option.selected .for-name {
+        color: #0E68B9;
+    }
+
+    /* Dark mode styles */
+    .dark .property-type-option {
+        background: #1F2937;
+        border-color: #374151;
+    }
+
+    .dark .property-type-option .type-name {
+        color: #E5E7EB;
+    }
+
+    .dark .property-type-option .type-icon {
+        color: #9CA3AF;
+    }
+
+    .dark .property-type-option.selected {
+        border-color: #0E68B9;
+        background: linear-gradient(135deg, rgba(14, 104, 185, 0.1), rgba(30, 144, 255, 0.1));
+    }
+
+    .dark .property-for-option {
+        background: #1F2937;
+        border-color: #374151;
+    }
+
+    .dark .property-for-option .for-name {
+        color: #E5E7EB;
+    }
+
+    .dark .property-for-option .for-icon {
+        color: #9CA3AF;
+    }
+
+    .dark .property-for-option.selected {
+        border-color: #0E68B9;
+        background: linear-gradient(135deg, rgba(14, 104, 185, 0.1), rgba(30, 144, 255, 0.1));
+    }
+
+    /* Loading spinner */
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Conditional sections */
+    .property-section {
+        display: none;
+    }
+
+    .property-section.active {
+        display: block;
     }
 </style>
 {% endblock %}
@@ -265,15 +446,15 @@
     </div>
 
     <!-- Form Container -->
-    <form id="propertyForm" method="POST" enctype="multipart/form-data" data-submitting="false">
+    <form id="propertyForm" method="POST" enctype="multipart/form-data" novalidate data-submitting="false">
         {% csrf_token %}
         <input type="hidden" name="current_step" id="currentStepField" value="1">
         
-        <!-- Display messages -->
+       <!-- Display messages -->
         {% if messages %}
         <div class="mb-6">
             {% for message in messages %}
-            <div class="p-4 rounded-lg {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200{% elif message.tags == 'success' %}bg-green-50 text-green-700 border border-green-200{% else %}bg-blue-50 text-blue-700 border border-blue-200 %}">
+            <div class="p-4 rounded-lg {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200{% elif message.tags == 'success' %}bg-green-50 text-green-700 border border-green-200{% else %}bg-blue-50 text-blue-700 border border-blue-200{% endif %}">
                 <div class="flex items-center">
                     <i class="fas {% if message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'success' %}fa-check-circle{% else %}fa-info-circle{% endif %} mr-2"></i>
                     {{ message }}
@@ -287,114 +468,160 @@
         <div id="step1" class="form-step active">
             <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Basic Information</h3>
             
-            <div class="space-y-6">
-                <!-- Property Category & Type -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="id_category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 required-field">
-                            Property Category
-                        </label>
-                        <select id="id_category" name="category" required
-                                class="w-full p-3 border {% if errors and errors.category %}border-red-500{% else %}border-gray-300 dark:border-gray-600{% endif %} rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent"
-                                onchange="updatePropertyTypes(this.value)">
-                            <option value="">Select Category</option>
-                            {% for category in categories %}
-                            <option value="{{ category.id }}"
-                                {% if form_data.category == category.id|stringformat:'s' or (property and property.category and property.category.id == category.id) %}selected{% endif %}>
-                                {{ category.name }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                        {% if errors and errors.category %}
-                        <p class="mt-1 text-sm text-red-600">{{ errors.category }}</p>
-                        {% endif %}
-                    </div>
-                    
-                    <div>
-                        <label for="id_property_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 required-field">
-                            Property Type
-                        </label>
-                        <select id="id_property_type" name="property_type" required
-                                class="w-full p-3 border {% if errors and errors.property_type %}border-red-500{% else %}border-gray-300 dark:border-gray-600{% endif %} rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
-                            <option value="">Select Type</option>
-                            {% for type in property_types %}
-                            <option value="{{ type.id }}"
-                                {% if form_data.property_type == type.id|stringformat:'s' or (property and property.property_type and property.property_type.id == type.id) %}selected{% endif %}>
-                                {{ type.name }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                        {% if errors and errors.property_type %}
-                        <p class="mt-1 text-sm text-red-600">{{ errors.property_type }}</p>
-                        {% endif %}
-                    </div>
+            <div class="space-y-8">
+                <!-- Property Category -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4 required-field">
+                        Property Category
+                    </label>
+                    <select id="id_category" name="category"
+                            class="w-full p-3 border {% if errors and errors.category %}border-red-500{% else %}border-gray-300 dark:border-gray-600{% endif %} rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent"
+                            onchange="loadPropertyTypes(this.value)">
+                        <option value="">Select Category</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}"
+                            {% if form_data.category == category.id|stringformat:'s' %}selected{% elif property and property.category and property.category.id == category.id %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% if errors and errors.category %}
+                    <p class="mt-2 text-sm text-red-600">{{ errors.category }}</p>
+                    {% endif %}
                 </div>
                 
-                <!-- Property For & Listing Type -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 required-field">
-                            Property For
-                        </label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <label class="relative flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                                <input type="radio" name="property_for" value="sale" 
-                                       class="sr-only peer" 
-                                       {% if form_data.property_for == 'sale' %}checked{% endif %}
+                <!-- Property Type Selection -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4 required-field">
+                        Property Type
+                    </label>
+                    <div id="propertyTypeContainer">
+                        {% if property_types %}
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4" id="propertyTypeOptions">
+                            {% for type in property_types %}
+                            <div class="property-type-option {% if form_data.property_type == type.id|stringformat:'s' or property and property.property_type and property.property_type.id == type.id %}selected{% endif %}"
+                                 onclick="selectPropertyType({{ type.id }}, this)">
+                                <input type="radio" name="property_type" value="{{ type.id }}" 
+                                       class="hidden" 
+                                       {% if form_data.property_type == type.id|stringformat:'s' %}checked{% endif %}
+                                       {% if property and property.property_type and property.property_type.id == type.id %}checked{% endif %}
                                        required>
-                                <div class="w-5 h-5 border rounded-full mr-3 flex items-center justify-center peer-checked:border-bhoosparsh-blue">
-                                    <div class="w-3 h-3 rounded-full bg-bhoosparsh-blue opacity-0 peer-checked:opacity-100"></div>
+                                <div class="type-icon">
+                                    {% if "apartment" in type.name|lower %}
+                                    <i class="fas fa-building"></i>
+                                    {% elif "house" in type.name|lower or "villa" in type.name|lower %}
+                                    <i class="fas fa-home"></i>
+                                    {% elif "office" in type.name|lower %}
+                                    <i class="fas fa-briefcase"></i>
+                                    {% elif "shop" in type.name|lower or "retail" in type.name|lower %}
+                                    <i class="fas fa-store"></i>
+                                    {% elif "warehouse" in type.name|lower %}
+                                    <i class="fas fa-warehouse"></i>
+                                    {% elif "land" in type.name|lower or "plot" in type.name|lower %}
+                                    <i class="fas fa-map"></i>
+                                    {% elif "farm" in type.name|lower %}
+                                    <i class="fas fa-tractor"></i>
+                                    {% elif "hotel" in type.name|lower or "resort" in type.name|lower %}
+                                    <i class="fas fa-hotel"></i>
+                                    {% else %}
+                                    <i class="fas fa-building"></i>
+                                    {% endif %}
                                 </div>
-                                <span class="text-sm">For Sale</span>
-                            </label>
-                            
-                            <label class="relative flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                                <input type="radio" name="property_for" value="rent" 
-                                       class="sr-only peer" 
-                                       {% if form_data.property_for == 'rent' %}checked{% endif %}
-                                       required>
-                                <div class="w-5 h-5 border rounded-full mr-3 flex items-center justify-center peer-checked:border-bhoosparsh-blue">
-                                    <div class="w-3 h-3 rounded-full bg-bhoosparsh-blue opacity-0 peer-checked:opacity-100"></div>
-                                </div>
-                                <span class="text-sm">For Rent</span>
-                            </label>
-                            
-                            <label class="relative flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                                <input type="radio" name="property_for" value="pg" 
-                                       class="sr-only peer" 
-                                       {% if form_data.property_for == 'pg' %}checked{% endif %}
-                                       required>
-                                <div class="w-5 h-5 border rounded-full mr-3 flex items-center justify-center peer-checked:border-bhoosparsh-blue">
-                                    <div class="w-3 h-3 rounded-full bg-bhoosparsh-blue opacity-0 peer-checked:opacity-100"></div>
-                                </div>
-                                <span class="text-sm">PG/Hostel</span>
-                            </label>
-                            
-                            <label class="relative flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                                <input type="radio" name="property_for" value="plot" 
-                                       class="sr-only peer" 
-                                       {% if form_data.property_for == 'plot' %}checked{% endif %}
-                                       required>
-                                <div class="w-5 h-5 border rounded-full mr-3 flex items-center justify-center peer-checked:border-bhoosparsh-blue">
-                                    <div class="w-3 h-3 rounded-full bg-bhoosparsh-blue opacity-0 peer-checked:opacity-100"></div>
-                                </div>
-                                <span class="text-sm">Plot/Land</span>
-                            </label>
+                                <div class="type-name">{{ type.name }}</div>
+                            </div>
+                            {% endfor %}
                         </div>
-                        {% if errors and errors.property_for %}
-                        <p class="mt-1 text-sm text-red-600">{{ errors.property_for }}</p>
+                        {% else %}
+                        <div class="p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center">
+                            <i class="fas fa-info-circle text-gray-400 text-3xl mb-3"></i>
+                            <p class="text-gray-600 dark:text-gray-400 mb-2">Please select a category first</p>
+                            <p class="text-sm text-gray-500">Property types will appear here after selecting a category</p>
+                        </div>
                         {% endif %}
                     </div>
-                    
+                    {% if errors and errors.property_type %}
+                    <p class="mt-2 text-sm text-red-600">{{ errors.property_type }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Property For Selection -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4 required-field">
+                        Property For
+                    </label>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4" id="propertyForOptions">
+                        <!-- Sale Option -->
+                        <div class="property-for-option {% if form_data.property_for == 'sale' or property and property.property_for == 'sale' %}selected{% endif %}"
+                             onclick="selectPropertyFor('sale', this)">
+                            <input type="radio" name="property_for" value="sale" 
+                                   class="hidden"
+                                   {% if form_data.property_for == 'sale' %}checked{% endif %}
+                                   {% if property and property.property_for == 'sale' %}checked{% endif %}
+                                   required>
+                            <div class="for-icon">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <div class="for-name">For Sale</div>
+                        </div>
+                        
+                        <!-- Rent Option -->
+                        <div class="property-for-option {% if form_data.property_for == 'rent' or property and property.property_for == 'rent' %}selected{% endif %}"
+                             onclick="selectPropertyFor('rent', this)">
+                            <input type="radio" name="property_for" value="rent" 
+                                   class="hidden"
+                                   {% if form_data.property_for == 'rent' %}checked{% endif %}
+                                   {% if property and property.property_for == 'rent' %}checked{% endif %}
+                                   required>
+                            <div class="for-icon">
+                                <i class="fas fa-key"></i>
+                            </div>
+                            <div class="for-name">For Rent</div>
+                        </div>
+                        
+                        <!-- PG/Hostel Option -->
+                        <div class="property-for-option {% if form_data.property_for == 'pg' or property and property.property_for == 'pg' %}selected{% endif %}"
+                             onclick="selectPropertyFor('pg', this)">
+                            <input type="radio" name="property_for" value="pg" 
+                                   class="hidden"
+                                   {% if form_data.property_for == 'pg' %}checked{% endif %}
+                                   {% if property and property.property_for == 'pg' %}checked{% endif %}
+                                   required>
+                            <div class="for-icon">
+                                <i class="fas fa-bed"></i>
+                            </div>
+                            <div class="for-name">PG/Hostel</div>
+                        </div>
+                        
+                        <!-- Plot/Land Option -->
+                        <div class="property-for-option {% if form_data.property_for == 'plot' or property and property.property_for == 'plot' %}selected{% endif %}"
+                             onclick="selectPropertyFor('plot', this)">
+                            <input type="radio" name="property_for" value="plot" 
+                                   class="hidden"
+                                   {% if form_data.property_for == 'plot' %}checked{% endif %}
+                                   {% if property and property.property_for == 'plot' %}checked{% endif %}
+                                   required>
+                            <div class="for-icon">
+                                <i class="fas fa-map-marked-alt"></i>
+                            </div>
+                            <div class="for-name">Plot/Land</div>
+                        </div>
+                    </div>
+                    {% if errors and errors.property_for %}
+                    <p class="mt-2 text-sm text-red-600">{{ errors.property_for }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Listing Type -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Listing Type
                         </label>
                         <select name="listing_type" 
                                 class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
-                            <option value="basic" {% if form_data.listing_type == 'basic' %}selected{% endif %}>Basic Listing</option>
-                            <option value="featured" {% if form_data.listing_type == 'featured' %}selected{% endif %}>Featured Listing</option>
-                            <option value="premium" {% if form_data.listing_type == 'premium' %}selected{% endif %}>Premium Listing</option>
+                            <option value="basic" {% if form_data.listing_type == 'basic' or property and property.listing_type == 'basic' %}selected{% endif %}>Basic Listing</option>
+                            <option value="featured" {% if form_data.listing_type == 'featured' or property and property.listing_type == 'featured' %}selected{% endif %}>Featured Listing</option>
+                            <option value="premium" {% if form_data.listing_type == 'premium' or property and property.listing_type == 'premium' %}selected{% endif %}>Premium Listing</option>
                         </select>
                     </div>
                 </div>
@@ -457,8 +684,22 @@
                     {% endif %}
                 </div>
                 
-                <!-- Location Details -->
+                <!-- Location Details with Locality Field -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                        <label for="id_locality" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 required-field">
+                            Locality/Area
+                        </label>
+                        <input type="text" id="id_locality" name="locality"
+                               value="{% if form_data.locality %}{{ form_data.locality }}{% elif property and property.locality %}{{ property.locality }}{% endif %}"
+                               required
+                               class="w-full p-3 border {% if errors and errors.locality %}border-red-500{% else %}border-gray-300 dark:border-gray-600{% endif %} rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent"
+                               placeholder="e.g., Andheri West, Koramangala">
+                        {% if errors and errors.locality %}
+                        <p class="mt-1 text-sm text-red-600">{{ errors.locality }}</p>
+                        {% endif %}
+                    </div>
+                    
                     <div>
                         <label for="id_city" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 required-field">
                             City
@@ -497,7 +738,10 @@
                         <p class="mt-1 text-sm text-red-600">{{ errors.pincode }}</p>
                         {% endif %}
                     </div>
-                    
+                </div>
+                
+                <!-- Additional Location Details -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="id_landmark" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Landmark
@@ -507,14 +751,24 @@
                                class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent"
                                placeholder="e.g., Near Metro Station">
                     </div>
+                    
+                    <div>
+                        <label for="id_google_map_url" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Google Maps URL
+                        </label>
+                        <input type="url" id="id_google_map_url" name="google_map_url" 
+                               value="{% if form_data.google_map_url %}{{ form_data.google_map_url }}{% elif property and property.google_map_url %}{{ property.google_map_url }}{% endif %}"
+                               class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300"
+                               placeholder="https://maps.google.com/?q=...">
+                    </div>
                 </div>
                 
-                <!-- Google Maps -->
+                <!-- Google Maps Coordinates -->
                 <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
                     <div class="flex items-center justify-between mb-4">
                         <div>
-                            <h4 class="font-medium text-gray-900 dark:text-white">Location on Map</h4>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Add exact location for better visibility</p>
+                            <h4 class="font-medium text-gray-900 dark:text-white">Location Coordinates (Optional)</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">For precise location on map</p>
                         </div>
                         <button type="button" onclick="openMapPicker()" 
                                 class="px-4 py-2 bg-bhoosparsh-blue text-white rounded-lg hover:bg-blue-700 transition text-sm">
@@ -542,16 +796,6 @@
                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300"
                                    placeholder="e.g., 72.877426">
                         </div>
-                    </div>
-                    
-                    <div class="mt-4">
-                        <label for="id_google_map_url" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Google Maps URL
-                        </label>
-                        <input type="url" id="id_google_map_url" name="google_map_url" 
-                               value="{% if form_data.google_map_url %}{{ form_data.google_map_url }}{% elif property and property.google_map_url %}{{ property.google_map_url }}{% endif %}"
-                               class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300"
-                               placeholder="https://maps.google.com/?q=...">
                     </div>
                 </div>
                 
@@ -588,12 +832,12 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label for="id_maintenance_charges" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Maintenance
+                                Maintenance (Monthly)
                             </label>
                             <input type="number" id="id_maintenance_charges" name="maintenance_charges" 
                                    value="{% if form_data.maintenance_charges %}{{ form_data.maintenance_charges }}{% elif property and property.maintenance_charges %}{{ property.maintenance_charges }}{% endif %}"
                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300"
-                                   placeholder="Monthly">
+                                   placeholder="Optional">
                         </div>
                         
                         <div>
@@ -603,7 +847,8 @@
                             <input type="number" id="id_booking_amount" name="booking_amount" 
                                    value="{% if form_data.booking_amount %}{{ form_data.booking_amount }}{% elif property and property.booking_amount %}{{ property.booking_amount }}{% endif %}" 
                                    step="0.01" min="0"
-                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300"
+                                   placeholder="Optional">
                         </div>
                     </div>
                 </div>
@@ -675,8 +920,8 @@
             <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Property Details & Features</h3>
             
             <div class="space-y-6">
-                <!-- Residential Fields -->
-                <div id="residentialSection" class="dynamic-section">
+                <!-- Residential Section -->
+                <div id="residentialSection" class="property-section">
                     <h4 class="font-medium text-gray-900 dark:text-white mb-4">Residential Details</h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div>
@@ -688,14 +933,12 @@
                                 <option value="">Select</option>
                                 {% for i in "123456789101112"|make_list %}
                                 <option value="{{ i }}" 
-                                    {% if form_data.bedrooms == i %}selected{% endif %}
-                                    {% if property and property.bedrooms and property.bedrooms|stringformat:'s' == i %}selected{% endif %}>
+                                    {% if form_data.bedrooms == i %}selected{% elif property and property.bedrooms and property.bedrooms|stringformat:'s' == i %}selected{% endif %}>
                                     {{ i }} {% if i == "1" %}Bedroom{% else %}Bedrooms{% endif %}
                                 </option>
                                 {% endfor %}
                                 <option value="13" 
-                                    {% if form_data.bedrooms == "13" %}selected{% endif %}
-                                    {% if property and property.bedrooms and property.bedrooms >= 13 %}selected{% endif %}>13+ Bedrooms</option>
+                                    {% if form_data.bedrooms == "13" %}selected{% elif property and property.bedrooms and property.bedrooms >= 13 %}selected{% endif %}>13+ Bedrooms</option>
                             </select>
                         </div>
                         
@@ -708,14 +951,12 @@
                                 <option value="">Select</option>
                                 {% for i in "123456"|make_list %}
                                 <option value="{{ i }}" 
-                                    {% if form_data.bathrooms == i %}selected{% endif %}
-                                    {% if property and property.bathrooms and property.bathrooms|stringformat:'s' == i %}selected{% endif %}>
+                                    {% if form_data.bathrooms == i %}selected{% elif property and property.bathrooms and property.bathrooms|stringformat:'s' == i %}selected{% endif %}>
                                     {{ i }} {% if i == "1" %}Bathroom{% else %}Bathrooms{% endif %}
                                 </option>
                                 {% endfor %}
                                 <option value="7" 
-                                    {% if form_data.bathrooms == "7" %}selected{% endif %}
-                                    {% if property and property.bathrooms and property.bathrooms >= 7 %}selected{% endif %}>7+ Bathrooms</option>
+                                    {% if form_data.bathrooms == "7" %}selected{% elif property and property.bathrooms and property.bathrooms >= 7 %}selected{% endif %}>7+ Bathrooms</option>
                             </select>
                         </div>
                         
@@ -736,15 +977,145 @@
                                     class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
                                 <option value="">Select</option>
                                 <option value="furnished" 
-                                    {% if form_data.furnishing == 'furnished' %}selected{% endif %}
-                                    {% if property and property.furnishing == 'furnished' %}selected{% endif %}>Fully Furnished</option>
+                                    {% if form_data.furnishing == 'furnished' %}selected{% elif property and property.furnishing == 'furnished' %}selected{% endif %}>Fully Furnished</option>
                                 <option value="semi_furnished" 
-                                    {% if form_data.furnishing == 'semi_furnished' %}selected{% endif %}
-                                    {% if property and property.furnishing == 'semi_furnished' %}selected{% endif %}>Semi Furnished</option>
+                                    {% if form_data.furnishing == 'semi_furnished' %}selected{% elif property and property.furnishing == 'semi_furnished' %}selected{% endif %}>Semi Furnished</option>
                                 <option value="unfurnished" 
-                                    {% if form_data.furnishing == 'unfurnished' %}selected{% endif %}
-                                    {% if property and property.furnishing == 'unfurnished' %}selected{% endif %}>Unfurnished</option>
+                                    {% if form_data.furnishing == 'unfurnished' %}selected{% elif property and property.furnishing == 'unfurnished' %}selected{% endif %}>Unfurnished</option>
                             </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Commercial Section -->
+                <div id="commercialSection" class="property-section">
+                    <h4 class="font-medium text-gray-900 dark:text-white mb-4">Commercial Details</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div>
+                            <label for="id_commercial_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Commercial Type
+                            </label>
+                            <select id="id_commercial_type" name="commercial_type"
+                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                                <option value="">Select Type</option>
+                                <option value="office" {% if form_data.commercial_type == 'office' %}selected{% endif %}>Office Space</option>
+                                <option value="shop" {% if form_data.commercial_type == 'shop' %}selected{% endif %}>Shop/Retail</option>
+                                <option value="warehouse" {% if form_data.commercial_type == 'warehouse' %}selected{% endif %}>Warehouse/Storage</option>
+                                <option value="industrial" {% if form_data.commercial_type == 'industrial' %}selected{% endif %}>Industrial</option>
+                                <option value="other" {% if form_data.commercial_type == 'other' %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="id_floor_number" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Floor Number
+                            </label>
+                            <input type="number" id="id_floor_number" name="floor_number" 
+                                   value="{% if form_data.floor_number %}{{ form_data.floor_number }}{% elif property %}{{ property.floor_number }}{% endif %}" 
+                                   min="0"
+                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300"
+                                   placeholder="Ground floor = 0">
+                        </div>
+                        
+                        <div>
+                            <label for="id_total_floors" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Total Floors in Building
+                            </label>
+                            <input type="number" id="id_total_floors" name="total_floors" 
+                                   value="{% if form_data.total_floors %}{{ form_data.total_floors }}{% elif property %}{{ property.total_floors }}{% endif %}" 
+                                   min="1"
+                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Plot/Land Section -->
+                <div id="plotSection" class="property-section">
+                    <h4 class="font-medium text-gray-900 dark:text-white mb-4">Plot/Land Details</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div>
+                            <label for="id_plot_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Plot Type
+                            </label>
+                            <select id="id_plot_type" name="plot_type"
+                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                                <option value="">Select Type</option>
+                                <option value="residential" {% if form_data.plot_type == 'residential' %}selected{% endif %}>Residential Plot</option>
+                                <option value="commercial" {% if form_data.plot_type == 'commercial' %}selected{% endif %}>Commercial Plot</option>
+                                <option value="agricultural" {% if form_data.plot_type == 'agricultural' %}selected{% endif %}>Agricultural Land</option>
+                                <option value="industrial" {% if form_data.plot_type == 'industrial' %}selected{% endif %}>Industrial Plot</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="id_facing" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Facing Direction
+                            </label>
+                            <select id="id_facing" name="facing"
+                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                                <option value="">Select Direction</option>
+                                <option value="east" {% if form_data.facing == 'east' %}selected{% endif %}>East</option>
+                                <option value="west" {% if form_data.facing == 'west' %}selected{% endif %}>West</option>
+                                <option value="north" {% if form_data.facing == 'north' %}selected{% endif %}>North</option>
+                                <option value="south" {% if form_data.facing == 'south' %}selected{% endif %}>South</option>
+                                <option value="north-east" {% if form_data.facing == 'north-east' %}selected{% endif %}>North-East</option>
+                                <option value="north-west" {% if form_data.facing == 'north-west' %}selected{% endif %}>North-West</option>
+                                <option value="south-east" {% if form_data.facing == 'south-east' %}selected{% endif %}>South-East</option>
+                                <option value="south-west" {% if form_data.facing == 'south-west' %}selected{% endif %}>South-West</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="id_plot_length" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Plot Length (ft)
+                            </label>
+                            <input type="number" id="id_plot_length" name="plot_length" 
+                                   value="{% if form_data.plot_length %}{{ form_data.plot_length }}{% endif %}" 
+                                   step="0.01" min="0"
+                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- PG/Hostel Section -->
+                <div id="pgSection" class="property-section">
+                    <h4 class="font-medium text-gray-900 dark:text-white mb-4">PG/Hostel Details</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div>
+                            <label for="id_pg_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                PG Type
+                            </label>
+                            <select id="id_pg_type" name="pg_type"
+                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                                <option value="">Select Type</option>
+                                <option value="boys" {% if form_data.pg_type == 'boys' %}selected{% endif %}>Boys PG</option>
+                                <option value="girls" {% if form_data.pg_type == 'girls' %}selected{% endif %}>Girls PG</option>
+                                <option value="co-living" {% if form_data.pg_type == 'co-living' %}selected{% endif %}>Co-living Space</option>
+                                <option value="family" {% if form_data.pg_type == 'family' %}selected{% endif %}>Family Hostel</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="id_meals_included" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Meals Included
+                            </label>
+                            <select id="id_meals_included" name="meals_included"
+                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                                <option value="">Select Option</option>
+                                <option value="yes" {% if form_data.meals_included == 'yes' %}selected{% endif %}>Yes (All meals)</option>
+                                <option value="breakfast_only" {% if form_data.meals_included == 'breakfast_only' %}selected{% endif %}>Breakfast Only</option>
+                                <option value="no" {% if form_data.meals_included == 'no' %}selected{% endif %}>No</option>
+                                <option value="optional" {% if form_data.meals_included == 'optional' %}selected{% endif %}>Optional (Extra charge)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="flex items-center mt-6">
+                            <input type="checkbox" id="id_shared_bathroom" name="shared_bathroom" 
+                                   {% if form_data.shared_bathroom == 'on' %}checked{% endif %}
+                                   class="w-4 h-4 text-bhoosparsh-blue rounded border-gray-300 focus:ring-bhoosparsh-blue">
+                            <label for="id_shared_bathroom" class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                                Shared Bathroom
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -755,26 +1126,37 @@
                         <label for="id_age_of_property" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Age of Property
                         </label>
-                        <input type="text" id="id_age_of_property" name="age_of_property" 
-                               value="{% if form_data.age_of_property %}{{ form_data.age_of_property }}{% elif property %}{{ property.age_of_property }}{% endif %}"
-                               class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300"
-                               placeholder="e.g., 5 years, New Construction">
+                        <select id="id_age_of_property" name="age_of_property"
+                                class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                            <option value="">Select</option>
+                            <option value="new" {% if form_data.age_of_property == 'new' %}selected{% endif %}>New Construction</option>
+                            <option value="0-1" {% if form_data.age_of_property == '0-1' %}selected{% endif %}>0-1 Year</option>
+                            <option value="1-5" {% if form_data.age_of_property == '1-5' %}selected{% endif %}>1-5 Years</option>
+                            <option value="5-10" {% if form_data.age_of_property == '5-10' %}selected{% endif %}>5-10 Years</option>
+                            <option value="10+" {% if form_data.age_of_property == '10+' %}selected{% endif %}>10+ Years</option>
+                        </select>
                     </div>
                     
                     <div>
                         <label for="id_possession_status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Possession Status
                         </label>
-                        <input type="text" id="id_possession_status" name="possession_status" 
-                               value="{% if form_data.possession_status %}{{ form_data.possession_status }}{% elif property %}{{ property.possession_status }}{% endif %}"
-                               class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300"
-                               placeholder="e.g., Ready to Move, Under Construction">
+                        <select id="id_possession_status" name="possession_status"
+                                class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                            <option value="">Select</option>
+                            <option value="ready" {% if form_data.possession_status == 'ready' %}selected{% endif %}>Ready to Move</option>
+                            <option value="under_construction" {% if form_data.possession_status == 'under_construction' %}selected{% endif %}>Under Construction</option>
+                            <option value="within_3_months" {% if form_data.possession_status == 'within_3_months' %}selected{% endif %}>Within 3 Months</option>
+                            <option value="within_6_months" {% if form_data.possession_status == 'within_6_months' %}selected{% endif %}>Within 6 Months</option>
+                            <option value="within_1_year" {% if form_data.possession_status == 'within_1_year' %}selected{% endif %}>Within 1 Year</option>
+                        </select>
                     </div>
                 </div>
                 
                 <!-- Amenities -->
                 <div>
                     <h4 class="font-medium text-gray-900 dark:text-white mb-4">Amenities & Facilities</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Select all applicable amenities</p>
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                         {% for amenity in amenities_list %}
                         <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition">
@@ -865,8 +1247,7 @@
                          onclick="document.getElementById('id_primary_image').click()">
                         <input type="file" id="id_primary_image" name="primary_image" accept="image/*" 
                                class="hidden" onchange="previewPrimaryImage(this)" 
-                               {% if not property or not property.primary_image %}required{% endif %}
-                               {% if property and property.primary_image %}data-has-existing="true"{% endif %}>
+                               {% if not property or not property.primary_image %}required{% endif %}>
                         
                         <div id="primaryImagePreview" class="flex flex-col items-center justify-center">
                             {% if property and property.primary_image %}
@@ -913,7 +1294,7 @@
                     <!-- Image Previews -->
                     <div id="imagePreviews" class="mt-4 image-preview-container">
                         {% if property %}
-                            {% for image in images %}
+                            {% for image in property.images.all %}
                             <div class="image-preview {% if image.is_primary %}primary{% endif %}" data-id="{{ image.id }}">
                                 <img src="{{ image.image.url }}" alt="Property Image">
                                 <div class="image-actions">
@@ -958,7 +1339,7 @@
                             </label>
                             <input type="tel" id="id_contact_phone" name="contact_phone" 
                                    value="{% if form_data.contact_phone %}{{ form_data.contact_phone }}{% elif property %}{{ property.contact_phone }}{% else %}{{ user.phone }}{% endif %}" required
-                                   pattern="^\+?1?\d{9,15}$"
+                                   pattern="^[+]?[1-9][\d]{9,14}$"
                                    class="w-full p-3 border {% if errors and errors.contact_phone %}border-red-500{% else %}border-gray-300 dark:border-gray-600{% endif %} rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
                             {% if errors and errors.contact_phone %}
                             <p class="mt-1 text-sm text-red-600">{{ errors.contact_phone }}</p>
@@ -1024,7 +1405,7 @@
                                 Save as Draft
                             </button>
                             
-                            <button type="submit" id="submitBtn"
+                            <button type="button" onclick="submitForReview()" id="submitBtn"
                                     class="px-6 py-3 bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg hover:opacity-90 transition font-medium flex items-center gap-2">
                                 <i class="fas fa-paper-plane"></i>
                                 <span>{% if property %}Update Property{% else %}Submit for Review{% endif %}</span>
@@ -1063,7 +1444,6 @@
         
         <div class="p-6 h-[calc(80vh-140px)]">
             <div id="mapContainer" class="w-full h-full bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden">
-                <!-- Google Maps will be loaded here -->
                 <div class="w-full h-full flex items-center justify-center">
                     <div class="text-center">
                         <i class="fas fa-map text-gray-400 text-4xl mb-3"></i>
@@ -1110,14 +1490,64 @@
     let currentStep = 1;
     const totalSteps = 4;
     let formIsSubmitting = false;
+    let isDraftSubmission = false;
+    let selectedCategoryId = null;
+    let propertyTypeMap = {};
+    
+    // Property type category mappings
+    const propertyTypeCategories = {
+        'residential': ['apartment', 'villa', 'house', 'penthouse', 'flat', 'residential', 'bhk'],
+        'commercial': ['office', 'shop', 'retail', 'warehouse', 'industrial', 'commercial', 'store'],
+        'plot': ['plot', 'land', 'agricultural', 'farm'],
+        'pg': ['pg', 'hostel', 'guest', 'paying', 'lodging']
+    };
     
     // Initialize the form
     document.addEventListener('DOMContentLoaded', function() {
-        // Show dynamic sections based on category
+        // Load property type map from data attributes
+        {% for type in property_types %}
+        propertyTypeMap[{{ type.id }}] = {
+            name: "{{ type.name|escapejs }}",
+            slug: "{{ type.slug|escapejs }}",
+            categoryId: "{{ type.category.id|escapejs }}"
+        };
+        {% endfor %}
+        
+        // Check if editing existing property
+        {% if property %}
+        // Show relevant section based on property type
+        setTimeout(() => {
+            const propertyTypeId = '{{ property.property_type.id }}';
+            if (propertyTypeId) {
+                showRelevantPropertySection(propertyTypeId);
+            }
+        }, 500);
+        {% endif %}
+        
+        // Handle category change
         const categorySelect = document.getElementById('id_category');
-        if (categorySelect.value) {
-            updateDynamicSections(categorySelect.value);
+        if (categorySelect) {
+            categorySelect.addEventListener('change', function() {
+                selectedCategoryId = this.value;
+                loadPropertyTypes(this.value);
+            });
+            
+            // Initialize with current value
+            if (categorySelect.value) {
+                selectedCategoryId = categorySelect.value;
+            }
         }
+        
+        // Handle property type selection
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.property-type-option')) {
+                const option = e.target.closest('.property-type-option');
+                const input = option.querySelector('input[type="radio"]');
+                if (input) {
+                    showRelevantPropertySection(input.value);
+                }
+            }
+        });
         
         // Handle image preview for additional images
         const additionalImagesInput = document.getElementById('id_additional_images');
@@ -1132,7 +1562,11 @@
         
         // Form submission handler
         document.getElementById('propertyForm').addEventListener('submit', function(e) {
-            if (!validateAllSteps() || formIsSubmitting) {
+            // Check if this is a draft submission
+            const formData = new FormData(this);
+            const isDraft = formData.get('save_as_draft') === 'true';
+
+            if ((!isDraft && !validateAllSteps()) || formIsSubmitting) {
                 e.preventDefault();
                 if (formIsSubmitting) {
                     showToast('Please wait, form is submitting...', 'info');
@@ -1145,11 +1579,226 @@
                 const submitBtn = document.getElementById('submitBtn');
                 if (submitBtn) {
                     submitBtn.disabled = true;
-                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+                    submitBtn.innerHTML = '<div class="loading-spinner mr-2"></div> Submitting...';
                 }
             }
         });
     });
+    
+    // Load property types based on selected category
+    function loadPropertyTypes(categoryId) {
+        if (!categoryId) {
+            const propertyTypeContainer = document.getElementById('propertyTypeContainer');
+            propertyTypeContainer.innerHTML = `
+                <div class="p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center">
+                    <i class="fas fa-info-circle text-gray-400 text-3xl mb-3"></i>
+                    <p class="text-gray-600 dark:text-gray-400 mb-2">Please select a category first</p>
+                    <p class="text-sm text-gray-500">Property types will appear here after selecting a category</p>
+                </div>
+            `;
+            hideAllPropertySections();
+            return;
+        }
+        
+        // Show loading state
+        const propertyTypeContainer = document.getElementById('propertyTypeContainer');
+        propertyTypeContainer.innerHTML = `
+            <div class="p-8 text-center">
+                <div class="loading-spinner mx-auto mb-4" style="border-top-color: #0E68B9;"></div>
+                <p class="text-gray-600 dark:text-gray-400">Loading property types...</p>
+            </div>
+        `;
+        
+        // Fetch property types via AJAX
+        fetch(`?get_property_types=true&category_id=${categoryId}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.types && data.types.length > 0) {
+                let html = '<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4" id="propertyTypeOptions">';
+                
+                data.types.forEach(type => {
+                    // Store in map
+                    propertyTypeMap[type.id] = {
+                        name: type.name,
+                        slug: type.slug,
+                        categoryId: categoryId
+                    };
+                    
+                    const isSelected = '{{ form_data.property_type }}' == type.id || 
+                                      ('{{ property.property_type.id }}' == type.id && '{{ property }}');
+                    
+                    html += `
+                        <div class="property-type-option ${isSelected ? 'selected' : ''}"
+                             onclick="selectPropertyType(${type.id}, this)">
+                            <input type="radio" name="property_type" value="${type.id}" 
+                                   class="hidden" ${isSelected ? 'checked' : ''} required>
+                            <div class="type-icon">
+                                ${getPropertyTypeIcon(type.name)}
+                            </div>
+                            <div class="type-name">${type.name}</div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                propertyTypeContainer.innerHTML = html;
+                
+                // If editing and property type exists, show relevant section
+                {% if property and property.property_type %}
+                const propertyTypeId = '{{ property.property_type.id }}';
+                if (propertyTypeId) {
+                    showRelevantPropertySection(propertyTypeId);
+                }
+                {% endif %}
+            } else {
+                propertyTypeContainer.innerHTML = `
+                    <div class="p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center">
+                        <i class="fas fa-exclamation-circle text-gray-400 text-3xl mb-3"></i>
+                        <p class="text-gray-600 dark:text-gray-400 mb-2">No property types available</p>
+                        <p class="text-sm text-gray-500">Please select a different category</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading property types:', error);
+            propertyTypeContainer.innerHTML = `
+                <div class="p-6 border-2 border-dashed border-red-300 dark:border-red-600 rounded-lg text-center">
+                    <i class="fas fa-exclamation-triangle text-red-400 text-3xl mb-3"></i>
+                    <p class="text-red-600 dark:text-red-400 mb-2">Error loading property types</p>
+                    <p class="text-sm text-red-500">Please try again or contact support</p>
+                </div>
+            `;
+            showToast('Error loading property types. Please try again.', 'error');
+        });
+    }
+    
+    // Get appropriate icon for property type
+    function getPropertyTypeIcon(typeName) {
+        const name = typeName.toLowerCase();
+        if (name.includes('apartment') || name.includes('flat')) {
+            return '<i class="fas fa-building"></i>';
+        } else if (name.includes('villa') || name.includes('house')) {
+            return '<i class="fas fa-home"></i>';
+        } else if (name.includes('office')) {
+            return '<i class="fas fa-briefcase"></i>';
+        } else if (name.includes('shop') || name.includes('retail') || name.includes('store')) {
+            return '<i class="fas fa-store"></i>';
+        } else if (name.includes('warehouse')) {
+            return '<i class="fas fa-warehouse"></i>';
+        } else if (name.includes('land') || name.includes('plot')) {
+            return '<i class="fas fa-map"></i>';
+        } else if (name.includes('farm') || name.includes('agricultural')) {
+            return '<i class="fas fa-tractor"></i>';
+        } else if (name.includes('pg') || name.includes('hostel') || name.includes('guest')) {
+            return '<i class="fas fa-bed"></i>';
+        } else {
+            return '<i class="fas fa-building"></i>';
+        }
+    }
+    
+    // Select property type
+    function selectPropertyType(typeId, element) {
+        // Remove selected class from all options
+        document.querySelectorAll('#propertyTypeOptions .property-type-option').forEach(option => {
+            option.classList.remove('selected');
+        });
+        
+        // Add selected class to clicked option
+        element.classList.add('selected');
+        
+        // Get the radio input inside the option
+        const radioInput = element.querySelector('input[type="radio"]');
+        if (radioInput) {
+            radioInput.checked = true;
+            
+            // Trigger change event for validation
+            const event = new Event('change', { bubbles: true });
+            radioInput.dispatchEvent(event);
+        }
+        
+        // Show relevant property section
+        showRelevantPropertySection(typeId);
+        
+        // Show success message
+        const typeName = propertyTypeMap[typeId]?.name || 'Property type';
+        showToast(`${typeName} selected`, 'success');
+    }
+    
+    // Show relevant property section based on property type
+    function showRelevantPropertySection(typeId) {
+        const typeInfo = propertyTypeMap[typeId];
+        if (!typeInfo) return;
+        
+        // Hide all property sections
+        hideAllPropertySections();
+        
+        // Determine which section to show
+        const typeName = typeInfo.name.toLowerCase();
+        const typeSlug = typeInfo.slug.toLowerCase();
+        
+        let sectionToShow = null;
+        
+        // Check each category
+        for (const [category, keywords] of Object.entries(propertyTypeCategories)) {
+            if (keywords.some(keyword => typeName.includes(keyword) || typeSlug.includes(keyword))) {
+                sectionToShow = category;
+                break;
+            }
+        }
+        
+        // Default to residential if no match found
+        if (!sectionToShow) {
+            sectionToShow = 'residential';
+        }
+        
+        // Show the relevant section
+        const sectionElement = document.getElementById(`${sectionToShow}Section`);
+        if (sectionElement) {
+            sectionElement.classList.add('active');
+        }
+    }
+    
+    // Hide all property sections
+    function hideAllPropertySections() {
+        document.querySelectorAll('.property-section').forEach(section => {
+            section.classList.remove('active');
+        });
+    }
+    
+    // Property For Selection
+    function selectPropertyFor(value, element) {
+        // Remove selected class from all options
+        document.querySelectorAll('#propertyForOptions .property-for-option').forEach(option => {
+            option.classList.remove('selected');
+        });
+        
+        // Add selected class to clicked option
+        element.classList.add('selected');
+        
+        // Get the radio input inside the option
+        const radioInput = element.querySelector('input[type="radio"]');
+        if (radioInput) {
+            radioInput.checked = true;
+            
+            // Trigger change event for validation
+            const event = new Event('change', { bubbles: true });
+            radioInput.dispatchEvent(event);
+        }
+        
+        // Show success message
+        const forName = element.querySelector('.for-name').textContent;
+        showToast(`${forName} selected`, 'success');
+    }
     
     // Navigation functions
     function nextStep() {
@@ -1158,17 +1807,17 @@
                 document.getElementById(`step${currentStep}`).classList.remove('active');
                 document.getElementById(`step${currentStep}Indicator`).classList.remove('active');
                 document.getElementById(`step${currentStep}Indicator`).classList.add('completed');
-                
+
                 if (currentStep < totalSteps - 1) {
                     document.getElementById(`step${currentStep}Connector`).classList.add('active');
                 }
-                
+
                 currentStep++;
+                document.getElementById('currentStepField').value = currentStep;
                 document.getElementById(`step${currentStep}`).classList.add('active');
                 document.getElementById(`step${currentStep}Indicator`).classList.add('active');
-                
+
                 updateStepHeaders();
-                updateCurrentStepField();
                 scrollToTop();
             }
         }
@@ -1184,7 +1833,6 @@
             document.getElementById(`step${currentStep}Indicator`).classList.add('active');
             
             updateStepHeaders();
-            updateCurrentStepField();
             scrollToTop();
         }
     }
@@ -1212,15 +1860,7 @@
             document.getElementById(`step${step}Indicator`).classList.add('active');
             
             updateStepHeaders();
-            updateCurrentStepField();
             scrollToTop();
-        }
-    }
-    
-    function updateCurrentStepField() {
-        const currentStepField = document.getElementById('currentStepField');
-        if (currentStepField) {
-            currentStepField.value = currentStep;
         }
     }
     
@@ -1267,41 +1907,75 @@
             el.remove();
         });
         
-        // Get all required inputs in this step
+        // Step-specific validation
+        if (step === 1) {
+            // Property type validation
+            const propertyTypeSelected = document.querySelector('input[name="property_type"]:checked');
+            if (!propertyTypeSelected) {
+                isValid = false;
+                const propertyTypeContainer = document.getElementById('propertyTypeContainer');
+                if (propertyTypeContainer && !propertyTypeContainer.querySelector('.error-message')) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'error-message mt-2';
+                    errorDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please select a property type';
+                    propertyTypeContainer.parentNode.insertBefore(errorDiv, propertyTypeContainer.nextSibling);
+                }
+            }
+
+            // Property for validation
+            const propertyForSelected = document.querySelector('input[name="property_for"]:checked');
+            if (!propertyForSelected) {
+                isValid = false;
+                const propertyForOptions = document.getElementById('propertyForOptions');
+                if (propertyForOptions && !propertyForOptions.querySelector('.error-message')) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'error-message mt-2';
+                    errorDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please select property for';
+                    propertyForOptions.parentNode.insertBefore(errorDiv, propertyForOptions.nextSibling);
+                }
+            }
+        }
+        
+        if (step === 2) {
+            // Validate locality (new required field)
+            const localityField = document.getElementById('id_locality');
+            if (localityField && !localityField.value.trim()) {
+                isValid = false;
+                markFieldAsError(localityField, 'Locality/Area is required');
+            }
+        }
+        
+        // Validate all required inputs in this step
         const requiredInputs = stepElement.querySelectorAll('[required]');
         
         requiredInputs.forEach(input => {
+            // Skip if already marked as error
+            if (input.classList.contains('error-field')) return;
+            
             let value = input.value;
+            let isChecked = input.checked;
+            
+            // Skip validation for hidden inputs
+            if (input.type === 'hidden') return;
             
             // Handle different input types
-            if (input.type === 'checkbox' && !input.checked) {
+            if (input.type === 'checkbox' && !isChecked) {
                 isValid = false;
                 markFieldAsError(input, 'This field is required');
             } 
             else if (input.type === 'radio') {
-                // Check if any radio with same name is checked
-                const radioName = input.name;
-                const radioGroup = document.querySelectorAll(`input[name="${radioName}"]`);
-                const isRadioChecked = Array.from(radioGroup).some(radio => radio.checked);
-                if (!isRadioChecked) {
-                    isValid = false;
-                    const radioContainer = radioGroup[0].closest('div');
-                    if (radioContainer && !radioContainer.querySelector('.error-message')) {
-                        const errorDiv = document.createElement('div');
-                        errorDiv.className = 'error-message';
-                        errorDiv.textContent = 'Please select an option';
-                        radioContainer.parentNode.appendChild(errorDiv);
-                    }
-                }
+                // Radio validation already handled in step 1
             }
             else if (input.type === 'file' && !input.files.length) {
                 // Check if primary image is required (only for new properties)
-                if (input.id === 'id_primary_image' && !input.hasAttribute('data-has-existing')) {
+                if (input.id === 'id_primary_image') {
+                    {% if not property or not property.primary_image %}
                     isValid = false;
                     markFieldAsError(input, 'Primary image is required');
+                    {% endif %}
                 }
             }
-            else if (!value.trim()) {
+            else if (!value.trim() && input.type !== 'file') {
                 isValid = false;
                 markFieldAsError(input, 'This field is required');
             }
@@ -1324,10 +1998,10 @@
             }
             
             if (input.name === 'contact_phone' && value) {
-                const phoneRegex = /^[+]?[1-9][\d]{0,15}$/;
+                const phoneRegex = /^[+]?[1-9][\d]{9,14}$/;
                 if (!phoneRegex.test(value.replace(/[\s()-]/g, ''))) {
                     isValid = false;
-                    markFieldAsError(input, 'Please enter a valid phone number');
+                    markFieldAsError(input, 'Please enter a valid phone number (10-15 digits)');
                 }
             }
             
@@ -1365,21 +2039,8 @@
         if (!errorContainer.querySelector('.error-message')) {
             const errorDiv = document.createElement('div');
             errorDiv.className = 'error-message';
-            errorDiv.textContent = message;
+            errorDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
             errorContainer.appendChild(errorDiv);
-        }
-    }
-    
-    function updateDynamicSections(categoryId) {
-        // Hide all dynamic sections
-        document.querySelectorAll('.dynamic-section').forEach(section => {
-            section.classList.add('hidden');
-        });
-        
-        // Show relevant section based on category
-        if (categoryId) {
-            // For demo, show residential section
-            document.getElementById('residentialSection').classList.remove('hidden');
         }
     }
     
@@ -1520,7 +2181,8 @@
     }
     
     function openMapPicker() {
-        openModal('mapModal');
+        document.getElementById('mapModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
         
         // In production, initialize Google Maps here
         // For demo, simulate coordinates
@@ -1530,6 +2192,11 @@
             document.getElementById('selectedLatitude').value = lat;
             document.getElementById('selectedLongitude').value = lng;
         }, 500);
+    }
+    
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+        document.body.style.overflow = 'auto';
     }
     
     function applyMapSelection() {
@@ -1551,19 +2218,19 @@
         }
     }
     
+    function submitForReview() {
+        // Submit form for review
+        document.getElementById('propertyForm').submit();
+    }
+
     function saveAsDraft() {
-        if (!validateAllSteps()) {
-            showToast('Please complete all required fields', 'error');
-            return;
-        }
-        
         // Create hidden field for draft
         const draftField = document.createElement('input');
         draftField.type = 'hidden';
         draftField.name = 'save_as_draft';
         draftField.value = 'true';
         document.getElementById('propertyForm').appendChild(draftField);
-        
+
         // Submit form
         document.getElementById('propertyForm').submit();
     }
@@ -1576,13 +2243,13 @@
     
     // Toast notification function
     function showToast(message, type = 'info') {
+        // Remove existing toasts
+        document.querySelectorAll('.toast').forEach(toast => {
+            toast.remove();
+        });
+        
         const toast = document.createElement('div');
-        toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-medium animate-slide-in ${
-            type === 'error' ? 'bg-red-500' :
-            type === 'success' ? 'bg-green-500' :
-            type === 'warning' ? 'bg-yellow-500' :
-            'bg-blue-500'
-        }`;
+        toast.className = `toast ${type}`;
         toast.innerHTML = `
             <div class="flex items-center gap-2">
                 <i class="fas ${
@@ -1599,28 +2266,13 @@
         
         // Remove toast after 5 seconds
         setTimeout(() => {
-            toast.style.animation = 'slide-out 0.3s ease-out forwards';
+            toast.style.animation = 'slideOutRight 0.3s ease-out forwards';
             setTimeout(() => {
-                document.body.removeChild(toast);
+                if (toast.parentNode) {
+                    document.body.removeChild(toast);
+                }
             }, 300);
         }, 5000);
-    }
-    
-    // Modal functions
-    function openModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        }
-    }
-    
-    function closeModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
     }
 </script>
 {% endblock %}

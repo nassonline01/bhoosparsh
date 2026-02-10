@@ -1,0 +1,642 @@
+<!-- templates/dashboard/seller/property_detail.html -->
+{% extends 'dashboard/seller/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}{{ property.title }} - Property Details - BHOOSPARSH Seller{% endblock %}
+
+{% block extra_css %}
+<style>
+    .property-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .info-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+    }
+    
+    .info-label {
+        color: #6b7280;
+        font-size: 13px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .info-value {
+        color: #111827;
+        font-size: 16px;
+        font-weight: 600;
+        margin-top: 4px;
+    }
+    
+    .image-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .gallery-image {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+    
+    .gallery-image:hover {
+        transform: scale(1.05);
+    }
+    
+    .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 32px;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    
+    .stat-label {
+        font-size: 14px;
+        opacity: 0.9;
+    }
+    
+    .inquiry-card {
+        background: white;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-left: 4px solid #3b82f6;
+    }
+    
+    .inquiry-new {
+        border-left-color: #10b981;
+    }
+    
+    .inquiry-contacted {
+        border-left-color: #f59e0b;
+    }
+    
+    .inquiry-converted {
+        border-left-color: #8b5cf6;
+    }
+    
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e5e7eb;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+    }
+    
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -23px;
+        top: 5px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #3b82f6;
+        border: 2px solid white;
+        box-shadow: 0 0 0 3px #e5e7eb;
+    }
+    
+    .btn-action {
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block header_title %}
+<h1 class="text-xl font-bold text-gray-900 dark:text-white">Property Details</h1>
+<p class="text-sm text-gray-600 dark:text-gray-400">
+    Manage and track your property listing
+</p>
+{% endblock %}
+
+{% block header_buttons %}
+<div class="flex flex-wrap gap-2">
+    <a href="{% url 'seller_properties' %}" 
+       class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-2">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to List</span>
+    </a>
+    
+    <a href="{% url 'seller_property_edit' property.id %}" 
+       class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:opacity-90 transition flex items-center gap-2">
+        <i class="fas fa-edit"></i>
+        <span>Edit Property</span>
+    </a>
+    
+    <div class="relative">
+        <button onclick="toggleActionMenu()" 
+                class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-2">
+            <i class="fas fa-ellipsis-h"></i>
+            <span>More Actions</span>
+        </button>
+        
+        <div id="actionMenu" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10">
+            {% if property.is_active %}
+            <a href="#" onclick="togglePropertyStatus('{{ property.id }}', 'inactive')" 
+               class="px-4 py-2 text-sm text-yellow-600 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+                <i class="fas fa-pause"></i>
+                <span>Deactivate</span>
+            </a>
+            {% else %}
+            <a href="#" onclick="togglePropertyStatus('{{ property.id }}', 'active')" 
+               class="px-4 py-2 text-sm text-green-600 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+                <i class="fas fa-play"></i>
+                <span>Activate</span>
+            </a>
+            {% endif %}
+            
+            <a href="#" onclick="duplicateProperty('{{ property.id }}')" 
+               class="px-4 py-2 text-sm text-purple-600 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+                <i class="fas fa-copy"></i>
+                <span>Duplicate</span>
+            </a>
+            
+            <a href="#" onclick="openBoostModal('{{ property.id }}')" 
+               class="px-4 py-2 text-sm text-orange-600 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+                <i class="fas fa-bolt"></i>
+                <span>Boost Property</span>
+            </a>
+            
+            <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+            
+            <a href="#" onclick="confirmDelete('{{ property.id }}')" 
+               class="px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+                <i class="fas fa-trash"></i>
+                <span>Delete Property</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Property Header -->
+    <div class="property-header rounded-xl p-6">
+        <div class="flex justify-between items-start">
+            <div>
+                <h1 class="text-2xl font-bold mb-2">{{ property.title }}</h1>
+                <div class="flex items-center gap-4 flex-wrap">
+                    <span class="bg-white/20 px-3 py-1 rounded-full text-sm">
+                        <i class="fas fa-map-marker-alt mr-2"></i>
+                        {{ property.locality }}, {{ property.city }}
+                    </span>
+                    
+                    <span class="bg-white/20 px-3 py-1 rounded-full text-sm">
+                        <i class="fas fa-tag mr-2"></i>
+                        {{ property.get_property_for_display }}
+                    </span>
+                    
+                    <span class="bg-white/20 px-3 py-1 rounded-full text-sm">
+                        ID: {{ property.property_id }}
+                    </span>
+                    
+                    {% if property.is_featured %}
+                    <span class="bg-gradient-to-r from-yellow-500 to-orange-500 px-3 py-1 rounded-full text-sm font-medium">
+                        <i class="fas fa-star mr-1"></i> Featured
+                    </span>
+                    {% endif %}
+                    
+                    {% if property.is_urgent %}
+                    <span class="bg-gradient-to-r from-red-500 to-pink-500 px-3 py-1 rounded-full text-sm font-medium animate-pulse">
+                        <i class="fas fa-bolt mr-1"></i> Urgent
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="text-right">
+                <div class="text-3xl font-bold">₹{{ property.price|intcomma }}</div>
+                {% if property.property_for in 'rent,pg' %}
+                <div class="text-white/80">per month</div>
+                {% endif %}
+                {% if property.price_per_sqft %}
+                <div class="text-white/80">(₹{{ property.price_per_sqft|floatformat:0 }}/sq.ft.)</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Status and Stats Row -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="info-card">
+            <div class="info-label">Status</div>
+            <div class="info-value">
+                <span class="px-3 py-1 rounded-full text-sm font-medium 
+                    {% if property.status == 'active' %}bg-green-100 text-green-800
+                    {% elif property.status == 'pending' %}bg-yellow-100 text-yellow-800
+                    {% elif property.status == 'draft' %}bg-gray-100 text-gray-800
+                    {% elif property.status == 'sold' %}bg-purple-100 text-purple-800
+                    {% else %}bg-red-100 text-red-800{% endif %}">
+                    {{ property.get_status_display }}
+                </span>
+            </div>
+        </div>
+        
+        <div class="info-card">
+            <div class="info-label">Category</div>
+            <div class="info-value">{{ property.category.name }}</div>
+        </div>
+        
+        <div class="info-card">
+            <div class="info-label">Property Type</div>
+            <div class="info-value">{{ property.property_type.name }}</div>
+        </div>
+        
+        <div class="info-card">
+            <div class="info-label">Listing Type</div>
+            <div class="info-value">{{ property.get_listing_type_display }}</div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left Column: Property Details -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Images Section -->
+            <div class="info-card">
+                <h3 class="text-lg font-semibold mb-4">Property Images</h3>
+                <div class="relative h-64 rounded-lg overflow-hidden mb-4">
+                    {% if property.primary_image %}
+                    <img src="{{ property.primary_image.url }}" 
+                         alt="{{ property.title }}" 
+                         class="w-full h-full object-cover">
+                    {% else %}
+                    <div class="w-full h-full bg-gray-100 flex items-center justify-center">
+                        <i class="fas fa-home text-gray-400 text-4xl"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                {% if property.images.count > 1 %}
+                <div class="image-gallery">
+                    {% for image in property.images.all %}
+                    <img src="{{ image.image.url }}" 
+                         alt="Property Image" 
+                         class="gallery-image"
+                         onclick="openImageModal('{{ image.image.url }}')">
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Description -->
+            <div class="info-card">
+                <h3 class="text-lg font-semibold mb-4">Description</h3>
+                <div class="text-gray-700 whitespace-pre-line">{{ property.description }}</div>
+            </div>
+
+            <!-- Property Specifications -->
+            <div class="info-card">
+                <h3 class="text-lg font-semibold mb-4">Specifications</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                        <div class="info-label">Carpet Area</div>
+                        <div class="info-value">{{ property.carpet_area|intcomma }} sq.ft.</div>
+                    </div>
+                    
+                    {% if property.builtup_area %}
+                    <div>
+                        <div class="info-label">Built-up Area</div>
+                        <div class="info-value">{{ property.builtup_area|intcomma }} sq.ft.</div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if property.super_builtup_area %}
+                    <div>
+                        <div class="info-label">Super Built-up</div>
+                        <div class="info-value">{{ property.super_builtup_area|intcomma }} sq.ft.</div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if property.plot_area %}
+                    <div>
+                        <div class="info-label">Plot Area</div>
+                        <div class="info-value">{{ property.plot_area|intcomma }} sq.ft.</div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if property.bedrooms %}
+                    <div>
+                        <div class="info-label">Bedrooms</div>
+                        <div class="info-value">{{ property.bedrooms }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if property.bathrooms %}
+                    <div>
+                        <div class="info-label">Bathrooms</div>
+                        <div class="info-value">{{ property.bathrooms }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if property.balconies %}
+                    <div>
+                        <div class="info-label">Balconies</div>
+                        <div class="info-value">{{ property.balconies }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if property.furnishing %}
+                    <div>
+                        <div class="info-label">Furnishing</div>
+                        <div class="info-value">{{ property.get_furnishing_display }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Location Details -->
+            <div class="info-card">
+                <h3 class="text-lg font-semibold mb-4">Location Details</h3>
+                <div class="space-y-3">
+                    <div>
+                        <div class="info-label">Complete Address</div>
+                        <div class="info-value">{{ property.address }}</div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <div class="info-label">Locality</div>
+                            <div class="info-value">{{ property.locality }}</div>
+                        </div>
+                        
+                        <div>
+                            <div class="info-label">City</div>
+                            <div class="info-value">{{ property.city }}</div>
+                        </div>
+                        
+                        <div>
+                            <div class="info-label">State</div>
+                            <div class="info-value">{{ property.state }}</div>
+                        </div>
+                        
+                        <div>
+                            <div class="info-label">Pincode</div>
+                            <div class="info-value">{{ property.pincode }}</div>
+                        </div>
+                    </div>
+                    
+                    {% if property.landmark %}
+                    <div>
+                        <div class="info-label">Landmark</div>
+                        <div class="info-value">{{ property.landmark }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if property.google_map_url %}
+                    <div>
+                        <div class="info-label">Google Maps</div>
+                        <a href="{{ property.google_map_url }}" target="_blank" 
+                           class="info-value text-blue-600 hover:text-blue-800">
+                            <i class="fas fa-external-link-alt mr-2"></i>View on Google Maps
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Stats and Actions -->
+        <div class="space-y-6">
+            <!-- Statistics Cards -->
+            <div class="space-y-4">
+                <div class="stat-card">
+                    <div class="stat-number">{{ property.view_count }}</div>
+                    <div class="stat-label">Total Views</div>
+                </div>
+                
+                <div class="stat-card" style="background: linear-gradient(135deg, #10b981 0%, #34d399 100%);">
+                    <div class="stat-number">{{ property.inquiry_count }}</div>
+                    <div class="stat-label">Total Inquiries</div>
+                </div>
+                
+                <div class="stat-card" style="background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);">
+                    <div class="stat-number">{{ property.favorite_count }}</div>
+                    <div class="stat-label">Saved to Favorites</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="info-card">
+                <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
+                <div class="space-y-3">
+                    <a href="{% url 'seller_leads' %}?property={{ property.id }}" 
+                       class="btn-action bg-blue-500 text-white flex items-center justify-center gap-2">
+                        <i class="fas fa-inbox"></i>
+                        View Inquiries ({{ property.inquiries.count }})
+                    </a>
+                    
+                    {% if property.status == 'active' %}
+                    <a href="#" onclick="copyPropertyLink('{{ property.slug }}')" 
+                       class="btn-action bg-green-500 text-white flex items-center justify-center gap-2">
+                        <i class="fas fa-link"></i>
+                        Copy Listing Link
+                    </a>
+                    {% endif %}
+                    
+                    <a href="#" onclick="generateReport('{{ property.id }}')" 
+                       class="btn-action bg-purple-500 text-white flex items-center justify-center gap-2">
+                        <i class="fas fa-chart-bar"></i>
+                        Generate Report
+                    </a>
+                </div>
+            </div>
+
+            <!-- Recent Inquiries -->
+            <div class="info-card">
+                <h3 class="text-lg font-semibold mb-4">Recent Inquiries</h3>
+                <div class="space-y-3 max-h-80 overflow-y-auto">
+                    {% for inquiry in property.inquiries.all|slice:":5" %}
+                    <div class="inquiry-card inquiry-{{ inquiry.status }}">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="font-medium">{{ inquiry.name }}</div>
+                                <div class="text-sm text-gray-600">{{ inquiry.email }}</div>
+                                <div class="text-sm text-gray-600">{{ inquiry.phone }}</div>
+                            </div>
+                            <span class="text-xs px-2 py-1 rounded-full 
+                                {% if inquiry.status == 'new' %}bg-green-100 text-green-800
+                                {% elif inquiry.status == 'contacted' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                {{ inquiry.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="mt-2 text-sm text-gray-700 line-clamp-2">{{ inquiry.message }}</div>
+                        <div class="mt-2 text-xs text-gray-500">
+                            {{ inquiry.created_at|timesince }} ago
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4 text-gray-500">
+                        <i class="fas fa-inbox text-2xl mb-2"></i>
+                        <p>No inquiries yet</p>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if property.inquiries.count > 5 %}
+                    <a href="{% url 'seller_inquiries' %}?property={{ property.id }}" 
+                       class="text-center block text-blue-600 hover:text-blue-800 text-sm">
+                        View all {{ property.inquiries.count }} inquiries →
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Property Timeline -->
+            <div class="info-card">
+                <h3 class="text-lg font-semibold mb-4">Property Timeline</h3>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="text-sm font-medium">Created</div>
+                        <div class="text-xs text-gray-500">{{ property.created_at|date:"M d, Y H:i" }}</div>
+                    </div>
+                    
+                    {% if property.published_at %}
+                    <div class="timeline-item">
+                        <div class="text-sm font-medium">Published</div>
+                        <div class="text-xs text-gray-500">{{ property.published_at|date:"M d, Y H:i" }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if property.expired_at %}
+                    <div class="timeline-item">
+                        <div class="text-sm font-medium">Expires</div>
+                        <div class="text-xs text-gray-500">{{ property.expired_at|date:"M d, Y H:i" }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if property.updated_at != property.created_at %}
+                    <div class="timeline-item">
+                        <div class="text-sm font-medium">Last Updated</div>
+                        <div class="text-xs text-gray-500">{{ property.updated_at|date:"M d, Y H:i" }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+{% include 'dashboard/seller/modals/delete_modal.html' %}
+{% include 'dashboard/seller/modals/boost_modal.html' %}
+{% include 'dashboard/seller/modals/image_modal.html' %}
+
+<script>
+    function toggleActionMenu() {
+        const menu = document.getElementById('actionMenu');
+        menu.classList.toggle('hidden');
+    }
+    
+    function copyPropertyLink(slug) {
+        const link = `${window.location.origin}/property/${slug}/`;
+        navigator.clipboard.writeText(link).then(() => {
+            showToast('Link copied to clipboard!', 'success');
+        });
+    }
+    
+    function openImageModal(imageUrl) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="bg-white rounded-lg max-w-4xl w-full mx-4">
+                <div class="p-4 border-b flex justify-between items-center">
+                    <h3 class="font-semibold">Property Image</h3>
+                    <button onclick="this.closest('.modal-overlay').remove()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="p-4">
+                    <img src="${imageUrl}" alt="Property Image" class="w-full h-auto max-h-[70vh] object-contain">
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    function generateReport(propertyId) {
+        showToast('Generating report...', 'info');
+        // AJAX call to generate report
+        fetch(`/seller/property/${propertyId}/report/`, {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Report generated successfully!', 'success');
+                if (data.download_url) {
+                    window.open(data.download_url, '_blank');
+                }
+            } else {
+                showToast(data.error, 'error');
+            }
+        });
+    }
+    
+    function duplicateProperty(propertyId) {
+        if (confirm('Duplicate this property?')) {
+            fetch(`/seller/property/${propertyId}/duplicate/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Property duplicated successfully!', 'success');
+                    setTimeout(() => {
+                        window.location.href = `/seller/property/edit/${data.property_id}/`;
+                    }, 1000);
+                } else {
+                    showToast(data.error, 'error');
+                }
+            });
+        }
+    }
+</script>
+{% endblock %}

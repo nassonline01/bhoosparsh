@@ -895,7 +895,7 @@
         // Show loading
         showLoading('Sending follow-up...');
         
-        fetch('/buyer/ajax/send-followup/', {
+        fetch(`/buyer/ajax/send-followup/${inquiryId}/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -807,6 +807,7 @@ class Property(models.Model):
     state = models.CharField(_('state'), max_length=100)
     country = CountryField(_('country'), default='IN')
     pincode = models.CharField(_('pincode'), max_length=10)
+    locality = models.CharField(_('locality/area'), max_length=200, blank=True)
     landmark = models.CharField(_('landmark'), max_length=200, blank=True)
     
     # Google Maps

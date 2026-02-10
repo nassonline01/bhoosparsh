@@ -79,15 +79,20 @@
 
     .dropdown-menu {
         min-width: 180px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(229, 231, 235, 0.8);
     }
 
     .filter-chip {
         background: #EFF6FF;
         color: #1E40AF;
-        padding: 4px 12px;
+        padding: 6px 14px;
         border-radius: 20px;
-        font-size: 12px;
+        font-size: 13px;
         font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
     }
 
     .filter-chip:hover {
@@ -107,6 +112,269 @@
         -webkit-box-orient: vertical;
         -webkit-line-clamp: 2;
     }
+
+    .line-clamp-3 {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+    }
+
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        padding: 20px;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+    }
+
+    .quick-view {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+    }
+
+    .quick-view.active {
+        max-height: 300px;
+        transition: max-height 0.5s ease-in;
+    }
+
+    .view-toggle-btn {
+        transition: all 0.2s ease;
+    }
+
+    .view-toggle-btn.active {
+        transform: rotate(180deg);
+        background: #EFF6FF;
+    }
+
+    /* Toast notification styles */
+    .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 99999;
+        animation: slideInRight 0.3s ease-out;
+    }
+
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+
+    /* Stats card hover effects */
+    .stats-card {
+        transition: all 0.3s ease;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Loading spinner */
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3b82f6;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* FIXED: Property Image Section */
+    .property-image-section {
+        position: relative;
+        height: 220px;
+        background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+    }
+
+    .property-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .property-image-section:hover .property-image {
+        transform: scale(1.05);
+    }
+
+    /* Badges Container - Top Left */
+    .badges-container {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        z-index: 30;
+    }
+
+    /* Action Button - Top Right (SMALLER SIZE) */
+    .action-button-container {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        z-index: 100;
+    }
+
+    .action-button {
+        width: 28px;
+        height: 28px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(229, 231, 235, 0.8);
+    }
+
+    .action-button:hover {
+        background: white;
+        transform: scale(1.05);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Action Menu - Fixed to appear ABOVE everything */
+    .action-menu {
+        position: absolute;
+        top: auto;
+        bottom: calc(100% + 5px);
+        right: 0;
+        min-width: 180px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        border: 1px solid rgba(229, 231, 235, 0.8);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(10px);
+        transition: all 0.2s ease;
+        z-index: 100000 !important;
+    }
+
+    .action-menu.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .action-menu.dark {
+        background: #1f2937;
+        border-color: #374151;
+    }
+
+    .action-menu-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        font-size: 13px;
+        color: #374151;
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .action-menu-item:last-child {
+        border-bottom: none;
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+
+    .action-menu-item:first-child {
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+
+    .action-menu-item:hover {
+        background: #f9fafb;
+    }
+
+    .action-menu-item.dark {
+        color: #d1d5db;
+        border-bottom-color: #374151;
+    }
+
+    .action-menu-item.dark:hover {
+        background: #374151;
+    }
+
+    /* Quick View Toggle - Bottom Left */
+    .quick-view-toggle-container {
+        position: absolute;
+        bottom: 12px;
+        left: 12px;
+        z-index: 30;
+    }
+
+    /* Dark mode adjustments */
+    .dark .action-button {
+        background: rgba(31, 41, 55, 0.95);
+        border-color: rgba(55, 65, 81, 0.8);
+    }
+
+    .dark .action-button:hover {
+        background: #1f2937;
+    }
+
+    .dark .action-menu-item {
+        color: #d1d5db;
+        border-bottom-color: #374151;
+    }
+
+    .dark .action-menu-item:hover {
+        background: #374151;
+    }
+
+    /* Empty image placeholder */
+    .empty-image {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+    }
+
+    .dark .empty-image {
+        background: linear-gradient(135deg, #374151, #4b5563);
+    }
 </style>
 {% endblock %}
 
@@ -121,13 +389,13 @@
 <div class="flex flex-wrap gap-2">
     {% if can_create %}
     <a href="{% url 'seller_property_create' %}" 
-       class="px-4 py-2 bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg hover:opacity-90 transition flex items-center gap-2">
+       class="px-4 py-2 bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg hover:opacity-90 transition flex items-center gap-2 shadow-md hover:shadow-lg">
         <i class="fas fa-plus"></i>
         <span>Post New Property</span>
     </a>
     {% else %}
     <a href="{% url 'seller_packages' %}" 
-       class="px-4 py-2 bg-gradient-to-r from-bhoosparsh-orange to-orange-600 text-white rounded-lg hover:opacity-90 transition flex items-center gap-2">
+       class="px-4 py-2 bg-gradient-to-r from-bhoosparsh-orange to-orange-600 text-white rounded-lg hover:opacity-90 transition flex items-center gap-2 shadow-md hover:shadow-lg">
         <i class="fas fa-arrow-up"></i>
         <span>Upgrade to Post ({{ listings_remaining }} left)</span>
     </a>
@@ -135,20 +403,20 @@
     
     <div class="relative">
         <button onclick="toggleFilterDropdown()" 
-                class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-2">
+                class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-2 shadow-sm hover:shadow">
             <i class="fas fa-filter"></i>
             <span>Filter</span>
             {% if status_filter != 'all' or property_for_filter != 'all' %}
-            <span class="w-2 h-2 bg-red-500 rounded-full"></span>
+            <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
             {% endif %}
         </button>
         
-        <div id="filterDropdown" class="hidden absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 z-10">
+        <div id="filterDropdown" class="hidden absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 p-4 z-50">
             <form method="GET" id="filterForm">
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
-                        <select name="status" class="w-full p-2 border rounded-lg">
+                        <select name="status" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
                             <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Status</option>
                             <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
                             <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>Draft</option>
@@ -160,7 +428,7 @@
                     
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Property For</label>
-                        <select name="property_for" class="w-full p-2 border rounded-lg">
+                        <select name="property_for" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
                             <option value="all" {% if property_for_filter == 'all' %}selected{% endif %}>All Types</option>
                             <option value="sale" {% if property_for_filter == 'sale' %}selected{% endif %}>For Sale</option>
                             <option value="rent" {% if property_for_filter == 'rent' %}selected{% endif %}>For Rent</option>
@@ -171,7 +439,7 @@
                     
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort By</label>
-                        <select name="sort" class="w-full p-2 border rounded-lg">
+                        <select name="sort" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
                             <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>Newest First</option>
                             <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>Oldest First</option>
                             <option value="-price" {% if sort_by == '-price' %}selected{% endif %}>Price: High to Low</option>
@@ -183,11 +451,11 @@
                     
                     <div class="flex gap-2 pt-2">
                         <button type="submit" 
-                                class="flex-1 px-3 py-2 bg-bhoosparsh-blue text-white rounded-lg hover:bg-blue-700 transition text-sm">
+                                class="flex-1 px-4 py-2 bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg hover:opacity-90 transition font-medium shadow-sm">
                             Apply Filters
                         </button>
                         <a href="{% url 'seller_properties' %}" 
-                           class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition text-sm">
+                           class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm">
                             Clear
                         </a>
                     </div>
@@ -201,54 +469,84 @@
 {% block content %}
 <!-- Stats Cards -->
 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-    <div class="bg-white dark:bg-gray-800 rounded-xl p-4">
-        <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ total_properties }}</div>
+    <div class="stats-card bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm hover:shadow">
+        <div class="text-2xl font-bold text-gray-900 dark:text-white mb-1">{{ total_properties }}</div>
         <p class="text-sm text-gray-600 dark:text-gray-400">Total Properties</p>
+        <div class="mt-2 text-xs text-gray-500 flex items-center">
+            <i class="fas fa-home mr-1"></i>
+            All Listings
+        </div>
     </div>
     
-    <div class="bg-white dark:bg-gray-800 rounded-xl p-4">
-        <div class="text-2xl font-bold text-green-600">{{ active_properties }}</div>
+    <div class="stats-card bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm hover:shadow">
+        <div class="text-2xl font-bold text-green-600 mb-1">{{ active_properties }}</div>
         <p class="text-sm text-gray-600 dark:text-gray-400">Active</p>
+        <div class="mt-2 text-xs text-gray-500 flex items-center">
+            <i class="fas fa-eye mr-1"></i>
+            Currently Live
+        </div>
     </div>
     
-    <div class="bg-white dark:bg-gray-800 rounded-xl p-4">
-        <div class="text-2xl font-bold text-yellow-600">{{ draft_properties }}</div>
+    <div class="stats-card bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm hover:shadow">
+        <div class="text-2xl font-bold text-yellow-600 mb-1">{{ draft_properties }}</div>
         <p class="text-sm text-gray-600 dark:text-gray-400">Draft</p>
+        <div class="mt-2 text-xs text-gray-500 flex items-center">
+            <i class="fas fa-edit mr-1"></i>
+            In Progress
+        </div>
     </div>
     
-    <div class="bg-white dark:bg-gray-800 rounded-xl p-4">
-        <div class="text-2xl font-bold text-purple-600">{{ sold_properties }}</div>
+    <div class="stats-card bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm hover:shadow">
+        <div class="text-2xl font-bold text-purple-600 mb-1">{{ sold_properties }}</div>
         <p class="text-sm text-gray-600 dark:text-gray-400">Sold/Rented</p>
+        <div class="mt-2 text-xs text-gray-500 flex items-center">
+            <i class="fas fa-check-circle mr-1"></i>
+            Completed
+        </div>
     </div>
 </div>
 
 <!-- Active Filters -->
 {% if status_filter != 'all' or property_for_filter != 'all' or search_query %}
-<div class="flex flex-wrap gap-2 mb-6">
+<div class="flex flex-wrap gap-2 mb-6 items-center">
+    <span class="text-sm text-gray-600 dark:text-gray-400">Active filters:</span>
+    
     {% if status_filter != 'all' %}
     <span class="filter-chip">
+        <i class="fas fa-tag text-xs"></i>
         Status: {{ status_filter|title }}
-        <a href="?{% if property_for_filter != 'all' %}property_for={{ property_for_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if sort_by != '-created_at' %}&sort={{ sort_by }}{% endif %}" class="ml-2 text-xs">×</a>
+        <a href="?{% if property_for_filter != 'all' %}property_for={{ property_for_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if sort_by != '-created_at' %}&sort={{ sort_by }}{% endif %}" 
+           class="ml-1 text-xs hover:text-red-500 transition">
+            <i class="fas fa-times"></i>
+        </a>
     </span>
     {% endif %}
     
     {% if property_for_filter != 'all' %}
     <span class="filter-chip">
+        <i class="fas fa-home text-xs"></i>
         Type: {{ property_for_filter|title }}
-        <a href="?{% if status_filter != 'all' %}status={{ status_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if sort_by != '-created_at' %}&sort={{ sort_by }}{% endif %}" class="ml-2 text-xs">×</a>
+        <a href="?{% if status_filter != 'all' %}status={{ status_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if sort_by != '-created_at' %}&sort={{ sort_by }}{% endif %}" 
+           class="ml-1 text-xs hover:text-red-500 transition">
+            <i class="fas fa-times"></i>
+        </a>
     </span>
     {% endif %}
     
     {% if search_query %}
     <span class="filter-chip">
+        <i class="fas fa-search text-xs"></i>
         Search: "{{ search_query }}"
-        <a href="?{% if status_filter != 'all' %}status={{ status_filter }}{% endif %}{% if property_for_filter != 'all' %}&property_for={{ property_for_filter }}{% endif %}{% if sort_by != '-created_at' %}&sort={{ sort_by }}{% endif %}" class="ml-2 text-xs">×</a>
+        <a href="?{% if status_filter != 'all' %}status={{ status_filter }}{% endif %}{% if property_for_filter != 'all' %}&property_for={{ property_for_filter }}{% endif %}{% if sort_by != '-created_at' %}&sort={{ sort_by }}{% endif %}" 
+           class="ml-1 text-xs hover:text-red-500 transition">
+            <i class="fas fa-times"></i>
+        </a>
     </span>
     {% endif %}
     
-    <a href="{% url 'seller_properties' %}" class="text-sm text-bhoosparsh-blue hover:text-blue-700 flex items-center gap-1">
+    <a href="{% url 'seller_properties' %}" class="text-sm text-bhoosparsh-blue hover:text-blue-700 dark:hover:text-blue-400 flex items-center gap-1 transition">
+        <i class="fas fa-times-circle"></i>
         Clear all filters
-        <i class="fas fa-times"></i>
     </a>
 </div>
 {% endif %}
@@ -260,9 +558,9 @@
                name="q" 
                value="{{ search_query }}" 
                placeholder="Search properties by title, location, or ID..." 
-               class="w-full p-3 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
-        <i class="fas fa-search absolute left-3 top-3.5 text-gray-400"></i>
-        <button type="submit" class="absolute right-3 top-3 text-gray-400 hover:text-gray-600">
+               class="w-full p-3.5 pl-11 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent shadow-sm">
+        <i class="fas fa-search absolute left-4 top-3.5 text-gray-400"></i>
+        <button type="submit" class="absolute right-3 top-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition">
             <i class="fas fa-arrow-right"></i>
         </button>
     </form>
@@ -272,127 +570,156 @@
 {% if page_obj.object_list %}
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
     {% for property in page_obj.object_list %}
-    <div class="property-card bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
-        <!-- Image Section -->
-        <div class="relative h-48 overflow-hidden">
+    <div class="property-card bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg border border-gray-200 dark:border-gray-700" data-property-id="{{ property.id }}">
+        <!-- Image Section with Fixed Positioning -->
+        <div class="property-image-section">
             {% if property.primary_image %}
             <img src="{{ property.primary_image.url }}" 
                  alt="{{ property.title }}" 
-                 class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
+                 class="property-image">
             {% else %}
-            <div class="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
+            <div class="empty-image">
                 <i class="fas fa-home text-gray-400 dark:text-gray-600 text-4xl"></i>
             </div>
             {% endif %}
             
-            <!-- Badges -->
-            <div class="absolute top-3 left-3 flex flex-col gap-1">
+            <!-- Badges Container (Top Left) -->
+            <div class="badges-container">
                 {% if property.is_featured %}
-                <span class="featured-badge">
-                    <i class="fas fa-star mr-1"></i> Featured
+                <span class="featured-badge inline-flex items-center justify-center gap-1">
+                    <i class="fas fa-star text-xs"></i>
+                    <span class="text-xs font-medium">Featured</span>
                 </span>
                 {% endif %}
                 
                 {% if property.is_urgent %}
-                <span class="urgent-badge">
-                    <i class="fas fa-bolt mr-1"></i> Urgent
+                <span class="urgent-badge inline-flex items-center justify-center gap-1">
+                    <i class="fas fa-bolt text-xs"></i>
+                    <span class="text-xs font-medium">Urgent</span>
                 </span>
                 {% endif %}
                 
-                <span class="status-badge status-{{ property.status }}">
+                <span class="status-badge status-{{ property.status }} inline-flex items-center justify-center">
                     {{ property.get_status_display }}
                 </span>
             </div>
             
-            <!-- Actions Menu -->
-            <div class="absolute top-3 right-3">
-                <div class="relative">
-                    <button onclick="togglePropertyMenu('menu{{ property.id }}')" 
-                            class="w-8 h-8 bg-white/90 dark:bg-gray-800/90 rounded-full flex items-center justify-center hover:bg-white dark:hover:bg-gray-700 transition">
-                        <i class="fas fa-ellipsis-v text-gray-600 dark:text-gray-300"></i>
-                    </button>
+            <!-- Action Button Container (Top Right) -->
+            <div class="action-button-container">
+                <button onclick="togglePropertyMenu('{{ property.id }}')" 
+                        class="action-button dark:bg-gray-800/95 dark:border-gray-700">
+                    <i class="fas fa-ellipsis-v text-gray-600 dark:text-gray-300 text-xs"></i>
+                </button>
+                
+                <!-- Action Menu -->
+                <div id="actionMenu{{ property.id }}" 
+                     class="action-menu dark:action-menu dark">
+                    {% if property.status == 'active' %}
+                    <a href="/property/{{ property.slug }}/" target="_blank" 
+                       class="action-menu-item dark:action-menu-item dark">
+                        <i class="fas fa-external-link-alt text-blue-500 text-sm w-4"></i>
+                        <span>View Live</span>
+                    </a>
+                    {% endif %}
                     
-                    <div id="menu{{ property.id }}" 
-                         class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10">
-                        <!-- <a href="/property/{{ property.slug }}/" target="_blank" 
-                           class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
-                            <i class="fas fa-eye"></i>
-                            <span>View Live</span>
-                        </a> -->
-                        <a href="{% url 'seller_property_edit' property.id %}" 
-                           class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
-                            <i class="fas fa-edit"></i>
-                            <span>Edit</span>
-                        </a>
-                        
-                        {% if property.is_active %}
-                        <a href="#" onclick="togglePropertyStatus('{{ property.id }}', 'inactive')" 
-                           class="px-4 py-2 text-sm text-yellow-600 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
-                            <i class="fas fa-pause"></i>
-                            <span>Deactivate</span>
-                        </a>
-                        {% else %}
-                        <a href="#" onclick="togglePropertyStatus('{{ property.id }}', 'active')" 
-                           class="px-4 py-2 text-sm text-green-600 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
-                            <i class="fas fa-play"></i>
-                            <span>Activate</span>
-                        </a>
-                        {% endif %}
-                        
-                        
-                        
-                        <a href="#" onclick="confirmDelete('{{ property.id }}')" 
-                           class="px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
-                            <i class="fas fa-trash"></i>
-                            <span>Delete</span>
-                        </a>
-                    </div>
+                    <a href="{% url 'seller_property_detail' property.id %}" 
+                       class="action-menu-item dark:action-menu-item dark">
+                        <i class="fas fa-eye text-green-500 text-sm w-4"></i>
+                        <span>View Details</span>
+                    </a>
+                    
+                    <a href="{% url 'seller_property_edit' property.id %}" 
+                       class="action-menu-item dark:action-menu-item dark">
+                        <i class="fas fa-edit text-blue-500 text-sm w-4"></i>
+                        <span>Edit Property</span>
+                    </a>
+                    
+                    {% if property.is_active %}
+                    <a href="#" onclick="togglePropertyStatus('{{ property.id }}', 'inactive')" 
+                       class="action-menu-item dark:action-menu-item dark">
+                        <i class="fas fa-pause text-yellow-500 text-sm w-4"></i>
+                        <span>Deactivate</span>
+                    </a>
+                    {% else %}
+                    <a href="#" onclick="togglePropertyStatus('{{ property.id }}', 'active')" 
+                       class="action-menu-item dark:action-menu-item dark">
+                        <i class="fas fa-play text-green-500 text-sm w-4"></i>
+                        <span>Activate</span>
+                    </a>
+                    {% endif %}
+                    
+                    <a href="#" onclick="duplicateProperty('{{ property.id }}')" 
+                       class="action-menu-item dark:action-menu-item dark">
+                        <i class="fas fa-copy text-purple-500 text-sm w-4"></i>
+                        <span>Duplicate</span>
+                    </a>
+                    
+                    <a href="#" onclick="openBoostModal('{{ property.id }}')" 
+                       class="action-menu-item dark:action-menu-item dark">
+                        <i class="fas fa-bolt text-orange-500 text-sm w-4"></i>
+                        <span>Boost Property</span>
+                    </a>
+                    
+                    <a href="#" onclick="showDeleteModal('{{ property.id }}', '{{ property.title }}')" 
+                       class="action-menu-item dark:action-menu-item dark text-red-600 hover:text-red-700">
+                        <i class="fas fa-trash text-sm w-4"></i>
+                        <span>Delete Property</span>
+                    </a>
                 </div>
             </div>
+            
+            <!-- Quick View Toggle (Bottom Left) -->
+            <button onclick="toggleQuickView('{{ property.id }}')" 
+                    class="quick-view-toggle-container action-button view-toggle-btn dark:bg-gray-800/95 dark:border-gray-700"
+                    id="viewToggle-{{ property.id }}">
+                <i class="fas fa-chevron-down text-gray-600 dark:text-gray-300 text-xs"></i>
+            </button>
         </div>
         
         <!-- Content Section -->
-        <div class="p-4">
+        <div class="p-5">
             <h3 class="font-bold text-gray-900 dark:text-white mb-2 line-clamp-1">{{ property.title }}</h3>
             
             <div class="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-3">
-                <i class="fas fa-map-marker-alt mr-2"></i>
-                <span class="line-clamp-1">{{ property.city }}, {{ property.state }}</span>
+                <i class="fas fa-map-marker-alt mr-2 text-bhoosparsh-blue"></i>
+                <span class="line-clamp-1 property-location">{{ property.locality }}, {{ property.city }}</span>
             </div>
             
-            <!-- Property Details -->
-            <div class="grid grid-cols-2 gap-2 mb-4">
+            <!-- Property Details Grid -->
+            <div class="grid grid-cols-2 gap-3 mb-4">
                 {% if property.bedrooms %}
-                <div class="flex items-center text-sm">
-                    <i class="fas fa-bed text-gray-400 mr-2"></i>
+                <div class="flex items-center text-sm text-gray-700 dark:text-gray-300">
+                    <i class="fas fa-bed text-gray-400 mr-2 w-4"></i>
                     <span>{{ property.bedrooms }} Beds</span>
                 </div>
                 {% endif %}
                 
                 {% if property.bathrooms %}
-                <div class="flex items-center text-sm">
-                    <i class="fas fa-bath text-gray-400 mr-2"></i>
+                <div class="flex items-center text-sm text-gray-700 dark:text-gray-300">
+                    <i class="fas fa-bath text-gray-400 mr-2 w-4"></i>
                     <span>{{ property.bathrooms }} Baths</span>
                 </div>
                 {% endif %}
                 
-                <div class="flex items-center text-sm">
-                    <i class="fas fa-ruler-combined text-gray-400 mr-2"></i>
+                {% if property.carpet_area %}
+                <div class="flex items-center text-sm text-gray-700 dark:text-gray-300">
+                    <i class="fas fa-ruler-combined text-gray-400 mr-2 w-4"></i>
                     <span>{{ property.carpet_area|intcomma }} sq.ft.</span>
                 </div>
+                {% endif %}
                 
-                <div class="flex items-center text-sm">
-                    <i class="fas fa-tag text-gray-400 mr-2"></i>
-                    <span>{{ property.property_for|title }}</span>
+                <div class="flex items-center text-sm text-gray-700 dark:text-gray-300">
+                    <i class="fas fa-tag text-gray-400 mr-2 w-4"></i>
+                    <span class="capitalize">{{ property.property_for }}</span>
                 </div>
             </div>
             
-            <!-- Price & Stats -->
+            <!-- Price and Stats -->
             <div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-700 pt-4">
                 <div>
-                    <div class="text-lg font-bold text-gray-900 dark:text-white">
+                    <div class="text-lg font-bold text-gray-900 dark:text-white property-price">
                         ₹{{ property.price|intcomma }}
-                        {% if property.property_for in 'rent,pg' %}<span class="text-sm font-normal">/month</span>{% endif %}
+                        {% if property.property_for in 'rent,pg' %}<span class="text-sm font-normal text-gray-600">/month</span>{% endif %}
                     </div>
                     {% if property.price_per_sqft %}
                     <div class="text-xs text-gray-500">₹{{ property.price_per_sqft|floatformat:0 }}/sq.ft.</div>
@@ -400,17 +727,71 @@
                 </div>
                 
                 <div class="text-right">
-                    <div class="flex items-center gap-3 text-sm">
-                        <div class="flex items-center gap-1" title="Views">
-                            <i class="fas fa-eye text-gray-400"></i>
-                            <span>{{ property.view_count }}</span>
+                    <div class="flex items-center gap-4 text-sm">
+                        <div class="flex flex-col items-center" title="Views">
+                            <i class="fas fa-eye text-gray-400 mb-1"></i>
+                            <span class="text-xs font-medium">{{ property.view_count }}</span>
                         </div>
-                        <div class="flex items-center gap-1" title="Leads">
-                            <i class="fas fa-inbox text-gray-400"></i>
-                            <span>{{ property.inquiry_count }}</span>
+                        <div class="flex flex-col items-center" title="Leads">
+                            <i class="fas fa-inbox text-gray-400 mb-1"></i>
+                            <span class="text-xs font-medium">{{ property.inquiry_count }}</span>
                         </div>
                     </div>
                     <div class="text-xs text-gray-500 mt-1">ID: {{ property.property_id }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick View Details -->
+        <div id="quickView-{{ property.id }}" class="quick-view border-t border-gray-100 dark:border-gray-700">
+            <div class="p-5 bg-gray-50 dark:bg-gray-700/50">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <div class="text-sm text-gray-500 mb-1">Description</div>
+                        <div class="text-sm text-gray-700 dark:text-gray-300 line-clamp-3">
+                            {{ property.description|truncatechars:150 }}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="text-sm text-gray-500 mb-1">Contact Info</div>
+                        <div class="text-sm text-gray-700 dark:text-gray-300">
+                            <div class="font-medium">{{ property.contact_person }}</div>
+                            <div class="text-gray-600 dark:text-gray-400">{{ property.contact_phone }}</div>
+                            {% if property.contact_email %}
+                            <div class="text-gray-600 dark:text-gray-400">{{ property.contact_email }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <div class="text-sm text-gray-500 mb-1">Created</div>
+                        <div class="text-sm text-gray-700 dark:text-gray-300">
+                            {{ property.created_at|date:"M d, Y" }}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="text-sm text-gray-500 mb-1">Updated</div>
+                        <div class="text-sm text-gray-700 dark:text-gray-300">
+                            {{ property.updated_at|date:"M d, Y" }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex gap-3 pt-3 border-t border-gray-200 dark:border-gray-600">
+                    <a href="{% url 'seller_property_detail' property.id %}" 
+                       class="px-3 py-1.5 text-sm bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg hover:opacity-90 transition flex items-center gap-2">
+                        <i class="fas fa-external-link-alt text-xs"></i>
+                        <span>Details</span>
+                    </a>
+                    <a href="{% url 'seller_property_edit' property.id %}" 
+                       class="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-2">
+                        <i class="fas fa-edit text-xs"></i>
+                        <span>Edit</span>
+                    </a>
                 </div>
             </div>
         </div>
@@ -421,20 +802,20 @@
 <!-- Pagination -->
 {% if page_obj.has_other_pages %}
 <div class="flex justify-center">
-    <nav class="flex items-center gap-1">
+    <nav class="flex items-center gap-1 bg-white dark:bg-gray-800 rounded-xl p-2 shadow-sm">
         {% if page_obj.has_previous %}
         <a href="?page={{ page_obj.previous_page_number }}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if property_for_filter != 'all' %}&property_for={{ property_for_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
-           class="px-3 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+           class="px-3 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
             <i class="fas fa-chevron-left"></i>
         </a>
         {% endif %}
         
         {% for num in page_obj.paginator.page_range %}
             {% if page_obj.number == num %}
-            <span class="px-3 py-2 bg-bhoosparsh-blue text-white rounded-lg">{{ num }}</span>
+            <span class="px-3 py-2 bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg font-medium">{{ num }}</span>
             {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
             <a href="?page={{ num }}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if property_for_filter != 'all' %}&property_for={{ property_for_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
-               class="px-3 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+               class="px-3 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                 {{ num }}
             </a>
             {% endif %}
@@ -442,7 +823,7 @@
         
         {% if page_obj.has_next %}
         <a href="?page={{ page_obj.next_page_number }}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if property_for_filter != 'all' %}&property_for={{ property_for_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
-           class="px-3 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+           class="px-3 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
             <i class="fas fa-chevron-right"></i>
         </a>
         {% endif %}
@@ -452,32 +833,42 @@
 
 {% else %}
 <!-- Empty State -->
-<div class="text-center py-16 bg-white dark:bg-gray-800 rounded-xl">
-    <div class="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-        <i class="fas fa-home text-gray-400 text-3xl"></i>
+<div class="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl shadow-sm">
+    <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
+        <i class="fas fa-home text-gray-400 text-4xl"></i>
     </div>
-    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No properties found</h3>
+    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">No properties found</h3>
     <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
         {% if status_filter != 'all' or property_for_filter != 'all' or search_query %}
-        Try adjusting your filters or search query
+        Try adjusting your filters or search query to find what you're looking for.
         {% else %}
-        You haven't posted any properties yet. Start by creating your first listing!
+        You haven't posted any properties yet. Start by creating your first listing and reach potential buyers!
         {% endif %}
     </p>
     
-    {% if can_create %}
-    <a href="{% url 'seller_property_create' %}" 
-       class="px-6 py-3 bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg hover:opacity-90 transition font-medium inline-flex items-center gap-2">
-        <i class="fas fa-plus"></i>
-        <span>Post Your First Property</span>
-    </a>
-    {% else %}
-    <a href="{% url 'seller_packages' %}" 
-       class="px-6 py-3 bg-gradient-to-r from-bhoosparsh-orange to-orange-600 text-white rounded-lg hover:opacity-90 transition font-medium inline-flex items-center gap-2">
-        <i class="fas fa-arrow-up"></i>
-        <span>Upgrade to Post Properties</span>
-    </a>
-    {% endif %}
+    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+        {% if status_filter != 'all' or property_for_filter != 'all' or search_query %}
+        <a href="{% url 'seller_properties' %}" 
+           class="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition font-medium inline-flex items-center justify-center gap-2">
+            <i class="fas fa-times"></i>
+            <span>Clear Filters</span>
+        </a>
+        {% endif %}
+        
+        {% if can_create %}
+        <a href="{% url 'seller_property_create' %}" 
+           class="px-6 py-3 bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg hover:opacity-90 transition font-medium inline-flex items-center justify-center gap-2 shadow-md hover:shadow-lg">
+            <i class="fas fa-plus"></i>
+            <span>Post Your First Property</span>
+        </a>
+        {% else %}
+        <a href="{% url 'seller_packages' %}" 
+           class="px-6 py-3 bg-gradient-to-r from-bhoosparsh-orange to-orange-600 text-white rounded-lg hover:opacity-90 transition font-medium inline-flex items-center justify-center gap-2 shadow-md hover:shadow-lg">
+            <i class="fas fa-arrow-up"></i>
+            <span>Upgrade to Post Properties</span>
+        </a>
+        {% endif %}
+    </div>
 </div>
 {% endif %}
 
@@ -487,8 +878,11 @@
         <div class="p-6 border-b border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Delete Property</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Are you sure you want to delete this property?</p>
+                    <div class="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Delete Property</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Are you sure you want to delete this property?</p>
                 </div>
                 <button onclick="closeModal('deleteModal')" 
                         class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition">
@@ -498,19 +892,34 @@
         </div>
         
         <div class="p-6">
-            <p class="text-gray-600 dark:text-gray-400">
-                This action cannot be undone. All property data, images, and leads will be permanently deleted.
-            </p>
+            <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-4">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-exclamation-circle text-red-500 mt-0.5"></i>
+                    <div>
+                        <p class="text-sm font-medium text-red-800 dark:text-red-300">This action cannot be undone</p>
+                        <p class="text-xs text-red-600 dark:text-red-400 mt-1">
+                            All property data, images, inquiries, and statistics will be permanently deleted.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">You are about to delete:</p>
+                <p class="font-medium text-gray-900 dark:text-white" id="propertyToDeleteTitle"></p>
+                <p class="text-xs text-gray-500 mt-1" id="propertyToDeleteInfo"></p>
+            </div>
         </div>
 
         <div class="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
             <button onclick="closeModal('deleteModal')" 
-                    class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                    class="px-5 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition font-medium">
                 Cancel
             </button>
             <button id="confirmDeleteBtn" 
-                    class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium">
-                <i class="fas fa-trash mr-2"></i>Delete Property
+                    class="px-5 py-2.5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:opacity-90 transition font-medium flex items-center gap-2">
+                <i class="fas fa-trash"></i>
+                <span>Delete Property</span>
             </button>
         </div>
     </div>
@@ -522,8 +931,11 @@
         <div class="p-6 border-b border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Boost Property</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Get more visibility for your property</p>
+                    <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-bolt text-orange-600 dark:text-orange-400 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Boost Property</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Get more visibility and leads</p>
                 </div>
                 <button onclick="closeModal('boostModal')" 
                         class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition">
@@ -534,48 +946,100 @@
         
         <div class="p-6">
             <div class="space-y-4">
-                <div class="flex items-center gap-3 p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
-                    <div class="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
-                        <i class="fas fa-star text-orange-600 dark:text-orange-400"></i>
-                    </div>
-                    <div class="flex-1">
-                        <h4 class="font-medium text-gray-900 dark:text-white">Featured Listing</h4>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">₹299 for 30 days</p>
+                <div class="boost-option border rounded-xl p-4 hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition cursor-pointer" 
+                     data-type="featured" data-price="299">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-star text-orange-600 dark:text-orange-400"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center">
+                                <h4 class="font-medium text-gray-900 dark:text-white">Featured Listing</h4>
+                                <span class="text-lg font-bold text-orange-600">₹299</span>
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">For 30 days</p>
+                            <ul class="text-xs text-gray-500 mt-3 space-y-2">
+                                <li class="flex items-center gap-2">
+                                    <i class="fas fa-check-circle text-green-500"></i>
+                                    <span>Top placement in search results</span>
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <i class="fas fa-check-circle text-green-500"></i>
+                                    <span>Featured badge on listing</span>
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <i class="fas fa-check-circle text-green-500"></i>
+                                    <span>Get 3x more leads</span>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="flex items-center gap-3 p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
-                    <div class="w-10 h-10 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
-                        <i class="fas fa-bolt text-red-600 dark:text-red-400"></i>
-                    </div>
-                    <div class="flex-1">
-                        <h4 class="font-medium text-gray-900 dark:text-white">Urgent Tag</h4>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">₹199 for 14 days</p>
-                    </div>
-                </div>
-                
-                <div class="flex items-center gap-3 p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
-                    <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                        <i class="fas fa-crown text-blue-600 dark:text-blue-400"></i>
-                    </div>
-                    <div class="flex-1">
-                        <h4 class="font-medium text-gray-900 dark:text-white">Spotlight Boost</h4>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">₹499 for 7 days</p>
+                <div class="boost-option border rounded-xl p-4 hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition cursor-pointer" 
+                     data-type="urgent" data-price="199">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-bolt text-red-600 dark:text-red-400"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center">
+                                <h4 class="font-medium text-gray-900 dark:text-white">Urgent Tag</h4>
+                                <span class="text-lg font-bold text-red-600">₹199</span>
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">For 14 days</p>
+                            <ul class="text-xs text-gray-500 mt-3 space-y-2">
+                                <li class="flex items-center gap-2">
+                                    <i class="fas fa-check-circle text-green-500"></i>
+                                    <span>"Urgent" badge on listing</span>
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <i class="fas fa-check-circle text-green-500"></i>
+                                    <span>Priority in urgent listings section</span>
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <i class="fas fa-check-circle text-green-500"></i>
+                                    <span>2x more visibility</span>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
-            <button onclick="closeModal('boostModal')" 
-                    class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                Cancel
-            </button>
-            <button onclick="proceedToBoost()" 
-                    class="px-4 py-2 bg-gradient-to-r from-bhoosparsh-orange to-orange-600 text-white rounded-lg hover:opacity-90 transition font-medium">
-                <i class="fas fa-bolt mr-2"></i>Apply Boost
-            </button>
+        <div class="p-6 border-t border-gray-200 dark:border-gray-700">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Selected Plan</div>
+                    <div id="selectedPlan" class="font-medium text-gray-900 dark:text-white">None selected</div>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Total Amount</div>
+                    <div id="totalAmount" class="text-2xl font-bold text-gray-900 dark:text-white">₹0</div>
+                </div>
+            </div>
+            
+            <div class="flex gap-3">
+                <button onclick="closeModal('boostModal')" 
+                        class="flex-1 px-5 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition font-medium">
+                    Cancel
+                </button>
+                <button onclick="proceedToPayment()" 
+                        class="flex-1 px-5 py-2.5 bg-gradient-to-r from-bhoosparsh-orange to-orange-600 text-white rounded-lg hover:opacity-90 transition font-medium flex items-center justify-center gap-2">
+                    <i class="fas fa-bolt"></i>
+                    <span>Proceed to Payment</span>
+                </button>
+            </div>
         </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="fixed inset-0 bg-black/50 flex items-center justify-center z-[99999] hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-2xl">
+        <div class="spinner mx-auto mb-4"></div>
+        <p class="text-gray-700 dark:text-gray-300 font-medium">Processing...</p>
     </div>
 </div>
 {% endblock %}
@@ -585,33 +1049,179 @@
     let propertyToDelete = null;
     let propertyToBoost = null;
     let boostType = null;
+    let boostPrice = null;
+    let activeMenu = null;
 
+    // Initialize when DOM is loaded
     document.addEventListener('DOMContentLoaded', function() {
         // Close dropdowns when clicking outside
         document.addEventListener('click', function(event) {
-            if (!event.target.closest('.relative')) {
-                document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                    menu.classList.add('hidden');
-                });
+            // Close property action menus if click is outside
+            if (!event.target.closest('.action-button-container')) {
+                hideAllPropertyMenus();
+            }
+            
+            // Close filter dropdown
+            if (!event.target.closest('#filterDropdown') && !event.target.closest('button[onclick*="toggleFilterDropdown"]')) {
+                document.getElementById('filterDropdown').classList.add('hidden');
             }
         });
+        
+        // Initialize boost options
+        initializeBoostOptions();
     });
 
+    // Hide all property menus
+    function hideAllPropertyMenus() {
+        document.querySelectorAll('.action-menu').forEach(menu => {
+            menu.classList.remove('show');
+        });
+        activeMenu = null;
+    }
+
+    // Toggle property action menu
+    function togglePropertyMenu(propertyId) {
+        const menu = document.getElementById(`actionMenu${propertyId}`);
+        
+        if (activeMenu === `actionMenu${propertyId}`) {
+            // Clicking the same button closes the menu
+            menu.classList.remove('show');
+            activeMenu = null;
+        } else {
+            // Close all menus first
+            hideAllPropertyMenus();
+            
+            // Open clicked menu
+            menu.classList.add('show');
+            activeMenu = `actionMenu${propertyId}`;
+        }
+        
+        // Close filter dropdown
+        document.getElementById('filterDropdown').classList.add('hidden');
+    }
+
+    // Toggle filter dropdown
     function toggleFilterDropdown() {
         const dropdown = document.getElementById('filterDropdown');
         dropdown.classList.toggle('hidden');
+        
+        // Close all property menus
+        hideAllPropertyMenus();
     }
 
-    function togglePropertyMenu(menuId) {
-        const menu = document.getElementById(menuId);
-        menu.classList.toggle('hidden');
+    // Toggle quick view panel
+    function toggleQuickView(propertyId) {
+        const quickView = document.getElementById(`quickView-${propertyId}`);
+        const toggleBtn = document.getElementById(`viewToggle-${propertyId}`);
+        
+        if (quickView.classList.contains('active')) {
+            quickView.classList.remove('active');
+            toggleBtn.classList.remove('active');
+            toggleBtn.innerHTML = '<i class="fas fa-chevron-down text-gray-600 dark:text-gray-300 text-xs"></i>';
+        } else {
+            // Close other quick views
+            document.querySelectorAll('.quick-view').forEach(view => {
+                view.classList.remove('active');
+            });
+            document.querySelectorAll('.view-toggle-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.innerHTML = '<i class="fas fa-chevron-down text-gray-600 dark:text-gray-300 text-xs"></i>';
+            });
+            
+            // Open this one
+            quickView.classList.add('active');
+            toggleBtn.classList.add('active');
+            toggleBtn.innerHTML = '<i class="fas fa-chevron-up text-gray-600 dark:text-gray-300 text-xs"></i>';
+        }
     }
 
+    // Show delete confirmation modal
+    function showDeleteModal(propertyId, propertyTitle) {
+        propertyToDelete = propertyId;
+        
+        // Get property info from the card
+        const propertyCard = document.querySelector(`[data-property-id="${propertyId}"]`);
+        let propertyInfo = '';
+        
+        if (propertyCard) {
+            const location = propertyCard.querySelector('.property-location')?.textContent || '';
+            const price = propertyCard.querySelector('.property-price')?.textContent || '';
+            propertyInfo = `${location} • ${price}`;
+        }
+        
+        // Update modal content
+        document.getElementById('propertyToDeleteTitle').textContent = propertyTitle;
+        document.getElementById('propertyToDeleteInfo').textContent = propertyInfo || 'Property ID: ' + propertyId;
+        
+        // Set delete button action
+        document.getElementById('confirmDeleteBtn').onclick = function() {
+            deleteProperty(propertyId);
+        };
+        
+        // Show modal
+        openModal('deleteModal');
+        hideAllPropertyMenus();
+    }
+
+    // Delete property via AJAX
+    function deleteProperty(propertyId) {
+        showLoading();
+        
+        fetch(`/seller/property/${propertyId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify({ confirm: true })
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            
+            if (data.success) {
+                showToast('Property deleted successfully!', 'success');
+                closeModal('deleteModal');
+                
+                // Remove property card from DOM
+                const propertyCard = document.querySelector(`[data-property-id="${propertyId}"]`);
+                if (propertyCard) {
+                    propertyCard.style.opacity = '0';
+                    propertyCard.style.transform = 'scale(0.9)';
+                    setTimeout(() => {
+                        propertyCard.remove();
+                        
+                        // Update stats if needed
+                        updatePropertyStats();
+                        
+                        // Reload if no properties left
+                        if (document.querySelectorAll('.property-card').length === 0) {
+                            setTimeout(() => location.reload(), 1000);
+                        }
+                    }, 300);
+                } else {
+                    // Reload page if card not found
+                    setTimeout(() => location.reload(), 1000);
+                }
+            } else {
+                showToast(data.error || 'Error deleting property', 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            showToast('Network error. Please try again.', 'error');
+            console.error('Delete error:', error);
+        });
+    }
+
+    // Toggle property status (active/inactive)
     function togglePropertyStatus(propertyId, newStatus) {
         const statusText = newStatus === 'active' ? 'activate' : 'deactivate';
+        const confirmText = `Are you sure you want to ${statusText} this property?`;
         
-        if (confirm(`Are you sure you want to ${statusText} this property?`)) {
-            // AJAX call to update status
+        if (confirm(confirmText)) {
+            showLoading();
+            
             fetch(`/seller/ajax/update-property-status/`, {
                 method: 'POST',
                 headers: {
@@ -625,33 +1235,133 @@
             })
             .then(response => response.json())
             .then(data => {
+                hideLoading();
+                
                 if (data.success) {
                     showToast(`Property ${statusText}d successfully!`, 'success');
-                    setTimeout(() => location.reload(), 1000);
+                    
+                    // Update UI immediately
+                    updatePropertyStatusUI(propertyId, newStatus, data.status_display);
+                    
+                    // Close menu
+                    hideAllPropertyMenus();
                 } else {
-                    showToast(data.error, 'error');
+                    showToast(data.error || 'Error updating status', 'error');
                 }
             })
             .catch(error => {
-                showToast('Error updating property status', 'error');
+                hideLoading();
+                showToast('Network error. Please try again.', 'error');
+                console.error('Status update error:', error);
             });
         }
     }
 
-    function applyBoost(propertyId, type) {
-        propertyToBoost = propertyId;
-        boostType = type;
+    // Update property status in UI
+    function updatePropertyStatusUI(propertyId, newStatus, statusDisplay) {
+        // Update status badge
+        const statusBadge = document.querySelector(`[data-property-id="${propertyId}"] .status-badge`);
+        if (statusBadge) {
+            // Remove all status classes
+            statusBadge.classList.remove('status-active', 'status-inactive', 'status-draft', 'status-pending', 'status-sold');
+            // Add new status class
+            statusBadge.classList.add(`status-${newStatus}`);
+            // Update text
+            statusBadge.textContent = statusDisplay;
+        }
         
+        // Update action menu item
+        const menu = document.getElementById(`actionMenu${propertyId}`);
+        if (menu) {
+            const statusAction = menu.querySelector('a[onclick*="togglePropertyStatus"]');
+            if (statusAction) {
+                if (newStatus === 'active') {
+                    statusAction.innerHTML = '<i class="fas fa-pause text-yellow-500 text-sm w-4"></i><span>Deactivate</span>';
+                    statusAction.onclick = function() { togglePropertyStatus(propertyId, 'inactive'); };
+                } else {
+                    statusAction.innerHTML = '<i class="fas fa-play text-green-500 text-sm w-4"></i><span>Activate</span>';
+                    statusAction.onclick = function() { togglePropertyStatus(propertyId, 'active'); };
+                }
+            }
+        }
+    }
+
+    // Duplicate property
+    function duplicateProperty(propertyId) {
+        if (confirm('Duplicate this property? A new draft will be created.')) {
+            showLoading();
+            
+            fetch(`/seller/property/${propertyId}/duplicate/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                
+                if (data.success) {
+                    showToast('Property duplicated successfully!', 'success');
+                    // Redirect to edit page
+                    setTimeout(() => {
+                        window.location.href = `/seller/property/edit/${data.property_id}/`;
+                    }, 1000);
+                } else {
+                    showToast(data.error || 'Error duplicating property', 'error');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                showToast('Network error. Please try again.', 'error');
+            });
+        }
+    }
+
+    // Initialize boost options selection
+    function initializeBoostOptions() {
+        const boostOptions = document.querySelectorAll('.boost-option');
+        boostOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove selection from all options
+                boostOptions.forEach(opt => {
+                    opt.classList.remove('border-blue-500', 'border-orange-500', 'border-red-500', 'bg-blue-50', 'bg-orange-50', 'bg-red-50');
+                });
+                
+                // Add selection to clicked option
+                const type = this.dataset.type;
+                const colorClass = type === 'featured' ? 'orange' : 'red';
+                this.classList.add(`border-${colorClass}-500`, `bg-${colorClass}-50`);
+                
+                // Update selection info
+                const price = this.dataset.price;
+                const planName = type === 'featured' ? 'Featured Listing (30 days)' : 'Urgent Tag (14 days)';
+                
+                document.getElementById('selectedPlan').textContent = planName;
+                document.getElementById('totalAmount').textContent = `₹${price}`;
+                
+                boostType = type;
+                boostPrice = price;
+            });
+        });
+    }
+
+    // Open boost modal
+    function openBoostModal(propertyId) {
+        propertyToBoost = propertyId;
+        hideAllPropertyMenus();
         openModal('boostModal');
     }
 
-    function proceedToBoost() {
-        if (!propertyToBoost || !boostType) {
+    // Proceed to payment for boost
+    function proceedToPayment() {
+        if (!boostType) {
             showToast('Please select a boost option', 'warning');
             return;
         }
-
-        // AJAX call to apply boost
+        
+        showLoading();
+        
         fetch('/seller/ajax/apply-boost/', {
             method: 'POST',
             headers: {
@@ -665,50 +1375,117 @@
         })
         .then(response => response.json())
         .then(data => {
+            hideLoading();
+            
             if (data.success) {
                 showToast(data.message, 'success');
                 closeModal('boostModal');
-                setTimeout(() => location.reload(), 1500);
+                
+                // Update UI immediately
+                updateBoostBadge(propertyToBoost, boostType);
+                
+                // Reset selection
+                boostType = null;
+                boostPrice = null;
+                propertyToBoost = null;
             } else {
-                showToast(data.error, 'error');
+                showToast(data.error || 'Error applying boost', 'error');
             }
         })
         .catch(error => {
-            showToast('Error applying boost', 'error');
+            hideLoading();
+            showToast('Network error. Please try again.', 'error');
         });
     }
 
-    function confirmDelete(propertyId) {
-        propertyToDelete = propertyId;
-        openModal('deleteModal');
+    // Update boost badge in UI
+    function updateBoostBadge(propertyId, boostType) {
+        const propertyCard = document.querySelector(`[data-property-id="${propertyId}"]`);
+        if (!propertyCard) return;
         
-        // Set delete button action
-        document.getElementById('confirmDeleteBtn').onclick = function() {
-            deleteProperty(propertyId);
-        };
+        const badgeContainer = propertyCard.querySelector('.badges-container');
+        if (badgeContainer) {
+            // Remove existing boost badges
+            const existingBadge = propertyCard.querySelector('.featured-badge, .urgent-badge');
+            if (existingBadge) {
+                existingBadge.remove();
+            }
+            
+            // Add new badge
+            const badge = document.createElement('span');
+            badge.className = boostType === 'featured' ? 'featured-badge inline-flex items-center justify-center gap-1' : 'urgent-badge inline-flex items-center justify-center gap-1';
+            badge.innerHTML = `<i class="fas ${boostType === 'featured' ? 'fa-star' : 'fa-bolt'} text-xs"></i><span class="text-xs font-medium">${boostType === 'featured' ? 'Featured' : 'Urgent'}</span>`;
+            
+            // Insert before status badge
+            const statusBadge = badgeContainer.querySelector('.status-badge');
+            if (statusBadge) {
+                badgeContainer.insertBefore(badge, statusBadge);
+            }
+        }
     }
 
-    function deleteProperty(propertyId) {
-        // AJAX call to delete property
-        fetch(`/seller/property/${propertyId}/delete/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-            },
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showToast('Property deleted successfully!', 'success');
-                closeModal('deleteModal');
-                setTimeout(() => location.reload(), 1000);
-            } else {
-                showToast(data.error, 'error');
-            }
-        })
-        .catch(error => {
-            showToast('Network error', 'error');
-        });
+    // Update property stats after deletion
+    function updatePropertyStats() {
+        // This function would update the stats cards
+        // For simplicity, we'll just decrement total count
+        const totalElement = document.querySelector('.stats-card:first-child .text-2xl');
+        if (totalElement) {
+            const currentTotal = parseInt(totalElement.textContent);
+            totalElement.textContent = (currentTotal - 1).toString();
+        }
+    }
+
+    // Modal functions
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+    }
+
+    // Loading overlay functions
+    function showLoading() {
+        document.getElementById('loadingOverlay').classList.remove('hidden');
+    }
+
+    function hideLoading() {
+        document.getElementById('loadingOverlay').classList.add('hidden');
+    }
+
+    // Toast notification function
+    function showToast(message, type = 'info') {
+        // Remove existing toasts
+        document.querySelectorAll('.toast').forEach(toast => toast.remove());
+        
+        const toast = document.createElement('div');
+        toast.className = `toast px-6 py-3 rounded-lg shadow-lg text-white font-medium ${type === 'error' ? 'bg-red-500' : type === 'success' ? 'bg-green-500' : type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'}`;
+        toast.innerHTML = `
+            <div class="flex items-center gap-3">
+                <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : type === 'success' ? 'fa-check-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Remove toast after 3 seconds
+        setTimeout(() => {
+            toast.style.animation = 'slideOutRight 0.3s ease-out forwards';
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 300);
+        }, 3000);
     }
 
     // Helper function to get CSRF token
@@ -726,5 +1503,25 @@
         }
         return cookieValue;
     }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(event) {
+        // ESC to close modals and menus
+        if (event.key === 'Escape') {
+            closeModal('deleteModal');
+            closeModal('boostModal');
+            hideAllPropertyMenus();
+        }
+        
+        // Ctrl/Cmd + F to focus search
+        if ((event.ctrlKey || event.metaKey) && event.key === 'f') {
+            event.preventDefault();
+            const searchInput = document.querySelector('input[name="q"]');
+            if (searchInput) {
+                searchInput.focus();
+                searchInput.select();
+            }
+        }
+    });
 </script>
 {% endblock %}

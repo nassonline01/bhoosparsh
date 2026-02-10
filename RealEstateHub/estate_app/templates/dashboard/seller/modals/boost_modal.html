@@ -1,0 +1,78 @@
+<div id="boostModal" class="modal-overlay">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full mx-4">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Boost Property</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Get more visibility for your property</p>
+                </div>
+                <button onclick="closeModal('boostModal')" 
+                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <div class="space-y-4">
+                <div class="boost-option" data-type="featured" data-price="299">
+                    <div class="flex items-center gap-3 p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                        <div class="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
+                            <i class="fas fa-star text-orange-600 dark:text-orange-400"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-medium text-gray-900 dark:text-white">Featured Listing</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">₹299 for 30 days</p>
+                            <ul class="text-xs text-gray-500 mt-2 space-y-1">
+                                <li><i class="fas fa-check text-green-500 mr-1"></i> Top placement in search results</li>
+                                <li><i class="fas fa-check text-green-500 mr-1"></i> Featured badge on listing</li>
+                                <li><i class="fas fa-check text-green-500 mr-1"></i> 3x more leads</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="boost-option" data-type="urgent" data-price="199">
+                    <div class="flex items-center gap-3 p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                        <div class="w-10 h-10 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
+                            <i class="fas fa-bolt text-red-600 dark:text-red-400"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-medium text-gray-900 dark:text-white">Urgent Tag</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">₹199 for 14 days</p>
+                            <ul class="text-xs text-gray-500 mt-2 space-y-1">
+                                <li><i class="fas fa-check text-green-500 mr-1"></i> "Urgent" badge on listing</li>
+                                <li><i class="fas fa-check text-green-500 mr-1"></i> Priority in urgent listings section</li>
+                                <li><i class="fas fa-check text-green-500 mr-1"></i> 2x more visibility</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6 border-t border-gray-200 dark:border-gray-700">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Selected Plan</div>
+                    <div id="selectedPlan" class="font-medium text-gray-900 dark:text-white">None selected</div>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Total Amount</div>
+                    <div id="totalAmount" class="text-2xl font-bold text-gray-900 dark:text-white">₹0</div>
+                </div>
+            </div>
+            
+            <div class="flex gap-3">
+                <button onclick="closeModal('boostModal')" 
+                        class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                    Cancel
+                </button>
+                <button onclick="proceedToPayment()" 
+                        class="flex-1 px-4 py-2 bg-gradient-to-r from-bhoosparsh-orange to-orange-600 text-white rounded-lg hover:opacity-90 transition font-medium">
+                    <i class="fas fa-bolt mr-2"></i>Proceed to Payment
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

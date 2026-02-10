@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django import template
 
 register = template.Library()
@@ -20,6 +21,17 @@ def replace(value, arg):
 def status_filter(queryset, status):
     """Filter inquiries by status"""
     return queryset.filter(status=status)
+
+@register.filter
+def add_days(value, days):
+    """
+    Adds number of days to a date
+    Usage: {{ some_date|add_days:7 }}
+    """
+    try:
+        return value + timedelta(days=int(days))
+    except Exception:
+        return value
 
 @register.filter
 def count_by_status(queryset, status):

@@ -1,4 +1,3 @@
-# views.py - Add buyer specific views
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -9,6 +8,7 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from .models import Property, PropertyFavorite, PropertyComparison, SiteVisit, BuyerProfile, PropertyInquiry,PropertyCategory, PropertyType
 from .forms import PropertyInquiryForm
+import json
 
 @login_required
 def buyer_dashboard(request):
@@ -276,6 +276,12 @@ def buyer_property_detail(request, slug):
     # Get seller info
     seller = property_obj.owner
     
+    # Get seller statistics
+    seller_listings_count = seller.properties.count()
+    seller_avg_views = seller.properties.aggregate(
+        avg_views=Avg('view_count')
+    )['avg_views'] or 0
+    
     # Get property images
     images = property_obj.images.all()
     
@@ -286,6 +292,8 @@ def buyer_property_detail(request, slug):
         'similar_properties': similar_properties,
         'has_inquired': has_inquired,
         'seller': seller,
+        'seller_listings_count': seller_listings_count,
+        'seller_avg_views': seller_avg_views,
         'images': images,
     }
     
@@ -873,21 +881,85 @@ def cancel_visit(request, visit_id):
         try:
             data = json.loads(request.body)
             visit = get_object_or_404(SiteVisit, id=visit_id, user=request.user)
-            
+
             if visit.status in ['completed', 'cancelled']:
                 return JsonResponse({'success': False, 'error': 'Visit cannot be cancelled'})
-            
+
             reason = data.get('reason', '')
             if data.get('reason') == 'other':
                 reason = data.get('other_reason', 'Other')
-            
+
             visit.status = 'cancelled'
             visit.notes = f"Cancelled: {reason}"
             visit.save()
-            
+
             return JsonResponse({'success': True, 'message': 'Visit cancelled successfully'})
-            
+
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
-    
+
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+
+@login_required
+def ajax_send_followup(request):
+    """AJAX view to send follow-up message on an inquiry"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            inquiry_id = data.get('inquiry_id')
+            message = data.get('message', '').strip()
+            status = data.get('status', '')
+
+            # Get the inquiry and verify ownership
+            inquiry = get_object_or_404(PropertyInquiry, id=inquiry_id, user=request.user)
+
+            if not message:
+                return JsonResponse({'success': False, 'error': 'Message is required'})
+
+            # Update the inquiry with the follow-up message
+            inquiry.message += f"\n\n--- Follow-up ({timezone.now().strftime('%Y-%m-%d %H:%M')}): ---\n{message}"
+            inquiry.updated_at = timezone.now()
+
+            # Update status if provided
+            if status and status in dict(PropertyInquiry.STATUS_CHOICES):
+                inquiry.status = status
+
+            inquiry.save()
+
+            return JsonResponse({
+                'success': True,
+                'message': 'Follow-up sent successfully!',
+                'new_status': inquiry.get_status_display() if status else None
+            })
+
+        except PropertyInquiry.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Inquiry not found'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+
+@login_required
+def ajax_delete_inquiry(request, inquiry_id):
+    """AJAX view to delete an inquiry"""
+    if request.method == 'DELETE':
+        try:
+            # Get the inquiry and verify ownership
+            inquiry = get_object_or_404(PropertyInquiry, id=inquiry_id, user=request.user)
+
+            # Delete the inquiry
+            inquiry.delete()
+
+            return JsonResponse({
+                'success': True,
+                'message': 'Inquiry deleted successfully!'
+            })
+
+        except PropertyInquiry.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Inquiry not found'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
     return JsonResponse({'success': False, 'error': 'Invalid request'})

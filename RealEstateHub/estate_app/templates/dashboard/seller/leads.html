@@ -575,7 +575,7 @@
                         <div class="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-1">
                             <i class="fas fa-home mr-2"></i>
                             <span class="font-medium text-gray-900 dark:text-white">Property:</span>
-                            <a href="{% url 'property_detail' inquiry.property.slug %}" target="_blank" 
+                            <a href="{% url 'seller_property_detail' inquiry.property.pk %}" target="_blank"
                                class="ml-2 text-bhoosparsh-blue hover:text-blue-700">
                                 {{ inquiry.property.title|truncatechars:40 }}
                             </a>

@@ -5,9 +5,6 @@ Django settings for RealEstateHub project.
 from pathlib import Path
 import os
 
-# GDAL_LIBRARY_PATH = r"C:\new\OSGeo4W\bin\gdal312.dll"
-# GEOS_LIBRARY_PATH = r"C:\new\OSGeo4W\bin\geos_c.dll"
-# os.environ["PATH"] += os.pathsep + r"C:\new\OSGeo4W\bin"
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -37,7 +34,6 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.facebook',
-    # 'chartjs',
     
     # Local apps
     'estate_app.apps.EstateAppConfig',
@@ -57,7 +53,7 @@ JAZZMIN_SETTINGS = {
     "login_logo_dark": None,
 
     # Theme style
-    "theme": "darkly",   # 👈 CHANGE THEME HERE
+    "theme": "default",   # 👈 Changed from darkly to default for better form visibility
 
     # Sidebar
     "show_sidebar": True,
@@ -134,6 +130,7 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
+
 # Static and media files
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
@@ -197,7 +194,7 @@ SOCIALACCOUNT_PROVIDERS = {
 GEOIP_PATH = os.path.join(BASE_DIR, 'geoip')
 
 # Site information
-SITE_NAME = 'RealEstatePro'
+SITE_NAME = 'BHOOSPARSH'
 SITE_URL = 'http://localhost:8000'  # Change in production
 ADMIN_EMAIL = 'admin@realestatepro.com'
 
@@ -276,13 +273,13 @@ ADMIN_SITE_TITLE = "BHOOSPARSH Admin Portal"
 ADMIN_INDEX_TITLE = "Dashboard"
 
 # Email settings for admin
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'your-email@gmail.com'
-EMAIL_HOST_PASSWORD = 'your-password'
-DEFAULT_FROM_EMAIL = 'BHOOSPARSH <noreply@bhoosparsh.com>'
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'your-email@gmail.com'
+# EMAIL_HOST_PASSWORD = 'your-password'
+# DEFAULT_FROM_EMAIL = 'BHOOSPARSH <noreply@bhoosparsh.com>'
 
 # Membership settings
 ENABLE_PACKAGE_SYSTEM = True  # Set to False to allow unlimited listings
@@ -303,12 +300,6 @@ ADMIN_CAN_IMPERSONATE = True
 ADMIN_CAN_MANUAL_APPROVE = True
 ADMIN_CAN_BULK_EMAIL = True
 
-
-# ==========================
-# Site Configuration
-# ==========================
-SITE_NAME = 'RealEstatePro'
-SITE_URL = 'http://localhost:8000'
 
 
 # ==========================
@@ -336,7 +327,7 @@ CACHES = {
     }
 }
 
-1
+
 # ==========================
 # Celery Configuration
 # ==========================
@@ -345,6 +336,6 @@ CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = TIME_ZONE
+CELERY_TIMEZONE = TIME_ZONE   
 
 

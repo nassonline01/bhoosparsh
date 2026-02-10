@@ -1,0 +1,252 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    /* Aggressive fix for Jazzmin darkly theme login form - highest specificity */
+    form#login-form input[type="text"],
+    form#login-form input[type="password"],
+    form#login-form input[type="email"],
+    .login-form input[type="text"],
+    .login-form input[type="password"],
+    .login-form input[type="email"],
+    input#id_username,
+    input#id_password {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        border: 2px solid #cccccc !important;
+        border-radius: 4px !important;
+        padding: 10px 12px !important;
+        font-size: 14px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        pointer-events: auto !important;
+        cursor: text !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        display: block !important;
+        position: static !important;
+        z-index: 9999 !important;
+    }
+
+    form#login-form input[type="text"]:focus,
+    form#login-form input[type="password"]:focus,
+    form#login-form input[type="email"]:focus,
+    .login-form input[type="text"]:focus,
+    .login-form input[type="password"]:focus,
+    .login-form input[type="email"]:focus,
+    input#id_username:focus,
+    input#id_password:focus {
+        border-color: #007bff !important;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25) !important;
+        outline: none !important;
+    }
+
+    form#login-form label,
+    .login-form label {
+        color: #000000 !important;
+        font-weight: 600 !important;
+        margin-bottom: 8px !important;
+        display: block !important;
+        background: transparent !important;
+    }
+
+    form#login-form .form-row,
+    .login-form .form-row {
+        margin-bottom: 20px !important;
+        position: relative !important;
+        z-index: 9999 !important;
+    }
+
+    /* Ensure form container is properly positioned */
+    .login-container,
+    #content-main {
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 20px;
+        position: relative !important;
+        z-index: 10000 !important;
+    }
+
+    /* Fix any overlay issues */
+    form#login-form,
+    .login-form {
+        position: relative !important;
+        z-index: 10000 !important;
+        background: white !important;
+        padding: 20px !important;
+        border-radius: 8px !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+    }
+
+    /* Button styling */
+    form#login-form input[type="submit"],
+    .login-form input[type="submit"] {
+        background-color: #007bff !important;
+        border: 2px solid #007bff !important;
+        color: #ffffff !important;
+        padding: 12px 20px !important;
+        border-radius: 4px !important;
+        cursor: pointer !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        width: 100% !important;
+        transition: background-color 0.3s ease !important;
+        margin-top: 10px !important;
+    }
+
+    form#login-form input[type="submit"]:hover,
+    .login-form input[type="submit"]:hover {
+        background-color: #0056b3 !important;
+        border-color: #0056b3 !important;
+    }
+
+    /* Help text styling */
+    form#login-form .help,
+    .login-form .help {
+        color: #666666 !important;
+        font-size: 12px !important;
+        margin-top: 5px !important;
+    }
+
+    /* Error message styling */
+    .errornote {
+        background-color: #f8d7da !important;
+        color: #721c24 !important;
+        padding: 10px !important;
+        border: 1px solid #f5c6cb !important;
+        border-radius: 4px !important;
+        margin-bottom: 15px !important;
+    }
+
+    /* Force visibility of form elements */
+    .field-username,
+    .field-password {
+        position: relative !important;
+        z-index: 9999 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    {% if form.errors and not form.non_field_errors %}
+        <p class="errornote">
+            {% if form.errors.items|length == 1 %}{% trans "Please correct the error below." %}{% else %}{% trans "Please correct the errors below." %}{% endif %}
+        </p>
+    {% endif %}
+
+    {% if form.non_field_errors %}
+        {% for error in form.non_field_errors %}
+            <p class="errornote">{{ error }}</p>
+        {% endfor %}
+    {% endif %}
+
+    <div id="content-main">
+        <form class="login-form" method="post" id="login-form" action="{% url 'admin:login' %}">
+            {% csrf_token %}
+
+            <div class="form-row">
+                <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    {% for error in form.username.errors %}
+                        <div class="help error">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="form-row">
+                <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+                {{ form.password }}
+                {% if form.password.errors %}
+                    {% for error in form.password.errors %}
+                        <div class="help error">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            {% if redirect_field_value %}
+                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+            {% endif %}
+
+            <div class="form-row">
+                <input type="submit" value="{% trans 'Log in' %}" />
+            </div>
+
+            {% if form.non_field_errors %}
+                {% for error in form.non_field_errors %}
+                    <div class="help error">{{ error }}</div>
+                {% endfor %}
+            {% endif %}
+        </form>
+
+        <script type="text/javascript">
+            // Force fix for Jazzmin darkly theme input issues
+            document.addEventListener('DOMContentLoaded', function() {
+                // Get the input elements
+                var usernameInput = document.getElementById('id_username');
+                var passwordInput = document.getElementById('id_password');
+
+                // Force styles programmatically
+                if (usernameInput) {
+                    usernameInput.style.backgroundColor = '#ffffff';
+                    usernameInput.style.color = '#000000';
+                    usernameInput.style.border = '2px solid #cccccc';
+                    usernameInput.style.borderRadius = '4px';
+                    usernameInput.style.padding = '10px 12px';
+                    usernameInput.style.fontSize = '14px';
+                    usernameInput.style.width = '100%';
+                    usernameInput.style.boxSizing = 'border-box';
+                    usernameInput.style.pointerEvents = 'auto';
+                    usernameInput.style.cursor = 'text';
+                    usernameInput.style.opacity = '1';
+                    usernameInput.style.visibility = 'visible';
+                    usernameInput.style.display = 'block';
+                    usernameInput.style.position = 'static';
+                    usernameInput.style.zIndex = '9999';
+                }
+
+                if (passwordInput) {
+                    passwordInput.style.backgroundColor = '#ffffff';
+                    passwordInput.style.color = '#000000';
+                    passwordInput.style.border = '2px solid #cccccc';
+                    passwordInput.style.borderRadius = '4px';
+                    passwordInput.style.padding = '10px 12px';
+                    passwordInput.style.fontSize = '14px';
+                    passwordInput.style.width = '100%';
+                    passwordInput.style.boxSizing = 'border-box';
+                    passwordInput.style.pointerEvents = 'auto';
+                    passwordInput.style.cursor = 'text';
+                    passwordInput.style.opacity = '1';
+                    passwordInput.style.visibility = 'visible';
+                    passwordInput.style.display = 'block';
+                    passwordInput.style.position = 'static';
+                    passwordInput.style.zIndex = '9999';
+                }
+
+                // Force focus on username field
+                if (usernameInput) {
+                    usernameInput.focus();
+                }
+            });
+
+            // Additional fix for any dynamic styling
+            setTimeout(function() {
+                var inputs = document.querySelectorAll('input[type="text"], input[type="password"], input[type="email"]');
+                inputs.forEach(function(input) {
+                    input.style.backgroundColor = '#ffffff !important';
+                    input.style.color = '#000000 !important';
+                    input.style.pointerEvents = 'auto !important';
+                    input.style.cursor = 'text !important';
+                    input.style.opacity = '1 !important';
+                    input.style.visibility = 'visible !important';
+                });
+            }, 100);
+        </script>
+    </div>
+</div>
+{% endblock %}

@@ -8,6 +8,13 @@ from django.db.models import Q, Count, Sum, Avg
 from django.utils import timezone
 from datetime import timedelta, datetime
 import json
+from django.db.models import Q
+from decimal import Decimal, InvalidOperation
+from datetime import date
+import uuid
+import re
+from django.db import transaction
+
 
 from .models import (
     CustomUser, UserProfile, UserMembership, MembershipPlan,
@@ -400,11 +407,272 @@ def seller_properties(request):
     return render(request, 'dashboard/seller/properties.html', context)
 
 
-# views.py - Update property create/edit views to handle form manually
+@login_required
+def seller_property_detail(request, pk):
+    """View property details"""
+    user = request.user
+    property_obj = get_object_or_404(Property, pk=pk, owner=user)
+    
+    # Get related data
+    inquiries = property_obj.inquiries.all().order_by('-created_at')
+    stats = {
+        'views_today': property_obj.views.filter(viewed_at__date=datetime.today()).count(),
+        'inquiries_today': property_obj.inquiries.filter(created_at__date=datetime.today()).count(),
+        'views_week': property_obj.views.filter(viewed_at__gte=datetime.today() - timedelta(days=7)).count(),
+    }
+    
+    context = {
+        'property': property_obj,
+        'inquiries': inquiries[:10],
+        'stats': stats,
+        'user': user,
+        'user_plan': user.membership.plan.name if hasattr(user, 'membership') and user.membership.plan else 'No Plan',
+        'plan_days_left': user.membership.days_until_expiry if hasattr(user, 'membership') else 0,
+    }
+    
+    return render(request, 'dashboard/seller/property_detail.html', context)
+
+@login_required
+@require_POST
+def seller_property_duplicate(request, pk):
+    """Duplicate a property"""
+    user = request.user
+    property_obj = get_object_or_404(Property, pk=pk, owner=user)
+    
+    try:
+        with transaction.atomic():
+            # Create new property with similar data
+            new_property = Property.objects.create(
+                owner=user,
+                title=f"{property_obj.title} (Copy)",
+                description=property_obj.description,
+                category=property_obj.category,
+                property_type=property_obj.property_type,
+                property_for=property_obj.property_for,
+                listing_type=property_obj.listing_type,
+                address=property_obj.address,
+                locality=property_obj.locality,
+                city=property_obj.city,
+                state=property_obj.state,
+                pincode=property_obj.pincode,
+                landmark=property_obj.landmark,
+                price=property_obj.price,
+                carpet_area=property_obj.carpet_area,
+                builtup_area=property_obj.builtup_area,
+                super_builtup_area=property_obj.super_builtup_area,
+                plot_area=property_obj.plot_area,
+                bedrooms=property_obj.bedrooms,
+                bathrooms=property_obj.bathrooms,
+                balconies=property_obj.balconies,
+                furnishing=property_obj.furnishing,
+                contact_person=property_obj.contact_person,
+                contact_phone=property_obj.contact_phone,
+                contact_email=property_obj.contact_email,
+                show_contact=property_obj.show_contact,
+                amenities=property_obj.amenities,
+                status='draft',
+            )
+            
+            # Copy images if needed (you might want to copy images as well)
+            
+            return JsonResponse({
+                'success': True,
+                'property_id': new_property.id,
+                'message': 'Property duplicated successfully'
+            })
+            
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+
+@login_required
+def seller_property_report(request, pk):
+    """Generate property report"""
+    user = request.user
+    property_obj = get_object_or_404(Property, pk=pk, owner=user)
+    
+    # Generate report data
+    report_data = {
+        'property': {
+            'title': property_obj.title,
+            'price': float(property_obj.price),
+            'status': property_obj.get_status_display(),
+            'created_at': property_obj.created_at.strftime('%Y-%m-%d %H:%M'),
+        },
+        'statistics': {
+            'total_views': property_obj.view_count,
+            'total_inquiries': property_obj.inquiry_count,
+            'daily_avg_views': property_obj.view_count / max((datetime.now().date() - property_obj.created_at.date()).days, 1),
+        },
+        'inquiries_by_status': {
+            'new': property_obj.inquiries.filter(status='new').count(),
+            'contacted': property_obj.inquiries.filter(status='contacted').count(),
+            'converted': property_obj.inquiries.filter(status='converted').count(),
+        }
+    }
+    
+    # In a real app, you would generate a PDF or Excel file
+    # For now, return JSON response
+    
+    return JsonResponse({
+        'success': True,
+        'report': report_data,
+        'message': 'Report generated successfully',
+        # 'download_url': '/media/reports/report.pdf'  # If you generate a file
+    })
+
+# AJAX Views
+@login_required
+@require_POST
+def ajax_update_property_status(request):
+    """Update property status via AJAX"""
+    try:
+        data = json.loads(request.body)
+        property_id = data.get('property_id')
+        new_status = data.get('status')
+        
+        property_obj = Property.objects.get(id=property_id, owner=request.user)
+        
+        # Validate status transition
+        valid_transitions = {
+            'draft': ['pending', 'active'],
+            'pending': ['active', 'draft'],
+            'active': ['inactive', 'sold'],
+            'inactive': ['active', 'sold'],
+            'sold': ['inactive'],
+        }
+        
+        if new_status not in valid_transitions.get(property_obj.status, []):
+            return JsonResponse({
+                'success': False,
+                'error': f'Cannot change status from {property_obj.status} to {new_status}'
+            })
+        
+        property_obj.status = new_status
+        
+        # Set published date when activating
+        if new_status == 'active' and not property_obj.published_at:
+            property_obj.published_at = timezone.now()
+        
+        property_obj.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Property status updated to {new_status}',
+            'new_status': new_status,
+            'status_display': property_obj.get_status_display(),
+        })
+        
+    except Property.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Property not found'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+
+@login_required
+@require_POST
+def ajax_apply_boost(request):
+    """Apply boost to property via AJAX"""
+    try:
+        data = json.loads(request.body)
+        property_id = data.get('property_id')
+        boost_type = data.get('boost_type')
+        
+        property_obj = Property.objects.get(id=property_id, owner=request.user)
+        
+        # Apply boost based on type
+        if boost_type == 'featured':
+            property_obj.is_featured = True
+            property_obj.featured_until = timezone.now() + timedelta(days=30)
+            message = 'Property marked as featured for 30 days'
+        elif boost_type == 'urgent':
+            property_obj.is_urgent = True
+            property_obj.urgent_until = timezone.now() + timedelta(days=14)
+            message = 'Property marked as urgent for 14 days'
+        else:
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid boost type'
+            })
+        
+        property_obj.save()
+        
+        # In real app, you would process payment here
+        # For now, just update the property
+        
+        return JsonResponse({
+            'success': True,
+            'message': message,
+            'boost_type': boost_type,
+        })
+        
+    except Property.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Property not found'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+
+@login_required
+@require_GET
+def ajax_property_details(request, pk):
+    """Get property details for AJAX requests"""
+    try:
+        property_obj = Property.objects.get(id=pk, owner=request.user)
+        
+        data = {
+            'id': property_obj.id,
+            'title': property_obj.title,
+            'description': property_obj.description,
+            'price': float(property_obj.price),
+            'price_per_sqft': float(property_obj.price_per_sqft) if property_obj.price_per_sqft else None,
+            'carpet_area': float(property_obj.carpet_area),
+            'bedrooms': property_obj.bedrooms,
+            'bathrooms': property_obj.bathrooms,
+            'city': property_obj.city,
+            'state': property_obj.state,
+            'locality': property_obj.locality,
+            'status': property_obj.status,
+            'status_display': property_obj.get_status_display(),
+            'property_for': property_obj.property_for,
+            'property_for_display': property_obj.get_property_for_display(),
+            'view_count': property_obj.view_count,
+            'inquiry_count': property_obj.inquiry_count,
+            'created_at': property_obj.created_at.strftime('%Y-%m-%d %H:%M'),
+            'primary_image_url': property_obj.primary_image.url if property_obj.primary_image else None,
+            'is_featured': property_obj.is_featured,
+            'is_urgent': property_obj.is_urgent,
+        }
+        
+        return JsonResponse({
+            'success': True,
+            'property': data,
+        })
+        
+    except Property.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Property not found'
+        })
+
+# ======================================================
+# Property Creation
+# ======================================================
 
 @login_required
 def seller_property_create(request):
-    """Create new property without using PropertyForm"""
+    """Create new property with dynamic field display"""
     user = request.user
     
     # Check if user can create listing
@@ -417,32 +685,84 @@ def seller_property_create(request):
         messages.warning(request, 'You need a membership plan to create listings.')
         return redirect('seller_packages')
     
-    # Get property categories and types for dynamic form
+    # Get property categories
     categories = PropertyCategory.objects.filter(is_active=True)
+    
+    # Get selected category ID from request
+    category_id = request.GET.get('category') or request.POST.get('category')
+    
+    # Get property types - initially empty or filtered by category
     property_types = PropertyType.objects.filter(is_active=True)
+    if category_id:
+        property_types = property_types.filter(category_id=category_id)
+    
+    # Get all property types for JavaScript (hidden)
+    all_property_types = PropertyType.objects.filter(is_active=True)
+    
+    # Define property type categories mapping
+    property_type_categories = {
+        'residential': ['apartment', 'villa', 'house', 'penthouse', 'builder-floor', 'studio'],
+        'commercial': ['office', 'shop', 'retail', 'warehouse', 'industrial', 'commercial-land'],
+        'plot': ['plot', 'land', 'agricultural-land', 'residential-plot', 'commercial-plot'],
+        'pg': ['pg', 'hostel', 'guest-house', 'co-living']
+    }
     
     # Amenities list
     amenities_list = [
         {'id': 'parking', 'name': 'Parking'},
         {'id': 'security', 'name': '24/7 Security'},
-        {'id': 'lift', 'name': 'Lift'},
+        {'id': 'lift', 'name': 'Lift/Elevator'},
         {'id': 'power_backup', 'name': 'Power Backup'},
         {'id': 'swimming_pool', 'name': 'Swimming Pool'},
-        {'id': 'gym', 'name': 'Gym'},
+        {'id': 'gym', 'name': 'Gym/Fitness Center'},
         {'id': 'clubhouse', 'name': 'Club House'},
         {'id': 'garden', 'name': 'Garden/Park'},
         {'id': 'water_supply', 'name': '24/7 Water Supply'},
         {'id': 'play_area', 'name': 'Children Play Area'},
         {'id': 'internet', 'name': 'Internet/WiFi'},
         {'id': 'ac', 'name': 'Air Conditioning'},
+        {'id': 'cctv', 'name': 'CCTV Security'},
+        {'id': 'fire_safety', 'name': 'Fire Safety'},
+        {'id': 'waste_disposal', 'name': 'Waste Disposal'},
+        {'id': 'maintenance_staff', 'name': 'Maintenance Staff'},
     ]
+    
+    # Handle AJAX request for property types
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        if request.GET.get('get_property_types'):
+            category_id = request.GET.get('category_id')
+            if category_id:
+                types = PropertyType.objects.filter(category_id=category_id, is_active=True)
+                data = [{'id': pt.id, 'name': pt.name, 'slug': pt.slug} for pt in types]
+                return JsonResponse({'types': data})
+            return JsonResponse({'types': []})
+        
+        if request.GET.get('get_property_type_info'):
+            type_id = request.GET.get('type_id')
+            try:
+                prop_type = PropertyType.objects.get(id=type_id)
+                # Determine category based on type name/slug
+                category = 'residential'  # default
+                for cat, types in property_type_categories.items():
+                    if any(t in prop_type.slug.lower() for t in types):
+                        category = cat
+                        break
+                
+                return JsonResponse({
+                    'id': prop_type.id,
+                    'name': prop_type.name,
+                    'slug': prop_type.slug,
+                    'category': category
+                })
+            except PropertyType.DoesNotExist:
+                return JsonResponse({'error': 'Type not found'}, status=404)
     
     if request.method == 'POST':
         try:
             # Check if saving as draft
             save_as_draft = request.POST.get('save_as_draft') == 'true'
             
-            # Extract form data
+            # Extract form data - Step 1
             title = request.POST.get('title', '').strip()
             description = request.POST.get('description', '').strip()
             category_id = request.POST.get('category')
@@ -450,8 +770,9 @@ def seller_property_create(request):
             property_for = request.POST.get('property_for')
             listing_type = request.POST.get('listing_type', 'basic')
             
-            # Location data
+            # Extract form data - Step 2
             address = request.POST.get('address', '').strip()
+            locality = request.POST.get('locality', '').strip()
             city = request.POST.get('city', '').strip()
             state = request.POST.get('state', '').strip()
             pincode = request.POST.get('pincode', '').strip()
@@ -460,55 +781,17 @@ def seller_property_create(request):
             longitude = request.POST.get('longitude')
             google_map_url = request.POST.get('google_map_url', '').strip()
             
-            # Pricing data - Convert to decimal
+            # Extract form data - Step 3 (dynamic based on property type)
             price_str = request.POST.get('price', '0')
             maintenance_charges_str = request.POST.get('maintenance_charges')
             booking_amount_str = request.POST.get('booking_amount')
             price_negotiable = request.POST.get('price_negotiable') == 'on'
             
-            # Convert strings to decimal
-            from decimal import Decimal, InvalidOperation
-            
-            try:
-                price = Decimal(price_str) if price_str else Decimal('0')
-            except (InvalidOperation, ValueError):
-                price = Decimal('0')
-            
-            try:
-                maintenance_charges = Decimal(maintenance_charges_str) if maintenance_charges_str else None
-            except (InvalidOperation, ValueError):
-                maintenance_charges = None
-            
-            try:
-                booking_amount = Decimal(booking_amount_str) if booking_amount_str else None
-            except (InvalidOperation, ValueError):
-                booking_amount = None
-            
-            # Area data - Convert to decimal
+            # Area fields
             carpet_area_str = request.POST.get('carpet_area', '0')
             builtup_area_str = request.POST.get('builtup_area')
             super_builtup_area_str = request.POST.get('super_builtup_area')
             plot_area_str = request.POST.get('plot_area')
-            
-            try:
-                carpet_area = Decimal(carpet_area_str) if carpet_area_str else Decimal('0')
-            except (InvalidOperation, ValueError):
-                carpet_area = Decimal('0')
-            
-            try:
-                builtup_area = Decimal(builtup_area_str) if builtup_area_str else None
-            except (InvalidOperation, ValueError):
-                builtup_area = None
-            
-            try:
-                super_builtup_area = Decimal(super_builtup_area_str) if super_builtup_area_str else None
-            except (InvalidOperation, ValueError):
-                super_builtup_area = None
-            
-            try:
-                plot_area = Decimal(plot_area_str) if plot_area_str else None
-            except (InvalidOperation, ValueError):
-                plot_area = None
             
             # Residential fields
             bedrooms_str = request.POST.get('bedrooms')
@@ -516,11 +799,25 @@ def seller_property_create(request):
             balconies_str = request.POST.get('balconies', '0')
             furnishing = request.POST.get('furnishing', '')
             
-            bedrooms = int(bedrooms_str) if bedrooms_str and bedrooms_str.isdigit() else None
-            bathrooms = int(bathrooms_str) if bathrooms_str and bathrooms_str.isdigit() else None
-            balconies = int(balconies_str) if balconies_str and balconies_str.isdigit() else 0
+            # Commercial fields
+            commercial_type = request.POST.get('commercial_type', '')
+            floor_number_str = request.POST.get('floor_number')
+            total_floors_str = request.POST.get('total_floors')
             
-            # Contact info
+            # Plot fields
+            plot_type = request.POST.get('plot_type', '')
+            facing = request.POST.get('facing', '')
+            
+            # PG fields
+            pg_type = request.POST.get('pg_type', '')
+            meals_included = request.POST.get('meals_included', '')
+            shared_bathroom = request.POST.get('shared_bathroom') == 'on'
+            
+            # Other details
+            age_of_property = request.POST.get('age_of_property', '').strip()
+            possession_status = request.POST.get('possession_status', '').strip()
+            
+            # Extract form data - Step 4
             contact_person = request.POST.get('contact_person', '').strip()
             contact_phone = request.POST.get('contact_phone', '').strip()
             contact_email = request.POST.get('contact_email', '').strip()
@@ -539,8 +836,9 @@ def seller_property_create(request):
             # Validation
             errors = {}
             
-            # Required fields - Skip validation for draft
+            # Required fields - Skip some validation for draft
             if not save_as_draft:
+                # Step 1 validation
                 if not title:
                     errors['title'] = 'Title is required'
                 if not description:
@@ -551,34 +849,49 @@ def seller_property_create(request):
                     errors['property_type'] = 'Property type is required'
                 if not property_for:
                     errors['property_for'] = 'Please select property for'
+                
+                # Step 2 validation
                 if not address:
                     errors['address'] = 'Address is required'
+                if not locality:
+                    errors['locality'] = 'Locality/Area is required'
                 if not city:
                     errors['city'] = 'City is required'
                 if not state:
                     errors['state'] = 'State is required'
                 if not pincode:
                     errors['pincode'] = 'Pincode is required'
-                if price <= Decimal('0'):
-                    errors['price'] = 'Valid price is required'
-                if carpet_area <= Decimal('0'):
-                    errors['carpet_area'] = 'Valid carpet area is required'
+                
+                # Step 3 validation
+                try:
+                    price = Decimal(price_str) if price_str else Decimal('0')
+                    if price <= Decimal('0'):
+                        errors['price'] = 'Valid price is required'
+                except (InvalidOperation, ValueError):
+                    errors['price'] = 'Invalid price format'
+                
+                try:
+                    carpet_area = Decimal(carpet_area_str) if carpet_area_str else Decimal('0')
+                    if carpet_area <= Decimal('0'):
+                        errors['carpet_area'] = 'Valid carpet area is required'
+                except (InvalidOperation, ValueError):
+                    errors['carpet_area'] = 'Invalid area format'
+                
+                # Step 4 validation
                 if not contact_person:
                     errors['contact_person'] = 'Contact person is required'
                 if not contact_phone:
                     errors['contact_phone'] = 'Contact phone is required'
                 if not primary_image:
                     errors['primary_image'] = 'Primary image is required'
-                
-                # Validate phone number format
-                import re
-                phone_pattern = re.compile(r'^[+]?[1-9][\d]{0,15}$')
-                if contact_phone and not phone_pattern.match(contact_phone.replace(' ', '')):
-                    errors['contact_phone'] = 'Please enter a valid phone number'
-                
-                # Validate email if provided
-                if contact_email and '@' not in contact_email:
-                    errors['contact_email'] = 'Please enter a valid email address'
+            
+            # Additional validation
+            phone_pattern = re.compile(r'^[+]?[1-9][\d]{9,14}$')
+            if contact_phone and not phone_pattern.match(contact_phone.replace(' ', '')):
+                errors['contact_phone'] = 'Please enter a valid phone number (10-15 digits)'
+            
+            if contact_email and not '@' in contact_email:
+                errors['contact_email'] = 'Please enter a valid email address'
             
             if errors:
                 # Return with errors
@@ -586,14 +899,60 @@ def seller_property_create(request):
                     'errors': errors,
                     'categories': categories,
                     'property_types': property_types,
+                    'all_property_types': all_property_types,
+                    'property_type_categories': property_type_categories,
                     'amenities_list': amenities_list,
                     'form_data': request.POST,
                     'user': user,
                     'user_plan': membership.plan.name if membership and membership.plan else 'No Plan',
                     'plan_days_left': membership.days_until_expiry if membership else 0,
+                    'selected_category_id': category_id,
                 }
                 messages.error(request, 'Please correct the errors below.')
                 return render(request, 'dashboard/seller/property_form.html', context)
+            
+            # Convert numeric values
+            try:
+                price = Decimal(price_str) if price_str else Decimal('0')
+            except (InvalidOperation, ValueError):
+                price = Decimal('0')
+            
+            try:
+                carpet_area = Decimal(carpet_area_str) if carpet_area_str else Decimal('0')
+            except (InvalidOperation, ValueError):
+                carpet_area = Decimal('0')
+            
+            try:
+                maintenance_charges = Decimal(maintenance_charges_str) if maintenance_charges_str else None
+            except (InvalidOperation, ValueError):
+                maintenance_charges = None
+            
+            try:
+                booking_amount = Decimal(booking_amount_str) if booking_amount_str else None
+            except (InvalidOperation, ValueError):
+                booking_amount = None
+            
+            try:
+                builtup_area = Decimal(builtup_area_str) if builtup_area_str else None
+            except (InvalidOperation, ValueError):
+                builtup_area = None
+            
+            try:
+                super_builtup_area = Decimal(super_builtup_area_str) if super_builtup_area_str else None
+            except (InvalidOperation, ValueError):
+                super_builtup_area = None
+            
+            try:
+                plot_area = Decimal(plot_area_str) if plot_area_str else None
+            except (InvalidOperation, ValueError):
+                plot_area = None
+            
+            # Convert other numeric fields
+            bedrooms = int(bedrooms_str) if bedrooms_str and bedrooms_str.isdigit() else None
+            bathrooms = int(bathrooms_str) if bathrooms_str and bathrooms_str.isdigit() else None
+            balconies = int(balconies_str) if balconies_str and balconies_str.isdigit() else 0
+            floor_number = int(floor_number_str) if floor_number_str and floor_number_str.isdigit() else None
+            total_floors = int(total_floors_str) if total_floors_str and total_floors_str.isdigit() else None
             
             # Calculate price per sqft
             price_per_sqft = None
@@ -613,6 +972,7 @@ def seller_property_create(request):
                 property_for=property_for,
                 listing_type=listing_type,
                 address=address,
+                locality=locality,
                 city=city,
                 state=state,
                 pincode=pincode,
@@ -627,7 +987,7 @@ def seller_property_create(request):
                 show_contact=show_contact,
                 is_featured=is_featured,
                 is_urgent=is_urgent,
-                status='draft' if save_as_draft else 'pending'  # Set status based on draft
+                status='draft' if save_as_draft else 'pending'
             )
             
             # Optional fields
@@ -645,37 +1005,60 @@ def seller_property_create(request):
             
             if google_map_url:
                 property_obj.google_map_url = google_map_url
-            
             if maintenance_charges:
                 property_obj.maintenance_charges = maintenance_charges
-            
             if booking_amount:
                 property_obj.booking_amount = booking_amount
-            
             if builtup_area:
                 property_obj.builtup_area = builtup_area
-            
             if super_builtup_area:
                 property_obj.super_builtup_area = super_builtup_area
-            
             if plot_area:
                 property_obj.plot_area = plot_area
             
+            # Property type specific fields
             if bedrooms:
                 property_obj.bedrooms = bedrooms
-            
             if bathrooms:
                 property_obj.bathrooms = bathrooms
-            
             if balconies:
                 property_obj.balconies = balconies
-            
             if furnishing:
                 property_obj.furnishing = furnishing
+            if commercial_type:
+                property_obj.commercial_type = commercial_type
+            if floor_number:
+                property_obj.floor_number = floor_number
+            if total_floors:
+                property_obj.total_floors = total_floors
+            if plot_type:
+                property_obj.plot_type = plot_type
+            if facing:
+                property_obj.facing = facing
+            if age_of_property:
+                property_obj.age_of_property = age_of_property
+            if possession_status:
+                property_obj.possession_status = possession_status
+            
+            # Additional fields for PG/Hostel (store in amenities JSON)
+            pg_details = {}
+            if pg_type:
+                pg_details['pg_type'] = pg_type
+            if meals_included:
+                pg_details['meals_included'] = meals_included
+            if shared_bathroom:
+                pg_details['shared_bathroom'] = True
             
             # Save amenities as JSON
             if amenities_selected:
-                property_obj.amenities = {'selected': amenities_selected}
+                property_obj.amenities = {'selected': amenities_selected, **pg_details}
+            elif pg_details:
+                property_obj.amenities = pg_details
+            else:
+                property_obj.amenities = {}
+            
+            # Generate unique property ID
+            property_obj.property_id = f"PROP{str(property_obj.id)[:8].upper()}" if property_obj.id else f"PROP{uuid.uuid4().hex[:8].upper()}"
             
             property_obj.save()
             
@@ -718,7 +1101,6 @@ def seller_property_create(request):
             
         except Exception as e:
             messages.error(request, f'Error creating property: {str(e)}')
-            # Print error for debugging
             import traceback
             traceback.print_exc()
             
@@ -727,11 +1109,14 @@ def seller_property_create(request):
                 'errors': {'general': str(e)},
                 'categories': categories,
                 'property_types': property_types,
+                'all_property_types': all_property_types,
+                'property_type_categories': property_type_categories,
                 'amenities_list': amenities_list,
                 'form_data': request.POST,
                 'user': user,
                 'user_plan': membership.plan.name if membership and membership.plan else 'No Plan',
                 'plan_days_left': membership.days_until_expiry if membership else 0,
+                'selected_category_id': category_id,
             }
             return render(request, 'dashboard/seller/property_form.html', context)
     
@@ -739,11 +1124,14 @@ def seller_property_create(request):
     context = {
         'categories': categories,
         'property_types': property_types,
+        'all_property_types': all_property_types,
+        'property_type_categories': property_type_categories,
         'amenities_list': amenities_list,
         'user': user,
         'user_plan': membership.plan.name if membership and membership.plan else 'No Plan',
         'plan_days_left': membership.days_until_expiry if membership else 0,
-        'form_data': {},  # Empty form data
+        'selected_category_id': category_id,
+        'form_data': {},
     }
     
     return render(request, 'dashboard/seller/property_form.html', context)
@@ -754,27 +1142,35 @@ def seller_property_edit(request, pk):
     """Edit existing property without using PropertyForm"""
     user = request.user
     property_obj = get_object_or_404(Property, pk=pk, owner=user)
-    
+
     # Get property categories and types for dynamic form
     categories = PropertyCategory.objects.filter(is_active=True)
-    property_types = PropertyType.objects.filter(is_active=True)
     
+    # Get property types based on current category
+    property_types = PropertyType.objects.filter(is_active=True)
+    if property_obj.category:
+        property_types = property_types.filter(category=property_obj.category)
+
     # Amenities list
     amenities_list = [
         {'id': 'parking', 'name': 'Parking'},
         {'id': 'security', 'name': '24/7 Security'},
-        {'id': 'lift', 'name': 'Lift'},
+        {'id': 'lift', 'name': 'Lift/Elevator'},
         {'id': 'power_backup', 'name': 'Power Backup'},
         {'id': 'swimming_pool', 'name': 'Swimming Pool'},
-        {'id': 'gym', 'name': 'Gym'},
+        {'id': 'gym', 'name': 'Gym/Fitness Center'},
         {'id': 'clubhouse', 'name': 'Club House'},
         {'id': 'garden', 'name': 'Garden/Park'},
         {'id': 'water_supply', 'name': '24/7 Water Supply'},
         {'id': 'play_area', 'name': 'Children Play Area'},
         {'id': 'internet', 'name': 'Internet/WiFi'},
         {'id': 'ac', 'name': 'Air Conditioning'},
+        {'id': 'cctv', 'name': 'CCTV Security'},
+        {'id': 'fire_safety', 'name': 'Fire Safety'},
+        {'id': 'waste_disposal', 'name': 'Waste Disposal'},
+        {'id': 'maintenance_staff', 'name': 'Maintenance Staff'},
     ]
-    
+
     # Get selected amenities
     selected_amenities = []
     if property_obj.amenities and 'selected' in property_obj.amenities:
@@ -782,6 +1178,9 @@ def seller_property_edit(request, pk):
     
     if request.method == 'POST':
         try:
+            # Check if saving as draft
+            save_as_draft = request.POST.get('save_as_draft') == 'true'
+            
             # Extract form data
             title = request.POST.get('title', '').strip()
             description = request.POST.get('description', '').strip()
@@ -792,6 +1191,7 @@ def seller_property_edit(request, pk):
             
             # Location data
             address = request.POST.get('address', '').strip()
+            locality = request.POST.get('locality', '').strip()
             city = request.POST.get('city', '').strip()
             state = request.POST.get('state', '').strip()
             pincode = request.POST.get('pincode', '').strip()
@@ -872,6 +1272,10 @@ def seller_property_edit(request, pk):
             plot_type = request.POST.get('plot_type', '')
             facing = request.POST.get('facing', '')
             
+            # PG/Hostel fields
+            pg_type = request.POST.get('pg_type', '')
+            meals_included = request.POST.get('meals_included', '')
+            
             # Other details
             age_of_property = request.POST.get('age_of_property', '').strip()
             possession_status = request.POST.get('possession_status', '').strip()
@@ -895,33 +1299,46 @@ def seller_property_edit(request, pk):
             # Validation
             errors = {}
             
-            # Required fields
-            if not title:
-                errors['title'] = 'Title is required'
-            if not description:
-                errors['description'] = 'Description is required'
-            if not category_id:
-                errors['category'] = 'Category is required'
-            if not property_type_id:
-                errors['property_type'] = 'Property type is required'
-            if not property_for:
-                errors['property_for'] = 'Please select property for'
-            if not address:
-                errors['address'] = 'Address is required'
-            if not city:
-                errors['city'] = 'City is required'
-            if not state:
-                errors['state'] = 'State is required'
-            if not pincode:
-                errors['pincode'] = 'Pincode is required'
-            if price <= Decimal('0'):
-                errors['price'] = 'Valid price is required'
-            if carpet_area <= Decimal('0'):
-                errors['carpet_area'] = 'Valid carpet area is required'
-            if not contact_person:
-                errors['contact_person'] = 'Contact person is required'
-            if not contact_phone:
-                errors['contact_phone'] = 'Contact phone is required'
+            # Required fields - Skip validation for draft
+            if not save_as_draft:
+                if not title:
+                    errors['title'] = 'Title is required'
+                if not description:
+                    errors['description'] = 'Description is required'
+                if not category_id:
+                    errors['category'] = 'Category is required'
+                if not property_type_id:
+                    errors['property_type'] = 'Property type is required'
+                if not property_for:
+                    errors['property_for'] = 'Please select property for'
+                if not address:
+                    errors['address'] = 'Address is required'
+                if not locality:
+                    errors['locality'] = 'Locality is required'
+                if not city:
+                    errors['city'] = 'City is required'
+                if not state:
+                    errors['state'] = 'State is required'
+                if not pincode:
+                    errors['pincode'] = 'Pincode is required'
+                if price <= Decimal('0'):
+                    errors['price'] = 'Valid price is required'
+                if carpet_area <= Decimal('0'):
+                    errors['carpet_area'] = 'Valid carpet area is required'
+                if not contact_person:
+                    errors['contact_person'] = 'Contact person is required'
+                if not contact_phone:
+                    errors['contact_phone'] = 'Contact phone is required'
+                
+                # Validate phone number format
+                import re
+                phone_pattern = re.compile(r'^[+]?[1-9][\d]{0,15}$')
+                if contact_phone and not phone_pattern.match(contact_phone.replace(' ', '')):
+                    errors['contact_phone'] = 'Please enter a valid phone number'
+                
+                # Validate email if provided
+                if contact_email and '@' not in contact_email:
+                    errors['contact_email'] = 'Please enter a valid email address'
             
             if errors:
                 # Return with errors
@@ -957,6 +1374,7 @@ def seller_property_edit(request, pk):
             property_obj.property_for = property_for
             property_obj.listing_type = listing_type
             property_obj.address = address
+            property_obj.locality = locality
             property_obj.city = city
             property_obj.state = state
             property_obj.pincode = pincode
@@ -977,7 +1395,7 @@ def seller_property_edit(request, pk):
                 try:
                     property_obj.latitude = Decimal(latitude)
                 except (InvalidOperation, ValueError):
-                    pass
+                    property_obj.latitude = None
             else:
                 property_obj.latitude = None
             
@@ -985,7 +1403,7 @@ def seller_property_edit(request, pk):
                 try:
                     property_obj.longitude = Decimal(longitude)
                 except (InvalidOperation, ValueError):
-                    pass
+                    property_obj.longitude = None
             else:
                 property_obj.longitude = None
             
@@ -1064,6 +1482,16 @@ def seller_property_edit(request, pk):
             else:
                 property_obj.facing = ''
             
+            if pg_type:
+                property_obj.pg_type = pg_type
+            else:
+                property_obj.pg_type = ''
+            
+            if meals_included:
+                property_obj.meals_included = meals_included
+            else:
+                property_obj.meals_included = ''
+            
             if age_of_property:
                 property_obj.age_of_property = age_of_property
             else:
@@ -1079,6 +1507,12 @@ def seller_property_edit(request, pk):
                 property_obj.amenities = {'selected': amenities_selected}
             else:
                 property_obj.amenities = {}
+            
+            # Update status if saving as draft
+            if save_as_draft:
+                property_obj.status = 'draft'
+            elif property_obj.status == 'draft':
+                property_obj.status = 'pending'  # Submit for review
             
             property_obj.save()
             
@@ -1117,13 +1551,33 @@ def seller_property_edit(request, pk):
                     display_order=existing_images_count + i
                 )
             
-            messages.success(request, 'Property updated successfully!')
+            if save_as_draft:
+                messages.success(request, 'Property saved as draft successfully!')
+            else:
+                messages.success(request, 'Property updated successfully!')
+            
             return redirect('seller_properties')
             
         except Exception as e:
             messages.error(request, f'Error updating property: {str(e)}')
             import traceback
             traceback.print_exc()
+            
+            # Return with errors
+            context = {
+                'property': property_obj,
+                'errors': {'general': str(e)},
+                'categories': categories,
+                'property_types': property_types,
+                'amenities_list': amenities_list,
+                'selected_amenities': selected_amenities,
+                'form_data': request.POST,
+                'images': property_obj.images.all(),
+                'user': user,
+                'user_plan': user.membership.plan.name if hasattr(user, 'membership') and user.membership.plan else 'No Plan',
+                'plan_days_left': user.membership.days_until_expiry if hasattr(user, 'membership') else 0,
+            }
+            return render(request, 'dashboard/seller/property_form.html', context)
     
     # GET request - show populated form
     form_data = {
@@ -1134,12 +1588,13 @@ def seller_property_edit(request, pk):
         'property_for': property_obj.property_for,
         'listing_type': property_obj.listing_type,
         'address': property_obj.address,
+        'locality': property_obj.locality,
         'city': property_obj.city,
         'state': property_obj.state,
         'pincode': property_obj.pincode,
         'landmark': property_obj.landmark,
-        'latitude': property_obj.latitude,
-        'longitude': property_obj.longitude,
+        'latitude': str(property_obj.latitude) if property_obj.latitude else '',
+        'longitude': str(property_obj.longitude) if property_obj.longitude else '',
         'google_map_url': property_obj.google_map_url,
         'price': str(property_obj.price) if property_obj.price else '',
         'maintenance_charges': str(property_obj.maintenance_charges) if property_obj.maintenance_charges else '',
@@ -1158,6 +1613,8 @@ def seller_property_edit(request, pk):
         'total_floors': str(property_obj.total_floors) if property_obj.total_floors else '',
         'plot_type': property_obj.plot_type,
         'facing': property_obj.facing,
+        'pg_type': property_obj.pg_type if hasattr(property_obj, 'pg_type') else '',
+        'meals_included': property_obj.meals_included if hasattr(property_obj, 'meals_included') else '',
         'age_of_property': property_obj.age_of_property,
         'possession_status': property_obj.possession_status,
         'contact_person': property_obj.contact_person,
@@ -1181,10 +1638,37 @@ def seller_property_edit(request, pk):
         'plan_days_left': user.membership.days_until_expiry if hasattr(user, 'membership') else 0,
     }
     
+    # Handle AJAX request for property types
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        if request.GET.get('get_property_types'):
+            category_id = request.GET.get('category_id')
+            if category_id:
+                types = PropertyType.objects.filter(category_id=category_id, is_active=True)
+                data = [{'id': pt.id, 'name': pt.name, 'slug': pt.slug} for pt in types]
+                return JsonResponse({'types': data})
+            return JsonResponse({'types': []})
+
+        if request.GET.get('get_property_type_info'):
+            type_id = request.GET.get('type_id')
+            try:
+                prop_type = PropertyType.objects.get(id=type_id)
+                # Determine category based on type name/slug
+                category = 'residential'  # default
+                for cat, types in property_type_categories.items():
+                    if any(t in prop_type.slug.lower() for t in types):
+                        category = cat
+                        break
+
+                return JsonResponse({
+                    'id': prop_type.id,
+                    'name': prop_type.name,
+                    'slug': prop_type.slug,
+                    'category': category
+                })
+            except PropertyType.DoesNotExist:
+                return JsonResponse({'error': 'Type not found'}, status=404)
+    
     return render(request, 'dashboard/seller/property_form.html', context)
-
-
-
 
 @login_required
 def seller_property_delete(request, pk):
