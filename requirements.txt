@@ -1,45 +1,72 @@
-amqp==5.3.1
+# Core Django
+Django==5.2.11
 asgiref==3.11.0
-billiard==4.2.4
+sqlparse==0.5.4
+tzdata==2025.2
+
+# Django Extensions
+django-allauth==65.13.1
+django-countries==8.2.0
+django-crispy-forms==2.5
+crispy-bootstrap5==2025.6
+django-jazzmin==3.0.1
+django-phonenumber-field==8.4.0
+django-redis==6.0.0
+
+# Django REST Framework
+djangorestframework==3.16.1
+djangorestframework-simplejwt==5.5.1
+
+# Celery & Redis
 celery==5.6.2
-certifi==2025.11.12
+amqp==5.3.1
+billiard==4.2.4
+kombu==5.6.2
+vine==5.1.0
+redis==5.0.4
+
+# Database
+mysqlclient==2.2.8
+
+# Security & Crypto
+cryptography==46.0.3
 cffi==2.0.0
-mysqlclient
+pycparser==2.23
+
+# HTTP & Networking
+requests==2.32.5
+urllib3==2.6.2
 charset-normalizer==3.4.4
+idna==3.11
+certifi==2025.11.12
+
+# JWT & Auth
+PyJWT==2.10.1
+
+# Images & Media
+pillow==12.0.0
+
+# Utilities
+python-dateutil==2.9.0.post0
+six==1.17.0
+packaging==25.0
+typing_extensions==4.15.0
+tzlocal==5.3.1
+wcwidth==0.2.14
+
+# CLI & Interactive
 click==8.3.1
 click-didyoumean==0.3.1
 click-plugins==1.1.1.2
 click-repl==0.3.0
 colorama==0.4.6
-crispy-bootstrap5==2025.6
-cryptography==46.0.3
-Django==6.0
-django-allauth==65.13.1
-django-countries==8.2.0
-django-crispy-forms==2.5
-django-jazzmin==3.0.1
-django-phonenumber-field==8.4.0
-django-redis==6.0.0
-djangorestframework==3.16.1
-djangorestframework_simplejwt==5.5.1
-Faker==40.1.0
-idna==3.11
-kombu==5.6.2
-packaging==25.0
-phonenumbers==9.0.22
-pillow==12.0.0
 prompt_toolkit==3.0.52
-pycparser==2.23
-PyJWT==2.10.1
-python-dateutil==2.9.0.post0
+
+# Fake data
+Faker==40.1.0
+
+# Payments
 razorpay==2.0.0
-redis==7.1.0
-requests==2.32.5
-six==1.17.0
-sqlparse==0.5.4
-typing_extensions==4.15.0
-tzdata==2025.2
-tzlocal==5.3.1
-urllib3==2.6.2
-vine==5.1.0
-wcwidth==0.2.14
+
+# Phone numbers
+phonenumbers==9.0.22
