@@ -14,21 +14,166 @@
           colors: {
             primary: '#1a3a4a',
             secondary: '#f0f4f8',
+            success: '#10b981',
+            error: '#ef4444',
           }
         }
       }
     }
   </script>
   <style>
+    /* Toast Notification Styles (same as login) */
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: white;
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 300px;
+      max-width: 400px;
+      transform: translateX(calc(100% + 30px));
+      transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      border-left: 4px solid;
+      overflow: hidden;
+    }
+    
+    .toast.show {
+      transform: translateX(0);
+    }
+    
+    .toast.hide {
+      transform: translateX(calc(100% + 30px));
+    }
+    
+    .toast.success { 
+      border-left-color: #10b981;
+      background: linear-gradient(to right, #f0fdf4, #ffffff);
+    }
+    
+    .toast.error { 
+      border-left-color: #ef4444;
+      background: linear-gradient(to right, #fef2f2, #ffffff);
+    }
+    
+    .toast.warning { 
+      border-left-color: #f59e0b;
+      background: linear-gradient(to right, #fffbeb, #ffffff);
+    }
+    
+    .toast.info { 
+      border-left-color: #3b82f6;
+      background: linear-gradient(to right, #eff6ff, #ffffff);
+    }
+    
+    .toast-icon {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    
+    .toast-content {
+      flex: 1;
+    }
+    
+    .toast-title {
+      font-weight: 600;
+      font-size: 14px;
+      color: #1f2937;
+      margin-bottom: 4px;
+    }
+    
+    .toast-message {
+      font-size: 13px;
+      color: #4b5563;
+      line-height: 1.4;
+    }
+    
+    .toast-close {
+      color: #9ca3af;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      transition: all 0.2s;
+      margin-left: 8px;
+      flex-shrink: 0;
+    }
+    
+    .toast-close:hover {
+      color: #6b7280;
+      background: rgba(0, 0, 0, 0.05);
+    }
+    
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .toast-progress {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+    
+    .toast-progress-bar {
+      height: 100%;
+      width: 100%;
+      transform-origin: left;
+      animation: progress 5s linear forwards;
+    }
+    
+    .toast.success .toast-progress-bar {
+      background: #10b981;
+    }
+    
+    .toast.error .toast-progress-bar {
+      background: #ef4444;
+    }
+    
+    .toast.warning .toast-progress-bar {
+      background: #f59e0b;
+    }
+    
+    .toast.info .toast-progress-bar {
+      background: #3b82f6;
+    }
+    
+    @keyframes progress {
+      from {
+        transform: scaleX(1);
+      }
+      to {
+        transform: scaleX(0);
+      }
+    }
+    
+    /* Home Icon */
     .home-icon-link {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       background-color: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
       transition: all 0.3s ease;
       position: absolute;
       top: 20px;
@@ -38,21 +183,23 @@
     
     .home-icon-link:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
       background-color: #f8fafc;
     }
     
+    /* User Type Selection */
     .user-type-option {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 12px 8px;
-      border: 1px solid #e5e7eb;
+      border: 2px solid #e5e7eb;
       border-radius: 0.75rem;
       cursor: pointer;
       transition: all 0.2s ease;
       background: white;
+      min-height: 70px;
     }
     
     .user-type-option:hover {
@@ -60,49 +207,134 @@
       background-color: #f8fafc;
     }
     
-    .user-type-radio {
-      display: none;
-    }
-    
-    .user-type-radio:checked + .user-type-content {
-      color: #1a3a4a;
-    }
-    
-    .user-type-radio:checked ~ .user-type-option {
+    .user-type-option.selected {
       border-color: #1a3a4a;
       background-color: #f0f4f8;
+      box-shadow: 0 0 0 3px rgba(26, 58, 74, 0.1);
     }
     
     .user-type-content {
       display: flex;
       flex-direction: column;
       align-items: center;
+      gap: 6px;
+    }
+    
+    .user-type-content i {
+      font-size: 1.25rem;
       color: #6b7280;
-      transition: color 0.2s ease;
+    }
+    
+    .user-type-option.selected .user-type-content i {
+      color: #1a3a4a;
+    }
+    
+    .user-type-content span {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #6b7280;
+      text-align: center;
+      line-height: 1.2;
+    }
+    
+    .user-type-option.selected .user-type-content span {
+      color: #1a3a4a;
+    }
+    
+    /* Form Validation */
+    .form-error {
+      border-color: #ef4444 !important;
+      background-color: #fef2f2 !important;
+    }
+    
+    .error-text {
+      color: #ef4444;
+      font-size: 0.75rem;
+      margin-top: 2px;
+    }
+    
+    /* Loading State */
+    .loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .loading-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #ffffff;
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+    }
+    
+    /* Form Animation */
+    .form-container {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    
+    .form-container.show {
+      opacity: 1;
+      transform: translateY(0);
     }
   </style>
 </head>
 <body class="min-h-screen bg-white">
-  <!-- Home Icon in Top Right -->
-  <a href="{% url 'home' %}" class="home-icon-link group">
-    <i class="fas fa-home text-lg text-primary group-hover:text-primary/80 transition-colors"></i>
-  </a>
-
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+  
   <div class="flex flex-col lg:flex-row min-h-screen">
+    <!-- Home Icon in Top Right -->
+    <a href="{% url 'home' %}" class="home-icon-link group">
+      <i class="fas fa-home text-lg text-gray-700 group-hover:text-primary transition-colors"></i>
+      <span class="absolute -top-8 -right-2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+        Go to Home
+      </span>
+    </a>
+
     <!-- Left Side - Form -->
     <div class="w-full lg:w-1/2 bg-gradient-to-b from-slate-100 to-slate-50 px-4 py-6 sm:px-8 sm:py-8 md:px-12 lg:px-16 lg:py-12 flex flex-col">
-     
-
-
       <!-- Form Content -->
-      <div class="w-full max-w-md mx-auto flex-1">
+      <div class="w-full max-w-md mx-auto flex-1 form-container">
         <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Create Your Account</h1>
         <p class="text-gray-500 text-xs sm:text-sm mb-6 sm:mb-8">Let's create & access exclusive real estate property</p>
 
-        <form class="space-y-4 sm:space-y-5" method="POST">
+        <!-- Django Messages (Hidden - will be converted to toasts) -->
+        {% if messages %}
+        <div class="hidden" id="django-messages">
+          {% for message in messages %}
+          <div 
+            data-type="{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %}" 
+            data-message="{{ message }}"
+          ></div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <form class="space-y-4 sm:space-y-5" method="POST" id="registrationForm">
           {% csrf_token %}
           
-          <!-- Name Fields - Two Column on larger screens -->
+          <!-- Django Form Errors (Hidden - will be converted to toasts) -->
+          {% if form.errors %}
+          <div class="hidden" id="form-errors">
+            {% for field, errors in form.errors.items %}
+              {% for error in errors %}
+              <div data-type="error" data-message="{{ field|title }}: {{ error }}"></div>
+              {% endfor %}
+            {% endfor %}
+          </div>
+          {% endif %}
+          
+          <!-- Name Fields -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <!-- First Name -->
             <div>
@@ -112,10 +344,15 @@
                   type="text" 
                   name="first_name"
                   placeholder="First name"
-                  class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  value="{{ form.first_name.value|default:'' }}"
+                  class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary {% if form.first_name.errors %}form-error{% endif %}"
                   required
+                  autocomplete="given-name"
                 >
               </div>
+              {% if form.first_name.errors %}
+              <div class="error-text hidden" data-field="first_name">{{ form.first_name.errors.0 }}</div>
+              {% endif %}
             </div>
 
             <!-- Last Name -->
@@ -126,10 +363,15 @@
                   type="text" 
                   name="last_name"
                   placeholder="Last name"
-                  class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  value="{{ form.last_name.value|default:'' }}"
+                  class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary {% if form.last_name.errors %}form-error{% endif %}"
                   required
+                  autocomplete="family-name"
                 >
               </div>
+              {% if form.last_name.errors %}
+              <div class="error-text hidden" data-field="last_name">{{ form.last_name.errors.0 }}</div>
+              {% endif %}
             </div>
           </div>
 
@@ -144,10 +386,15 @@
                 type="email" 
                 name="email"
                 placeholder="your.email@example.com"
-                class="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                value="{{ form.email.value|default:'' }}"
+                class="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary {% if form.email.errors %}form-error{% endif %}"
                 required
+                autocomplete="email"
               >
             </div>
+            {% if form.email.errors %}
+            <div class="error-text hidden" data-field="email">{{ form.email.errors.0 }}</div>
+            {% endif %}
           </div>
 
           <!-- Phone Field -->
@@ -161,13 +408,18 @@
                 type="tel" 
                 name="phone"
                 placeholder="+91 234 567 8900"
-                class="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                value="{{ form.phone.value|default:'' }}"
+                class="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary {% if form.phone.errors %}form-error{% endif %}"
                 required
+                autocomplete="tel"
               >
             </div>
+            {% if form.phone.errors %}
+            <div class="error-text hidden" data-field="phone">{{ form.phone.errors.0 }}</div>
+            {% endif %}
           </div>
 
-          <!-- Password Fields - Two Column on larger screens -->
+          <!-- Password Fields -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <!-- Password -->
             <div>
@@ -181,18 +433,23 @@
                   name="password1"
                   id="password1"
                   placeholder="Create password"
-                  class="w-full pl-9 sm:pl-10 pr-9 sm:pr-10 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  class="w-full pl-9 sm:pl-10 pr-9 sm:pr-10 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary {% if form.password1.errors %}form-error{% endif %}"
                   required
+                  autocomplete="new-password"
                 >
                 <button 
                   type="button"
                   onclick="togglePassword('password1')"
                   class="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  tabindex="-1"
                 >
                   <i class="far fa-eye text-sm" id="eyeIcon1"></i>
                 </button>
               </div>
               <p class="text-xs text-gray-400 mt-1">Min. 8 characters</p>
+              {% if form.password1.errors %}
+              <div class="error-text hidden" data-field="password1">{{ form.password1.errors.0 }}</div>
+              {% endif %}
             </div>
 
             <!-- Confirm Password -->
@@ -207,81 +464,64 @@
                   name="password2"
                   id="password2"
                   placeholder="Confirm password"
-                  class="w-full pl-9 sm:pl-10 pr-9 sm:pr-10 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  class="w-full pl-9 sm:pl-10 pr-9 sm:pr-10 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary {% if form.password2.errors %}form-error{% endif %}"
                   required
+                  autocomplete="new-password"
                 >
                 <button 
                   type="button"
                   onclick="togglePassword('password2')"
                   class="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  tabindex="-1"
                 >
                   <i class="far fa-eye text-sm" id="eyeIcon2"></i>
                 </button>
               </div>
+              {% if form.password2.errors %}
+              <div class="error-text hidden" data-field="password2">{{ form.password2.errors.0 }}</div>
+              {% endif %}
             </div>
           </div>
 
           <!-- User Type Selection -->
           <div>
             <label class="block text-xs text-gray-500 mb-2">I want to *</label>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <label class="user-type-option">
+            <div class="grid grid-cols-2 sm:grid-cols-2 gap-2">
+              <label class="user-type-option {% if form.user_type.value == 'buyer' or not form.user_type.value %}selected{% endif %}">
                 <input 
                   type="radio" 
                   name="user_type" 
                   value="buyer"
-                  class="user-type-radio"
-                  checked
+                  class="hidden"
+                  {% if form.user_type.value == 'buyer' or not form.user_type.value %}checked{% endif %}
                 >
                 <div class="user-type-content">
-                  <i class="fas fa-home text-base mb-1"></i>
-                  <span class="text-xs font-medium">Buyer/Tenant</span>
+                  <i class="fas fa-home"></i>
+                  <span>Buyer/Tenant</span>
                 </div>
               </label>
               
-              <label class="user-type-option">
+              <label class="user-type-option {% if form.user_type.value == 'seller' %}selected{% endif %}">
                 <input 
                   type="radio" 
                   name="user_type" 
                   value="seller"
-                  class="user-type-radio"
+                  class="hidden"
+                  {% if form.user_type.value == 'seller' %}checked{% endif %}
                 >
                 <div class="user-type-content">
-                  <i class="fas fa-user-tie text-base mb-1"></i>
-                  <span class="text-xs font-medium">Seller/Owner</span>
+                  <i class="fas fa-user-tie"></i>
+                  <span>Seller/Owner</span>
                 </div>
               </label>
-              
-              <!-- <label class="user-type-option">
-                <input 
-                  type="radio" 
-                  name="user_type" 
-                  value="agent"
-                  class="user-type-radio"
-                >
-                <div class="user-type-content">
-                  <i class="fas fa-user-tie text-base mb-1"></i>
-                  <span class="text-xs font-medium">Agent/Broker</span>
-                </div>
-              </label> -->
-              
-              <!-- <label class="user-type-option">
-                <input 
-                  type="radio" 
-                  name="user_type" 
-                  value="admin"
-                  class="user-type-radio"
-                >
-                <div class="user-type-content">
-                  <i class="fas fa-user-shield text-base mb-1"></i>
-                  <span class="text-xs font-medium">Administrator</span>
-                </div>
-              </label> -->
             </div>
+            {% if form.user_type.errors %}
+            <div class="error-text hidden" data-field="user_type">{{ form.user_type.errors.0 }}</div>
+            {% endif %}
           </div>
 
-          <!-- Agency Name Field (Initially Hidden) -->
-          <div id="agency-field" class="hidden transition-all duration-300">
+          <!-- Agency Name Field -->
+          <div id="agency-field" class="transition-all duration-300 {% if form.user_type.value != 'seller' %}hidden{% endif %}">
             <label class="block text-xs text-gray-500 mb-1.5">Agency Name *</label>
             <div class="relative">
               <span class="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400">
@@ -292,10 +532,15 @@
                 name="agency_name"
                 id="agency_name"
                 placeholder="Enter your agency name"
-                class="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                value="{{ form.agency_name.value|default:'' }}"
+                class="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary {% if form.agency_name.errors %}form-error{% endif %}"
+                {% if form.user_type.value == 'seller' %}required{% endif %}
               >
             </div>
             <p class="text-xs text-gray-400 mt-1">Required for sellers and agents</p>
+            {% if form.agency_name.errors %}
+            <div class="error-text hidden" data-field="agency_name">{{ form.agency_name.errors.0 }}</div>
+            {% endif %}
           </div>
 
           <!-- Terms and Privacy Policy -->
@@ -311,22 +556,25 @@
             </div>
             <label for="terms" class="text-xs text-gray-600">
               By creating an account, you agree to our 
-              <a href="#" class="text-primary font-medium hover:underline">Terms & Conditions</a> and 
-              <a href="#" class="text-primary font-medium hover:underline">Privacy Policy</a>
+              <a href="{% url 'terms' %}" class="text-primary font-medium hover:underline" target="_blank">Terms & Conditions</a> and 
+              <a href="{% url 'privacy' %}" class="text-primary font-medium hover:underline" target="_blank">Privacy Policy</a>
             </label>
           </div>
-
-          <!-- Error Messages -->
-          <div id="form-errors" class="hidden bg-red-50 border border-red-200 text-red-700 px-3 sm:px-4 py-3 rounded-lg text-sm">
-            <ul class="list-disc pl-5 space-y-1" id="error-list"></ul>
-          </div>
+          {% if 'terms' in form.errors %}
+          <div class="error-text hidden" data-field="terms">{{ form.errors.terms.0 }}</div>
+          {% endif %}
 
           <!-- Sign Up Button -->
           <button 
             type="submit"
-            class="w-full py-2.5 sm:py-3 bg-primary text-white font-medium rounded-lg hover:bg-opacity-90 transition-colors text-sm sm:text-base mt-4"
+            class="w-full py-2.5 sm:py-3 bg-primary text-white font-medium rounded-lg hover:bg-opacity-90 transition-colors text-sm sm:text-base mt-4 flex items-center justify-center"
+            id="submitBtn"
           >
-            Create Account
+            <span id="btnText">Create Account</span>
+            <div id="btnSpinner" class="hidden">
+              <div class="loading-spinner"></div>
+              <span>Processing...</span>
+            </div>
           </button>
         </form>
 
@@ -338,15 +586,16 @@
       </div>
     </div>
 
-    <!-- Right Side - Image (Styled like the previous HTML) -->
+    <!-- Right Side - Image -->
     <div class="hidden md:block md:w-1/2 lg:w-1/2 relative min-h-[300px] md:min-h-[400px] lg:min-h-0">
       <img 
         src="{% static 'images/registration.jpg' %}" 
         alt="Modern Luxury Home"
         class="absolute inset-0 w-full h-full object-cover object-right"
+        onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80';"
       >
       
-      <!-- Stats Overlay Card (Styled like the previous HTML) -->
+      <!-- Stats Overlay Card -->
       <div class="absolute bottom-4 left-4 right-4 md:bottom-6 md:left-6 md:right-6 lg:bottom-8 lg:left-8 lg:right-8">
         <div class="bg-white/95 backdrop-blur-sm rounded-xl md:rounded-2xl p-4 md:p-5 lg:p-6 shadow-xl">
           <!-- Stats Row -->
@@ -384,7 +633,7 @@
       </div>
     </div>
 
-    <!-- Mobile Stats Card (shown only on small screens) -->
+    <!-- Mobile Stats Card -->
     <div class="md:hidden px-4 pb-6 bg-gradient-to-b from-slate-100 to-slate-50">
       <div class="bg-white rounded-xl p-4 shadow-lg border border-gray-100">
         <div class="flex items-center justify-around mb-3">
@@ -419,6 +668,90 @@
   </div>
 
   <script>
+    // Toast Notification System
+    class Toast {
+      constructor(type, message, duration = 5000) {
+        this.type = type;
+        this.message = message;
+        this.duration = duration;
+        this.element = null;
+        this.timeout = null;
+        this.create();
+      }
+      
+      create() {
+        const icons = {
+          success: 'check-circle',
+          error: 'exclamation-circle',
+          warning: 'exclamation-triangle',
+          info: 'info-circle',
+          danger: 'exclamation-circle'
+        };
+        
+        const titles = {
+          success: 'Success',
+          error: 'Error',
+          warning: 'Warning',
+          info: 'Info',
+          danger: 'Error'
+        };
+        
+        const container = document.getElementById('toast-container');
+        
+        this.element = document.createElement('div');
+        this.element.className = `toast ${this.type}`;
+        this.element.innerHTML = `
+          <div class="toast-icon">
+            <i class="fas fa-${icons[this.type] || 'info-circle'} 
+              ${this.type === 'success' ? 'text-green-500' : 
+                this.type === 'error' || this.type === 'danger' ? 'text-red-500' : 
+                this.type === 'warning' ? 'text-yellow-500' : 'text-blue-500'}"></i>
+          </div>
+          <div class="toast-content">
+            <div class="toast-title">${titles[this.type] || 'Info'}</div>
+            <div class="toast-message">${this.message}</div>
+          </div>
+          <div class="toast-close">
+            <i class="fas fa-times"></i>
+          </div>
+          <div class="toast-progress">
+            <div class="toast-progress-bar"></div>
+          </div>
+        `;
+        
+        container.appendChild(this.element);
+        
+        const closeBtn = this.element.querySelector('.toast-close');
+        if (closeBtn) {
+          closeBtn.addEventListener('click', () => this.remove());
+        }
+        
+        this.timeout = setTimeout(() => this.remove(), this.duration);
+        
+        setTimeout(() => {
+          this.element.classList.add('show');
+        }, 10);
+      }
+      
+      remove() {
+        if (this.timeout) clearTimeout(this.timeout);
+        this.element.classList.remove('show');
+        this.element.classList.add('hide');
+        
+        setTimeout(() => {
+          if (this.element.parentNode) {
+            this.element.parentNode.removeChild(this.element);
+          }
+        }, 400);
+      }
+    }
+    
+    // Function to show toast
+    function showToast(type, message, duration = 5000) {
+      new Toast(type, message, duration);
+    }
+    
+    // Password toggle function
     function togglePassword(fieldId) {
       const passwordInput = document.getElementById(fieldId);
       const eyeIcon = document.getElementById(`eyeIcon${fieldId.slice(-1)}`);
@@ -433,30 +766,61 @@
         eyeIcon.classList.add('fa-eye');
       }
     }
-
-    // Toggle agency field based on user type
-    document.addEventListener('DOMContentLoaded', function() {
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      // Show form animation
+      const formContainer = document.querySelector('.form-container');
+      setTimeout(() => {
+        formContainer.classList.add('show');
+      }, 100);
+      
+      // Convert Django messages to toasts
+      const djangoMessages = document.getElementById('django-messages');
+      if (djangoMessages) {
+        const messages = djangoMessages.querySelectorAll('div[data-type]');
+        messages.forEach(msg => {
+          const type = msg.dataset.type || 'info';
+          const message = msg.dataset.message;
+          showToast(type, message);
+        });
+      }
+      
+      // Convert form errors to toasts
+      const formErrors = document.getElementById('form-errors');
+      if (formErrors) {
+        const errors = formErrors.querySelectorAll('div[data-type]');
+        errors.forEach(error => {
+          const type = error.dataset.type || 'error';
+          const message = error.dataset.message;
+          showToast(type, message);
+        });
+      }
+      
+      // Convert field errors to toasts
+      document.querySelectorAll('.error-text').forEach(el => {
+        if (el.textContent.trim()) {
+          showToast('error', el.textContent.trim());
+        }
+      });
+      
+      // User type selection functionality
       const agencyField = document.getElementById('agency-field');
       const agencyInput = document.getElementById('agency_name');
-      const userTypeRadios = document.querySelectorAll('.user-type-radio');
       const userTypeOptions = document.querySelectorAll('.user-type-option');
+      const registrationForm = document.getElementById('registrationForm');
+      const submitBtn = document.getElementById('submitBtn');
+      const btnText = document.getElementById('btnText');
+      const btnSpinner = document.getElementById('btnSpinner');
       
-      function toggleAgencyField() {
-        const selectedType = document.querySelector('.user-type-radio:checked').value;
-        
-        // Remove all active styles first
-        userTypeOptions.forEach(option => {
-          option.style.borderColor = '#e5e7eb';
-          option.style.backgroundColor = 'white';
-        });
-        
-        // Add active style to selected option
-        const selectedOption = document.querySelector(`input[value="${selectedType}"]`).closest('.user-type-option');
-        selectedOption.style.borderColor = '#1a3a4a';
-        selectedOption.style.backgroundColor = '#f0f4f8';
-        
-        // Toggle agency field
-        if (selectedType === 'seller' || selectedType === 'agent') {
+      // Initialize user type selection
+      function initializeUserType() {
+        const selectedType = document.querySelector('input[name="user_type"]:checked').value;
+        updateAgencyField(selectedType);
+        updateUserTypeSelection(selectedType);
+      }
+      
+      function updateAgencyField(userType) {
+        if (userType === 'seller') {
           agencyField.classList.remove('hidden');
           agencyInput.required = true;
         } else {
@@ -466,53 +830,193 @@
         }
       }
       
-      // Add event listeners to all radio buttons
-      userTypeRadios.forEach(radio => {
-        radio.addEventListener('change', toggleAgencyField);
-      });
+      function updateUserTypeSelection(selectedType) {
+        userTypeOptions.forEach(option => {
+          option.classList.remove('selected');
+          const radio = option.querySelector('input[type="radio"]');
+          if (radio.value === selectedType) {
+            option.classList.add('selected');
+          }
+        });
+      }
       
-      // Add click event to entire option box
+      // Add click handlers to user type options
       userTypeOptions.forEach(option => {
-        option.addEventListener('click', function() {
-          const radio = this.querySelector('.user-type-radio');
+        option.addEventListener('click', function(e) {
+          e.preventDefault();
+          const radio = this.querySelector('input[type="radio"]');
           radio.checked = true;
-          toggleAgencyField();
+          const selectedType = radio.value;
+          updateAgencyField(selectedType);
+          updateUserTypeSelection(selectedType);
+          
+          radio.dispatchEvent(new Event('change', { bubbles: true }));
         });
       });
       
-      // Initialize on page load
-      toggleAgencyField();
+      // Add change handlers to radio buttons
+      document.querySelectorAll('input[name="user_type"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+          updateAgencyField(this.value);
+          updateUserTypeSelection(this.value);
+        });
+      });
       
-      // Form validation
-      const form = document.querySelector('form');
-      const errorDiv = document.getElementById('form-errors');
-      const errorList = document.getElementById('error-list');
-      
-      form.addEventListener('submit', function(e) {
-        // Clear previous errors
-        errorDiv.classList.add('hidden');
-        errorList.innerHTML = '';
+      // Form validation and submission
+      registrationForm.addEventListener('submit', function(e) {
+        // Prevent multiple submissions
+        if (submitBtn.classList.contains('loading')) {
+          e.preventDefault();
+          return;
+        }
         
-        // Check if passwords match
+        // Clear all error states
+        document.querySelectorAll('.form-error').forEach(el => {
+          el.classList.remove('form-error');
+        });
+        
+        // Clear any existing toasts
+        document.querySelectorAll('.toast').forEach(toast => {
+          toast.remove();
+        });
+        
+        // Validate passwords match
         const password1 = document.getElementById('password1').value;
         const password2 = document.getElementById('password2').value;
         
         if (password1 !== password2) {
           e.preventDefault();
-          errorDiv.classList.remove('hidden');
-          const li = document.createElement('li');
-          li.textContent = 'Passwords do not match';
-          errorList.appendChild(li);
+          showToast('error', 'Passwords do not match');
+          document.getElementById('password1').classList.add('form-error');
+          document.getElementById('password2').classList.add('form-error');
+          return;
         }
         
-        // Check password strength
+        // Validate password strength
         if (password1.length < 8) {
           e.preventDefault();
-          errorDiv.classList.remove('hidden');
-          const li = document.createElement('li');
-          li.textContent = 'Password must be at least 8 characters long';
-          errorList.appendChild(li);
+          showToast('error', 'Password must be at least 8 characters long');
+          document.getElementById('password1').classList.add('form-error');
+          return;
         }
+        
+        // Validate selected user type
+        const userType = document.querySelector('input[name="user_type"]:checked');
+        if (!userType) {
+          e.preventDefault();
+          showToast('error', 'Please select a user type');
+          return;
+        }
+        
+        // Validate agency name for sellers
+        if (userType.value === 'seller') {
+          const agencyName = agencyInput.value.trim();
+          if (!agencyName) {
+            e.preventDefault();
+            showToast('error', 'Agency name is required for sellers');
+            agencyInput.classList.add('form-error');
+            agencyInput.focus();
+            return;
+          }
+        }
+        
+        // Validate terms
+        const termsCheckbox = document.getElementById('terms');
+        if (!termsCheckbox.checked) {
+          e.preventDefault();
+          showToast('error', 'You must agree to the terms and conditions');
+          return;
+        }
+        
+        // Validate all required fields
+        let hasEmptyFields = false;
+        const requiredFields = registrationForm.querySelectorAll('[required]');
+        requiredFields.forEach(field => {
+          if (!field.value.trim() && !field.hidden) {
+            e.preventDefault();
+            hasEmptyFields = true;
+            field.classList.add('form-error');
+          }
+        });
+        
+        if (hasEmptyFields) {
+          showToast('error', 'Please fill all required fields');
+          return;
+        }
+        
+        // If all validations pass, show loading state
+        submitBtn.classList.add('loading');
+        btnText.classList.add('hidden');
+        btnSpinner.classList.remove('hidden');
+      });
+      
+      // Real-time password validation
+      const password1Input = document.getElementById('password1');
+      const password2Input = document.getElementById('password2');
+      
+      function validatePasswords() {
+        const password1 = password1Input.value;
+        const password2 = password2Input.value;
+        
+        if (password2 && password1 !== password2) {
+          password2Input.classList.add('form-error');
+          password1Input.classList.add('form-error');
+          document.querySelectorAll('[data-field="password1"], [data-field="password2"]').forEach(el => {
+            if (!el.textContent.includes('match')) {
+              el.textContent = 'Passwords do not match';
+              el.classList.remove('hidden');
+            }
+          });
+        } else {
+          password2Input.classList.remove('form-error');
+          password1Input.classList.remove('form-error');
+          document.querySelectorAll('[data-field="password1"], [data-field="password2"]').forEach(el => {
+            if (el.textContent.includes('match')) {
+              el.classList.add('hidden');
+            }
+          });
+        }
+      }
+      
+      password1Input.addEventListener('input', validatePasswords);
+      password2Input.addEventListener('input', validatePasswords);
+      
+      // Remove error state on input
+      const inputs = registrationForm.querySelectorAll('input');
+      inputs.forEach(input => {
+        input.addEventListener('input', function() {
+          this.classList.remove('form-error');
+          const errorField = document.querySelector(`[data-field="${this.name}"]`);
+          if (errorField) {
+            errorField.classList.add('hidden');
+          }
+        });
+      });
+      
+      // Initialize on page load
+      initializeUserType();
+      
+      // Handle enter key in form
+      document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            registrationForm.dispatchEvent(new Event('submit'));
+          }
+        });
+      });
+      
+      // Add hover effect to form inputs
+      document.querySelectorAll('input, select, textarea').forEach(element => {
+        element.addEventListener('mouseenter', function() {
+          this.classList.add('border-primary/30');
+        });
+        
+        element.addEventListener('mouseleave', function() {
+          if (!this.matches(':focus')) {
+            this.classList.remove('border-primary/30');
+          }
+        });
       });
     });
   </script>

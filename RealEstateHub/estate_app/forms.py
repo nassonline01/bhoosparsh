@@ -60,117 +60,98 @@ class ProfileSettingsForm(forms.ModelForm):
 # User Forms
 # ===================================================================
 
-class UserRegistrationForm(forms.ModelForm):
-    """Form for user registration"""
-    
-    password1 = forms.CharField(
-        label=_("Password"),
-        widget=forms.PasswordInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Create a strong password'
-        }),
-        min_length=8,
-        help_text=_("Password must be at least 8 characters long.")
-    )
-    
-    password2 = forms.CharField(
-        label=_("Confirm Password"),
-        widget=forms.PasswordInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Confirm your password'
-        })
-    )
-    
-    user_type = forms.ChoiceField(
-        label=_("I want to"),
-        choices=CustomUser.USER_TYPE_CHOICES,
-        widget=forms.RadioSelect(attrs={'class': 'form-check-input'}),
-        initial='buyer'
-    )
+from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from .models import CustomUser, UserProfile
+from django.core.exceptions import ValidationError
+import re
 
+class UserRegistrationForm(UserCreationForm):
     agency_name = forms.CharField(
-        label=_("Agency Name (Optional)"),
-        max_length=255,
         required=False,
+        max_length=255,
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'placeholder': 'Enter your agency name'
         }),
-        help_text=_('If you represent a real estate agency, enter the agency name.')
+        help_text='Required for sellers and agents'
     )
-
-    terms = forms.BooleanField(
-        label=_("I agree to the Terms & Conditions and Privacy Policy"),
+    
+    phone = forms.CharField(
+        max_length=17,
         required=True,
-        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': '+91 234 567 8900'
+        })
     )
+    
+    terms = forms.BooleanField(
+        required=True,
+        error_messages={'required': 'You must agree to the terms and conditions.'}
+    )
+    
+    class Meta:
+        model = CustomUser
+        fields = ('first_name', 'last_name', 'email', 'phone', 'user_type', 'password1', 'password2')
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'First name'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last name'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'your.email@example.com'}),
+            'user_type': forms.RadioSelect(attrs={'class': 'user-type-radio'}),
+        }
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        # Make agency_name required for sellers and agents
-        user_type = self.data.get('user_type') if self.data else self.initial.get('user_type')
-        if user_type in ['seller', 'agent']:
-            self.fields['agency_name'].required = True
-            self.fields['agency_name'].label = _("Agency Name")
-        else:
-            self.fields['agency_name'].required = False
-            self.fields['agency_name'].label = _("Agency Name (Optional)")
-
-    class Meta:
-        model = CustomUser
-        fields = ['first_name', 'last_name', 'email', 'phone', 'user_type']
-        widgets = {
-            'first_name': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Enter your first name'
-            }),
-            'last_name': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Enter your last name'
-            }),
-            'email': forms.EmailInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Enter your email address'
-            }),
-            'phone': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': '+1234567890'
-            }),
-        }
-    
+        # Remove help text for password fields
+        self.fields['password1'].help_text = ''
+        self.fields['password2'].help_text = ''
+        
     def clean_email(self):
-        """Validate email uniqueness"""
         email = self.cleaned_data.get('email')
-        if User.objects.filter(email=email).exists():
-            raise ValidationError(_("A user with this email already exists."))
-        return email.lower()
+        if CustomUser.objects.filter(email=email).exists():
+            raise ValidationError('This email is already registered.')
+        return email
     
     def clean_phone(self):
-        """Validate phone number"""
         phone = self.cleaned_data.get('phone')
-        if phone and User.objects.filter(phone=phone).exists():
-            raise ValidationError(_("This phone number is already registered."))
+        # Validate phone number format
+        phone_regex = r'^\+?1?\d{9,15}$'
+        if not re.match(phone_regex, phone):
+            raise ValidationError('Please enter a valid phone number.')
         return phone
     
-    def clean_password2(self):
-        """Check that the two password entries match"""
-        password1 = self.cleaned_data.get("password1")
-        password2 = self.cleaned_data.get("password2")
-        if password1 and password2 and password1 != password2:
-            raise ValidationError(_("Passwords don't match"))
-        return password2
+    def clean(self):
+        cleaned_data = super().clean()
+        user_type = cleaned_data.get('user_type')
+        agency_name = cleaned_data.get('agency_name')
+        
+        # Validate agency name for sellers/agents
+        if user_type in ['seller', 'agent'] and not agency_name:
+            raise ValidationError({'agency_name': 'Agency name is required for sellers and agents.'})
+        
+        return cleaned_data
     
     def save(self, commit=True):
-        """Save the user with encrypted password"""
         user = super().save(commit=False)
-        user.set_password(self.cleaned_data["password1"])
-        user.is_active = True  # Can set to False if email verification required
+        user.username = self.cleaned_data['email']  # Set username as email
+        user.phone = self.cleaned_data['phone']
         
         if commit:
             user.save()
+            
+            # Create user profile with agency name if provided
+            profile = UserProfile.objects.create(
+                user=user,
+                agency_name=self.cleaned_data.get('agency_name', '')
+            )
+            
+            # Create buyer profile for buyer users
+            if user.user_type == 'buyer':
+                from .models import BuyerProfile
+                BuyerProfile.objects.create(user=user)
+        
         return user
-
 
 class UserLoginForm(AuthenticationForm):
     """Custom login form"""

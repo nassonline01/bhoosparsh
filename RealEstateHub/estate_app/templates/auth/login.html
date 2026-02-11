@@ -197,6 +197,45 @@
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
       background-color: #f8fafc;
     }
+    
+    /* Custom styling for remember me checkbox */
+    .custom-checkbox {
+      width: 16px;
+      height: 16px;
+      border: 2px solid #d1d5db;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .custom-checkbox.checked {
+      background-color: #3B82F6;
+      border-color: #3B82F6;
+    }
+    
+    .custom-checkbox.checked::after {
+      content: '✓';
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    
+    /* For responsive design */
+    @media (max-width: 640px) {
+      .form-options-row {
+        flex-direction: column;
+        gap: 10px !important;
+        align-items: flex-start !important;
+      }
+      
+      .form-options-row .forgot-password {
+        margin-left: 0 !important;
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen bg-white">
@@ -247,18 +286,6 @@
             <p class="text-gray-500 text-sm">Sign in to your account</p>
           </div>
           
-          <!-- Django Messages - Now handled by toasts -->
-          {% if messages %}
-          <div class="hidden" id="django-messages">
-            {% for message in messages %}
-            <div 
-              data-type="{{ message.tags }}" 
-              data-message="{{ message }}"
-            ></div>
-            {% endfor %}
-          </div>
-          {% endif %}
-          
           <!-- Django Login Form -->
           <form method="POST" novalidate id="login-form">
             {% csrf_token %}
@@ -280,6 +307,7 @@
                   placeholder="Enter your email address"
                   class="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary {% if form.username.errors %}border-red-300{% endif %}"
                   required
+                  autocomplete="email"
                 >
                 {% if form.username.errors %}
                 <div class="absolute right-3 top-1/2 -translate-y-1/2">
@@ -296,7 +324,7 @@
             </div>
             
             <!-- Password Field -->
-            <div class="mb-5">
+            <div class="mb-4">
               <label for="{{ form.password.id_for_label }}" class="block text-xs text-gray-500 mb-2">
                 Password *
               </label>
@@ -307,8 +335,9 @@
                   id="{{ form.password.id_for_label }}"
                   class="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary pr-10 {% if form.password.errors %}border-red-300{% endif %}"
                   required
+                  autocomplete="current-password"
                 >
-                <button type="button" onclick="togglePassword()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <button type="button" onclick="togglePassword()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600" tabindex="-1">
                   <i class="fas fa-eye" id="toggleIcon"></i>
                 </button>
               </div>
@@ -318,31 +347,28 @@
                 {{ form.password.errors.0 }}
               </div>
               {% endif %}
-              <div class="text-end mt-1">
-                <a href="{% url 'password_reset' %}" class="text-sm text-primary hover:underline">Forgot Password?</a>
-              </div>
             </div>
             
-            <!-- Remember Me -->
-            <div class="flex items-center justify-between mb-6">
-              <label class="flex items-center gap-2 cursor-pointer">
+            <!-- Remember Me & Forgot Password on Same Line -->
+            <div class="flex items-center justify-between mb-6 form-options-row">
+              <!-- Remember Me -->
+              <label class="flex items-center gap-2 cursor-pointer group" id="remember-me-label">
+                <div class="custom-checkbox" id="custom-checkbox"></div>
                 <input 
                   type="checkbox" 
                   name="{{ form.remember_me.name }}"
                   id="{{ form.remember_me.id_for_label }}"
                   {% if form.remember_me.value %}checked{% endif %}
-                  class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                  class="hidden"
                 >
-                <span class="text-sm text-gray-600">Remember Me</span>
+                <span class="text-sm text-gray-600 group-hover:text-gray-800 transition-colors">Remember Me</span>
               </label>
+              
+              <!-- Forgot Password -->
+              <a href="{% url 'password_reset' %}" class="text-sm text-primary hover:text-primary-dark hover:underline transition-colors forgot-password ml-4">
+                Forgot Password?
+              </a>
             </div>
-            
-            <!-- Form Errors (Non-field errors) -->
-            {% if form.non_field_errors %}
-            <div id="non-field-errors" class="hidden">
-              <div data-type="error" data-message="{{ form.non_field_errors.0 }}"></div>
-            </div>
-            {% endif %}
             
             <!-- Login Button -->
             <button 
@@ -390,6 +416,42 @@
       }
     }
     
+    // Custom checkbox handling
+    document.addEventListener('DOMContentLoaded', function() {
+      const checkbox = document.getElementById('{{ form.remember_me.id_for_label }}');
+      const customCheckbox = document.getElementById('custom-checkbox');
+      const rememberMeLabel = document.getElementById('remember-me-label');
+      
+      // Initialize checkbox state
+      if (checkbox.checked) {
+        customCheckbox.classList.add('checked');
+      }
+      
+      // Toggle checkbox when custom checkbox is clicked
+      customCheckbox.addEventListener('click', function(e) {
+        e.preventDefault();
+        checkbox.checked = !checkbox.checked;
+        if (checkbox.checked) {
+          customCheckbox.classList.add('checked');
+        } else {
+          customCheckbox.classList.remove('checked');
+        }
+      });
+      
+      // Toggle checkbox when label text is clicked
+      rememberMeLabel.addEventListener('click', function(e) {
+        if (e.target === customCheckbox || e.target.tagName === 'SPAN') {
+          e.preventDefault();
+          checkbox.checked = !checkbox.checked;
+          if (checkbox.checked) {
+            customCheckbox.classList.add('checked');
+          } else {
+            customCheckbox.classList.remove('checked');
+          }
+        }
+      });
+    });
+    
     // Toast Notification System
     class Toast {
       constructor(type, message, duration = 5000) {
@@ -407,7 +469,7 @@
           error: 'exclamation-circle',
           warning: 'exclamation-triangle',
           info: 'info-circle',
-          danger: 'exclamation-circle' // Map danger to error
+          danger: 'exclamation-circle'
         };
         
         const titles = {
@@ -478,37 +540,29 @@
       new Toast(type, message, duration);
     }
     
-    // Convert Django messages to toasts on page load
+    // Show form errors as toasts
     document.addEventListener('DOMContentLoaded', () => {
-      // Convert Django messages
-      const djangoMessages = document.getElementById('django-messages');
-      if (djangoMessages) {
-        const messages = djangoMessages.querySelectorAll('div[data-type]');
-        messages.forEach(msg => {
-          const type = msg.dataset.type || 'info';
-          const message = msg.dataset.message;
-          showToast(type, message);
-        });
-      }
-      
-      // Convert non-field errors
-      const nonFieldErrors = document.getElementById('non-field-errors');
-      if (nonFieldErrors) {
-        const errors = nonFieldErrors.querySelectorAll('div[data-type]');
-        errors.forEach(error => {
-          const type = error.dataset.type || 'error';
-          const message = error.dataset.message;
-          showToast(type, message);
-        });
-      }
-      
-      // Convert field errors to toasts
+      // Show field errors as toasts
       const fieldErrors = document.querySelectorAll('.text-red-500');
       fieldErrors.forEach(el => {
         if (el.textContent.trim()) {
           showToast('error', el.textContent.trim());
         }
       });
+      
+      // Show non-field errors as toasts
+      {% if form.non_field_errors %}
+      {% for error in form.non_field_errors %}
+      showToast('error', '{{ error }}');
+      {% endfor %}
+      {% endif %}
+      
+      // Show Django messages as toasts
+      {% if messages %}
+      {% for message in messages %}
+      showToast('{{ message.tags }}', '{{ message|safe }}');
+      {% endfor %}
+      {% endif %}
       
       // Add animation to form
       const formContainer = document.querySelector('.w-full.max-w-md');
@@ -540,18 +594,42 @@
       document.querySelectorAll('.text-red-500').forEach(el => {
         el.style.display = 'none';
       });
+      
+      // Validate email format
+      const emailInput = document.getElementById('{{ form.username.id_for_label }}');
+      const email = emailInput.value.trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      
+      if (!emailRegex.test(email)) {
+        e.preventDefault();
+        showToast('error', 'Please enter a valid email address');
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        emailInput.focus();
+        return;
+      }
+      
+      // Validate password
+      const passwordInput = document.getElementById('{{ form.password.id_for_label }}');
+      const password = passwordInput.value;
+      
+      if (password.length < 6) {
+        e.preventDefault();
+        showToast('error', 'Password must be at least 6 characters long');
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        passwordInput.focus();
+        return;
+      }
+      
+      // If all validations pass, continue with form submission
+      setTimeout(() => {
+        if (!e.defaultPrevented) {
+          // Form is valid, allow submission
+          this.submit();
+        }
+      }, 100);
     });
-    
-    // Auto-dismiss original alerts (now handled by toasts)
-    setTimeout(function() {
-      document.querySelectorAll('.alert').forEach(function(alert) {
-        alert.style.transition = 'opacity 0.5s ease';
-        alert.style.opacity = '0';
-        setTimeout(function() {
-          alert.remove();
-        }, 500);
-      });
-    }, 100);
     
     // Handle enter key in form
     document.querySelectorAll('input').forEach(input => {
@@ -572,6 +650,25 @@
       element.addEventListener('mouseleave', function() {
         if (!this.matches(':focus')) {
           this.classList.remove('border-primary/30');
+        }
+      });
+    });
+    
+    // Auto-focus email field on page load
+    window.onload = function() {
+      const emailInput = document.getElementById('{{ form.username.id_for_label }}');
+      if (emailInput && !emailInput.value) {
+        emailInput.focus();
+      }
+    };
+    
+    // Clear validation errors on input
+    document.querySelectorAll('input').forEach(input => {
+      input.addEventListener('input', function() {
+        this.classList.remove('border-red-300');
+        const errorDiv = this.parentElement.nextElementSibling;
+        if (errorDiv && errorDiv.classList.contains('text-red-500')) {
+          errorDiv.style.display = 'none';
         }
       });
     });

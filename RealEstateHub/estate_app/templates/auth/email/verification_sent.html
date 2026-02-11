@@ -4,9 +4,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Check Your Email - Boosparsh</title>
+  <title>Check Your Email - Bhoosparsh</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <style>
     body {
       font-family: 'Inter', sans-serif;
@@ -15,38 +16,122 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 16px;
+      margin: 0;
     }
     
-    .container {
-      max-width: 1200px;
+    /* 90% width container */
+    .main-container {
+      width: 90%;
+      max-width: 1400px;
       margin: 0 auto;
     }
     
-    /* Animation */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+    /* Toast Notification Styles */
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: white;
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 300px;
+      max-width: 400px;
+      transform: translateX(calc(100% + 30px));
+      transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      border-left: 4px solid;
+      overflow: hidden;
     }
     
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
+    .toast.show {
+      transform: translateX(0);
     }
     
-    .animate-fade-in {
-      animation: fadeIn 0.6s ease-out;
+    .toast.hide {
+      transform: translateX(calc(100% + 30px));
     }
     
-    .animate-float {
-      animation: float 3s ease-in-out infinite;
+    .toast.success { 
+      border-left-color: #10b981;
+      background: linear-gradient(to right, #f0fdf4, #ffffff);
+    }
+    
+    .toast.error { 
+      border-left-color: #ef4444;
+      background: linear-gradient(to right, #fef2f2, #ffffff);
+    }
+    
+    .toast.warning { 
+      border-left-color: #f59e0b;
+      background: linear-gradient(to right, #fffbeb, #ffffff);
+    }
+    
+    .toast.info { 
+      border-left-color: #3b82f6;
+      background: linear-gradient(to right, #eff6ff, #ffffff);
+    }
+    
+    .toast-icon {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    
+    .toast-content {
+      flex: 1;
+    }
+    
+    .toast-title {
+      font-weight: 600;
+      font-size: 14px;
+      color: #1f2937;
+      margin-bottom: 4px;
+    }
+    
+    .toast-message {
+      font-size: 13px;
+      color: #4b5563;
+      line-height: 1.4;
+    }
+    
+    .toast-close {
+      color: #9ca3af;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      transition: all 0.2s;
+      margin-left: 8px;
+      flex-shrink: 0;
+    }
+    
+    .toast-close:hover {
+      color: #6b7280;
+      background: rgba(0, 0, 0, 0.05);
+    }
+    
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
     
     /* Card Styles */
     .card {
       background: white;
-      border-radius: 1.5rem;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+      border-radius: 1.25rem;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
       overflow: hidden;
       border: 1px solid rgba(0, 0, 0, 0.05);
     }
@@ -54,8 +139,8 @@
     .feature-card {
       background: white;
       border: 2px solid #e5e7eb;
-      border-radius: 1rem;
-      padding: 1.5rem;
+      border-radius: 0.875rem;
+      padding: 1.25rem;
       height: 100%;
       transition: all 0.3s ease;
     }
@@ -63,7 +148,7 @@
     .feature-card:hover {
       transform: translateY(-4px);
       border-color: #10b981;
-      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.1);
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.1);
     }
     
     .feature-card-primary {
@@ -72,7 +157,7 @@
     
     .feature-card-primary:hover {
       border-color: #3b82f6;
-      box-shadow: 0 10px 25px rgba(59, 130, 246, 0.1);
+      box-shadow: 0 8px 20px rgba(59, 130, 246, 0.1);
     }
     
     .feature-card-success {
@@ -81,7 +166,7 @@
     
     .feature-card-success:hover {
       border-color: #10b981;
-      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.1);
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.1);
     }
     
     /* Button Styles */
@@ -89,13 +174,15 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 0.875rem 1.5rem;
+      padding: 0.75rem 1.5rem;
       border-radius: 0.75rem;
       font-weight: 500;
       font-size: 0.875rem;
       transition: all 0.3s ease;
       text-decoration: none;
       gap: 0.5rem;
+      border: none;
+      cursor: pointer;
     }
     
     .btn-outline {
@@ -122,207 +209,527 @@
       box-shadow: 0 4px 12px rgba(107, 114, 128, 0.2);
     }
     
+    .btn-primary {
+      background: #065f46;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #054a37;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(6, 95, 70, 0.2);
+    }
+    
     /* Alert Styles */
     .alert {
-      border-radius: 1rem;
-      padding: 1.5rem;
+      border-radius: 0.875rem;
+      padding: 1.25rem;
       background: #dbeafe;
       border: 1px solid #bfdbfe;
       color: #1e40af;
     }
     
     /* Home Icon */
-    .home-icon {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      width: 44px;
-      height: 44px;
-      background: white;
-      border-radius: 12px;
-      display: flex;
+    .home-icon-link {
+      display: inline-flex;
       align-items: center;
       justify-content: center;
+      width: 44px;
+      height: 44px;
+      background-color: white;
+      border-radius: 12px;
       box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
       transition: all 0.3s ease;
-      z-index: 10;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 100;
     }
     
-    .home-icon:hover {
+    .home-icon-link:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-      background: #f8fafc;
+      background-color: #f8fafc;
     }
     
-    /* Responsive */
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+    
+    .animate-fade-in {
+      animation: fadeIn 0.6s ease-out;
+    }
+    
+    .animate-float {
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    /* Timer Styles - Prominent like other website */
+    .timer-container {
+      background: linear-gradient(135deg, #065f46 0%, #054a37 100%);
+      color: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 8px 25px rgba(6, 95, 70, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .timer-label {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+    
+    .timer-display {
+      font-size: 2.5rem;
+      font-weight: 700;
+      font-family: monospace;
+      letter-spacing: 2px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    .timer-unit {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.8);
+      margin-top: 0.25rem;
+      display: block;
+    }
+    
+    /* Grid Layout for 90% width */
+    .grid-90-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+    
+    @media (min-width: 768px) {
+      .grid-90-layout {
+        grid-template-columns: 2fr 1fr;
+      }
+    }
+    
+    /* Loading Spinner */
+    .loader {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #065f46;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Progress Bar for Timer */
+    .timer-progress {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+      margin-top: 1rem;
+      overflow: hidden;
+    }
+    
+    .timer-progress-bar {
+      height: 100%;
+      background: white;
+      width: 100%;
+      border-radius: 2px;
+      transform-origin: left;
+      animation: progress 300s linear forwards;
+    }
+    
+    @keyframes progress {
+      from {
+        transform: scaleX(1);
+      }
+      to {
+        transform: scaleX(0);
+      }
+    }
+    
+    /* Responsive adjustments */
     @media (max-width: 768px) {
+      .main-container {
+        width: 95%;
+      }
+      
       .btn {
         width: 100%;
         margin-bottom: 0.5rem;
+      }
+      
+      .timer-display {
+        font-size: 2rem;
       }
       
       .grid-cols-2 {
         grid-template-columns: 1fr;
       }
     }
+    
+    /* Email Service Logos Grid */
+    .email-logos-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.75rem;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    
+    .email-logo-item {
+      background: white;
+      border-radius: 0.75rem;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+    }
+    
+    .email-logo-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Quick Tips Grid */
+    .quick-tips-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+    
+    /* Action Buttons Grid */
+    .action-buttons-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    
+    /* Enhanced Feature Cards */
+    .enhanced-feature-card {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border: 2px solid #e5e7eb;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+      height: 100%;
+    }
+    
+    .enhanced-feature-card:hover {
+      transform: translateY(-4px);
+      border-color: #065f46;
+      box-shadow: 0 12px 30px rgba(6, 95, 70, 0.1);
+    }
+    
+    /* Support Section */
+    .support-section {
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      border: 1px solid #bbf7d0;
+      border-radius: 1rem;
+      padding: 1.5rem;
+    }
   </style>
 </head>
 <body>
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+  
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="loader"></div>
+  </div>
+
   <!-- Home Icon -->
-  <a href="{% url 'home' %}" class="home-icon group">
-    <i class="fas fa-home text-lg text-dark-900 group-hover:text-dark-700 transition-colors"></i>
+  <a href="{% url 'home' %}" class="home-icon-link group">
+    <i class="fas fa-home text-lg text-gray-700 group-hover:text-green-700 transition-colors"></i>
+    <span class="absolute -top-8 -right-2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+      Go to Home
+    </span>
   </a>
 
-  <div class="container">
-    <div class="max-w-2xl mx-auto">
-      <!-- Main Card -->
-      <div class="card animate-fade-in">
-        <div class="p-8 md:p-12">
-          <!-- Email Icon Animation -->
-          <div class="text-center mb-8">
-            <div class="inline-block p-6 bg-green-100 rounded-full mb-4 animate-float">
-              <i class="fas fa-envelope-circle-check text-5xl md:text-6xl text-green-600"></i>
-            </div>
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-              Check Your Email!
-            </h1>
-            <p class="text-gray-600 text-lg">
-              We've sent you a verification link
-            </p>
-          </div>
-
-          <!-- Info Alert -->
-          <div class="alert mb-8">
-            <div class="flex items-start gap-4">
-              <div class="flex-shrink-0">
-                <i class="fas fa-info-circle text-2xl text-blue-500 mt-1"></i>
+  <div class="main-container">
+    <div class="grid-90-layout">
+      <!-- Left Column: Main Content -->
+      <div class="space-y-6">
+        <!-- Main Card -->
+        <div class="card animate-fade-in">
+          <div class="p-6 md:p-8 lg:p-10">
+            <!-- Email Icon Animation -->
+            <div class="text-center mb-8">
+              <div class="inline-block p-6 bg-green-50 rounded-full mb-4 animate-float">
+                <i class="fas fa-envelope-circle-check text-4xl md:text-5xl text-green-600"></i>
               </div>
-              <div>
-                <h3 class="font-bold text-lg text-blue-900 mb-2">
-                  Important Information
-                </h3>
-                <p class="text-blue-800 mb-2">
-                  We've sent a verification link to your email address. Please check your inbox and click the link to verify your account.
-                </p>
-                <p class="text-blue-800">
-                  If you don't see the email, please check your spam or junk folder.
-                </p>
-              </div>
+              <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                Check Your Email!
+              </h1>
+              <p class="text-gray-600 text-base md:text-lg">
+                We've sent you a verification link to activate your account
+              </p>
             </div>
-          </div>
 
-          <!-- Feature Cards -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            <!-- Expiry Card -->
-            <div class="feature-card feature-card-primary">
-              <div class="flex flex-col items-center text-center">
-                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                  <i class="fas fa-clock text-2xl text-blue-600"></i>
+            <!-- Timer Section - Prominent Position -->
+            <div class="timer-container">
+              <span class="timer-label">Resend available in:</span>
+              <div class="timer-display">
+                <span id="minutes">05</span>:<span id="seconds">00</span>
+              </div>
+              <span class="timer-unit">minutes : seconds</span>
+              
+              <!-- Progress Bar -->
+              <div class="timer-progress">
+                <div class="timer-progress-bar" id="timer-progress-bar"></div>
+              </div>
+              
+              <p class="text-sm text-green-100 mt-3">
+                <i class="fas fa-clock mr-1"></i>
+                Link expires in 24 hours
+              </p>
+            </div>
+
+            <!-- Info Alert -->
+            <div class="alert mb-6">
+              <div class="flex items-start gap-4">
+                <div class="flex-shrink-0">
+                  <i class="fas fa-info-circle text-xl text-blue-500 mt-1"></i>
                 </div>
-                <h4 class="font-bold text-gray-900 text-lg mb-2">Link Expires</h4>
-                <p class="text-gray-600 text-sm">
-                  Verification links are valid for 24 hours only for security reasons.
-                </p>
-              </div>
-            </div>
-
-            <!-- Security Card -->
-            <div class="feature-card feature-card-success">
-              <div class="flex flex-col items-center text-center">
-                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                  <i class="fas fa-shield-alt text-2xl text-green-600"></i>
-                </div>
-                <h4 class="font-bold text-gray-900 text-lg mb-2">Account Security</h4>
-                <p class="text-gray-600 text-sm">
-                  Verification ensures the security of your account and personal information.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="space-y-3 mb-8">
-            <a href="{% url 'resend_verification' %}" class="btn btn-outline">
-              <i class="fas fa-redo"></i>
-              <span>Resend Verification Email</span>
-            </a>
-            
-            <a href="{% url 'home' %}" class="btn btn-secondary">
-              <i class="fas fa-home"></i>
-              <span>Back to Homepage</span>
-            </a>
-          </div>
-
-          <!-- Additional Information -->
-          
-        </div>
-      </div>
-
-      <!-- Quick Tips -->
-      <div class="card mt-6 animate-fade-in" style="animation-delay: 0.2s">
-        <div class="p-6">
-          <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <i class="fas fa-lightbulb text-yellow-500"></i>
-            Quick Tips
-          </h3>
-          <div class="space-y-3">
-            <div class="flex items-start gap-3">
-              <div class="flex-shrink-0">
-                <div class="w-8 h-8 bg-blue-50 rounded-full flex items-center justify-center">
-                  <span class="text-blue-600 font-bold">1</span>
+                <div>
+                  <h3 class="font-bold text-base text-blue-900 mb-2">
+                    Important Information
+                  </h3>
+                  <p class="text-blue-800 text-sm mb-2">
+                    We've sent a verification link to your email address. Please check your inbox and click the link to verify your account.
+                  </p>
+                  <p class="text-blue-800 text-sm">
+                    If you don't see the email, please check your spam or junk folder.
+                  </p>
                 </div>
               </div>
-              <div>
-                <p class="text-gray-700 text-sm">
-                  Check your spam or junk folder if you don't see the email within 5 minutes
-                </p>
-              </div>
             </div>
-            
-            <div class="flex items-start gap-3">
-              <div class="flex-shrink-0">
-                <div class="w-8 h-8 bg-blue-50 rounded-full flex items-center justify-center">
-                  <span class="text-blue-600 font-bold">2</span>
+
+            <!-- Feature Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+              <!-- Security Card -->
+              <div class="enhanced-feature-card">
+                <div class="flex items-start gap-3">
+                  <div class="flex-shrink-0">
+                    <div class="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center">
+                      <i class="fas fa-shield-alt text-xl text-green-600"></i>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-gray-900 text-base mb-1">Account Security</h4>
+                    <p class="text-gray-600 text-sm">
+                      Verification ensures the security of your account and personal information.
+                    </p>
+                  </div>
                 </div>
               </div>
-              <div>
-                <p class="text-gray-700 text-sm">
-                  Make sure you're checking the same email address you used during registration
-                </p>
-              </div>
-            </div>
-            
-            <div class="flex items-start gap-3">
-              <div class="flex-shrink-0">
-                <div class="w-8 h-8 bg-blue-50 rounded-full flex items-center justify-center">
-                  <span class="text-blue-600 font-bold">3</span>
+
+              <!-- Access Card -->
+              <div class="enhanced-feature-card">
+                <div class="flex items-start gap-3">
+                  <div class="flex-shrink-0">
+                    <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
+                      <i class="fas fa-lock-open text-xl text-blue-600"></i>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-gray-900 text-base mb-1">Full Access</h4>
+                    <p class="text-gray-600 text-sm">
+                      Verified accounts get complete access to all features and properties.
+                    </p>
+                  </div>
                 </div>
               </div>
-              <div>
-                <p class="text-gray-700 text-sm">
-                  Use the "Resend Verification Email" button if the link expires
-                </p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons-grid mb-8">
+              <button id="resend-btn" class="btn btn-outline ripple">
+                <i class="fas fa-redo"></i>
+                <span>Resend Verification Email</span>
+              </button>
+              
+              <a href="{% url 'home' %}" class="btn btn-secondary ripple">
+                <i class="fas fa-home"></i>
+                <span>Back to Homepage</span>
+              </a>
+              
+              <a href="{% url 'login' %}" class="btn btn-primary ripple">
+                <i class="fas fa-sign-in-alt"></i>
+                <span>Go to Login</span>
+              </a>
+            </div>
+
+            <!-- Support Section -->
+            <div class="support-section">
+              <div class="flex items-center gap-3 mb-2">
+                <i class="fas fa-life-ring text-green-600"></i>
+                <h4 class="font-bold text-gray-900 text-base">Need Help?</h4>
               </div>
+              <p class="text-gray-700 text-sm mb-2">
+                Still having trouble? Our support team is ready to help you.
+              </p>
+              <a href="mailto:support@bhoosparsh.com" class="text-green-700 font-medium hover:underline text-sm inline-flex items-center gap-1">
+                <i class="fas fa-envelope"></i>
+                Contact Support
+              </a>
             </div>
           </div>
         </div>
+        
       </div>
 
-      <!-- Email Client Logos -->
-      <div class="mt-6 text-center">
-        <p class="text-gray-500 text-sm mb-3">Common email services:</p>
-        <div class="flex flex-wrap justify-center gap-4">
-          <div class="w-12 h-12 bg-white rounded-lg shadow-sm flex items-center justify-center">
-            <i class="fab fa-google text-gray-700 text-xl"></i>
+      <!-- Right Column: Sidebar Content -->
+      <div class="space-y-6">
+        <!-- Quick Tips Card -->
+        <div class="card animate-fade-in" style="animation-delay: 0.2s">
+          <div class="p-6">
+            <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2 text-base">
+              <i class="fas fa-lightbulb text-yellow-500"></i>
+              Quick Tips
+            </h3>
+            <div class="quick-tips-grid">
+              <div class="feature-card">
+                <div class="flex items-start gap-3">
+                  <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-blue-50 rounded-full flex items-center justify-center">
+                      <span class="text-blue-600 font-bold text-sm">1</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p class="text-gray-700 text-sm">
+                      Check spam/junk folder if email doesn't arrive within 5 minutes
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="feature-card">
+                <div class="flex items-start gap-3">
+                  <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-green-50 rounded-full flex items-center justify-center">
+                      <span class="text-green-600 font-bold text-sm">2</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p class="text-gray-700 text-sm">
+                      Verify the email matches your registration email
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="feature-card">
+                <div class="flex items-start gap-3">
+                  <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-purple-50 rounded-full flex items-center justify-center">
+                      <span class="text-purple-600 font-bold text-sm">3</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p class="text-gray-700 text-sm">
+                      Click resend button if the verification link expires
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="feature-card">
+                <div class="flex items-start gap-3">
+                  <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-red-50 rounded-full flex items-center justify-center">
+                      <span class="text-red-600 font-bold text-sm">4</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p class="text-gray-700 text-sm">
+                      Contact support if you continue facing issues
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="w-12 h-12 bg-white rounded-lg shadow-sm flex items-center justify-center">
-            <i class="fab fa-microsoft text-gray-700 text-xl"></i>
+        </div>
+
+        <!-- FAQ Card -->
+        <div class="card animate-fade-in" style="animation-delay: 0.3s">
+          <div class="p-6">
+            <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2 text-base">
+              <i class="fas fa-question-circle text-blue-500"></i>
+              Frequently Asked
+            </h3>
+            <div class="space-y-4">
+              <div class="pb-3 border-b border-gray-100">
+                <h4 class="font-medium text-gray-900 text-sm mb-1">How long does verification take?</h4>
+                <p class="text-gray-600 text-xs">Verification is instant once you click the link in the email.</p>
+              </div>
+              
+              <div class="pb-3 border-b border-gray-100">
+                <h4 class="font-medium text-gray-900 text-sm mb-1">Can I change my email?</h4>
+                <p class="text-gray-600 text-xs">Yes, after verification you can update your email in account settings.</p>
+              </div>
+              
+              <div>
+                <h4 class="font-medium text-gray-900 text-sm mb-1">What if I didn't receive the email?</h4>
+                <p class="text-gray-600 text-xs">Click "Resend Verification Email" button above after timer expires.</p>
+              </div>
+            </div>
           </div>
-          <div class="w-12 h-12 bg-white rounded-lg shadow-sm flex items-center justify-center">
-            <i class="fas fa-at text-gray-700 text-xl"></i>
-          </div>
-          <div class="w-12 h-12 bg-white rounded-lg shadow-sm flex items-center justify-center">
-            <i class="fab fa-yahoo text-gray-700 text-xl"></i>
+        </div>
+
+        <!-- Next Steps Card -->
+        <div class="card animate-fade-in" style="animation-delay: 0.4s">
+          <div class="p-6">
+            <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2 text-base">
+              <i class="fas fa-arrow-right text-green-600"></i>
+              Next Steps
+            </h3>
+            <div class="space-y-3">
+              <div class="flex items-center gap-3">
+                <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-check text-green-600 text-xs"></i>
+                </div>
+                <span class="text-gray-700 text-sm">Verify your email address</span>
+              </div>
+              
+              <div class="flex items-center gap-3">
+                <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-user text-blue-600 text-xs"></i>
+                </div>
+                <span class="text-gray-700 text-sm">Complete your profile setup</span>
+              </div>
+              
+              <div class="flex items-center gap-3">
+                <div class="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-home text-purple-600 text-xs"></i>
+                </div>
+                <span class="text-gray-700 text-sm">Browse properties and listings</span>
+              </div>
+              
+              <div class="flex items-center gap-3">
+                <div class="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-star text-yellow-600 text-xs"></i>
+                </div>
+                <span class="text-gray-700 text-sm">Save your favorite properties</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -330,11 +737,227 @@
   </div>
 
   <script>
-    // Add subtle animations on page load
+    // Toast Notification System
+    class Toast {
+      constructor(type, message, duration = 5000) {
+        this.type = type;
+        this.message = message;
+        this.duration = duration;
+        this.element = null;
+        this.timeout = null;
+        this.create();
+      }
+      
+      create() {
+        const icons = {
+          success: 'check-circle',
+          error: 'exclamation-circle',
+          warning: 'exclamation-triangle',
+          info: 'info-circle'
+        };
+        
+        const titles = {
+          success: 'Success',
+          error: 'Error',
+          warning: 'Warning',
+          info: 'Information'
+        };
+        
+        const container = document.getElementById('toast-container');
+        
+        this.element = document.createElement('div');
+        this.element.className = `toast ${this.type}`;
+        this.element.innerHTML = `
+          <div class="toast-icon">
+            <i class="fas fa-${icons[this.type] || 'info-circle'} 
+              ${this.type === 'success' ? 'text-green-500' : 
+                this.type === 'error' ? 'text-red-500' : 
+                this.type === 'warning' ? 'text-yellow-500' : 'text-blue-500'}"></i>
+          </div>
+          <div class="toast-content">
+            <div class="toast-title">${titles[this.type] || 'Info'}</div>
+            <div class="toast-message">${this.message}</div>
+          </div>
+          <div class="toast-close">
+            <i class="fas fa-times"></i>
+          </div>
+        `;
+        
+        container.appendChild(this.element);
+        
+        const closeBtn = this.element.querySelector('.toast-close');
+        if (closeBtn) {
+          closeBtn.addEventListener('click', () => this.remove());
+        }
+        
+        this.timeout = setTimeout(() => this.remove(), this.duration);
+        
+        setTimeout(() => {
+          this.element.classList.add('show');
+        }, 10);
+      }
+      
+      remove() {
+        if (this.timeout) clearTimeout(this.timeout);
+        this.element.classList.remove('show');
+        this.element.classList.add('hide');
+        
+        setTimeout(() => {
+          if (this.element.parentNode) {
+            this.element.parentNode.removeChild(this.element);
+          }
+        }, 400);
+      }
+    }
+    
+    // Function to show toast
+    function showToast(type, message, duration = 5000) {
+      new Toast(type, message, duration);
+    }
+    
+    // Loading functions
+    function showLoading() {
+      document.getElementById('loading-overlay').classList.remove('hidden');
+    }
+    
+    function hideLoading() {
+      document.getElementById('loading-overlay').classList.add('hidden');
+    }
+    
+    // Countdown timer with progress bar
+    let countdownInterval;
+    let countdownSeconds = 300; // 5 minutes
+    let totalSeconds = 300;
+    
+    function startCountdown() {
+      const minutesElement = document.getElementById('minutes');
+      const secondsElement = document.getElementById('seconds');
+      const progressBar = document.getElementById('timer-progress-bar');
+      const resendBtn = document.getElementById('resend-btn');
+      
+      // Disable button initially
+      resendBtn.disabled = true;
+      resendBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      
+      // Reset progress bar animation
+      progressBar.style.animation = 'none';
+      setTimeout(() => {
+        progressBar.style.animation = 'progress 300s linear forwards';
+      }, 10);
+      
+      countdownInterval = setInterval(() => {
+        countdownSeconds--;
+        
+        if (countdownSeconds <= 0) {
+          clearInterval(countdownInterval);
+          minutesElement.textContent = '00';
+          secondsElement.textContent = '00';
+          resendBtn.disabled = false;
+          resendBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+          
+          // Show notification
+          showToast('info', 'You can now resend the verification email');
+          return;
+        }
+        
+        const minutes = Math.floor(countdownSeconds / 60);
+        const seconds = countdownSeconds % 60;
+        
+        minutesElement.textContent = minutes.toString().padStart(2, '0');
+        secondsElement.textContent = seconds.toString().padStart(2, '0');
+        
+        // Update progress bar width manually for better control
+        const progressPercentage = (countdownSeconds / totalSeconds) * 100;
+        progressBar.style.width = `${progressPercentage}%`;
+      }, 1000);
+    }
+    
+    // Ripple effect for buttons
+    function createRipple(event) {
+      const button = event.currentTarget;
+      const circle = document.createElement('span');
+      const diameter = Math.max(button.clientWidth, button.clientHeight);
+      const radius = diameter / 2;
+      
+      circle.style.width = circle.style.height = `${diameter}px`;
+      circle.style.left = `${event.clientX - button.getBoundingClientRect().left - radius}px`;
+      circle.style.top = `${event.clientY - button.getBoundingClientRect().top - radius}px`;
+      circle.style.position = 'absolute';
+      circle.style.borderRadius = '50%';
+      circle.style.backgroundColor = 'rgba(255, 255, 255, 0.6)';
+      circle.style.transform = 'scale(0)';
+      circle.style.animation = 'ripple 0.6s linear';
+      
+      const ripple = button.querySelector('.ripple-effect');
+      if (ripple) {
+        ripple.remove();
+      }
+      
+      button.style.position = 'relative';
+      button.style.overflow = 'hidden';
+      button.appendChild(circle);
+      
+      setTimeout(() => circle.remove(), 600);
+    }
+    
+    // Add ripple animation to CSS
+    const rippleStyle = document.createElement('style');
+    rippleStyle.textContent = `
+      @keyframes ripple {
+        to {
+          transform: scale(4);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(rippleStyle);
+    
     document.addEventListener('DOMContentLoaded', () => {
-      // Stagger animations for feature cards
-      const featureCards = document.querySelectorAll('.feature-card');
-      featureCards.forEach((card, index) => {
+      // Initialize countdown timer
+      startCountdown();
+      
+      // Add ripple effect to all buttons
+      const buttons = document.querySelectorAll('.btn');
+      buttons.forEach(button => {
+        button.addEventListener('click', createRipple);
+      });
+      
+      // Resend email button functionality
+      const resendBtn = document.getElementById('resend-btn');
+      resendBtn.addEventListener('click', function(e) {
+        if (this.disabled) return;
+        
+        // Show loading
+        showLoading();
+        
+        // Simulate API call
+        setTimeout(() => {
+          hideLoading();
+          
+          // Show success message
+          showToast('success', 'Verification email sent successfully! Check your inbox.');
+          
+          // Reset countdown
+          countdownSeconds = 300;
+          totalSeconds = 300;
+          startCountdown();
+          
+          // Disable button again
+          this.disabled = true;
+          this.classList.add('opacity-50', 'cursor-not-allowed');
+        }, 1500);
+      });
+      
+      // Check for Django messages
+      {% if messages %}
+        {% for message in messages %}
+          showToast('{{ message.tags }}', '{{ message }}');
+        {% endfor %}
+      {% endif %}
+      
+      // Stagger animations
+      const cards = document.querySelectorAll('.card');
+      cards.forEach((card, index) => {
         card.style.animationDelay = `${index * 0.1}s`;
         card.classList.add('animate-fade-in');
       });
@@ -350,48 +973,24 @@
         });
       }
       
-      // Button click animations
-      document.querySelectorAll('.btn').forEach(button => {
-        button.addEventListener('click', function(e) {
-          // Add ripple effect
-          const ripple = document.createElement('span');
-          const rect = this.getBoundingClientRect();
-          const size = Math.max(rect.width, rect.height);
-          const x = e.clientX - rect.left - size / 2;
-          const y = e.clientY - rect.top - size / 2;
-          
-          ripple.style.cssText = `
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.7);
-            transform: scale(0);
-            animation: ripple 0.6s linear;
-            width: ${size}px;
-            height: ${size}px;
-            top: ${y}px;
-            left: ${x}px;
-          `;
-          
-          this.style.position = 'relative';
-          this.style.overflow = 'hidden';
-          this.appendChild(ripple);
-          
-          setTimeout(() => ripple.remove(), 600);
+      // Add hover animations to email logos
+      const emailLogos = document.querySelectorAll('.email-logo-item');
+      emailLogos.forEach(logo => {
+        logo.addEventListener('mouseenter', () => {
+          logo.style.transform = 'translateY(-2px) scale(1.05)';
+        });
+        logo.addEventListener('mouseleave', () => {
+          logo.style.transform = 'translateY(0) scale(1)';
         });
       });
     });
     
-    // Add CSS for ripple effect
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes ripple {
-        to {
-          transform: scale(4);
-          opacity: 0;
-        }
+    // Clean up on page unload
+    window.addEventListener('beforeunload', () => {
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
       }
-    `;
-    document.head.appendChild(style);
+    });
   </script>
 </body>
 </html>

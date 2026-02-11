@@ -23,49 +23,76 @@ from .tokens import account_activation_token
 
 def register_view(request):
     """Handle user registration"""
-    # if request.user.is_authenticated:
-    #     return redirect('dashboard')
+    if request.user.is_authenticated:
+        return redirect('dashboard')
 
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
-            with transaction.atomic():
-                user = form.save()
-
-                # Get or create user profile directly (avoid signal recursion)
-                profile, created = UserProfile.objects.get_or_create(
-                    user=user,
-                    defaults={}
-                )
-
-                # Update profile based on user type
-                if user.user_type in ['seller', 'agent']:
-                    profile.agency_name = form.cleaned_data.get('agency_name', '')
-                    profile.save()
-
-                # Send verification email
-                if settings.EMAIL_VERIFICATION_REQUIRED:
-                    send_verification_email(request, user)
-                    messages.success(
-                        request,
-                        'Registration successful! Please check your email to verify your account.'
-                    )
-                    return redirect('verification_sent')
-                else:
-                    user.is_verified = True
+            try:
+                with transaction.atomic():
+                    user = form.save(commit=False)
+                    user.username = form.cleaned_data['email']  # Set username to email
+                    
+                    # Save user first
                     user.save()
-                    login(request, user)
-                    messages.success(request, 'Registration successful! Welcome to our platform.')
-                    return redirect('dashboard')
+                    
+                    # Create user profile with agency name if provided
+                    profile, created = UserProfile.objects.get_or_create(
+                        user=user,
+                        defaults={}
+                    )
+                    
+                    # Update profile based on user type
+                    user_type = form.cleaned_data.get('user_type')
+                    if user_type in ['seller', 'agent']:
+                        agency_name = form.cleaned_data.get('agency_name', '')
+                        if agency_name:
+                            profile.agency_name = agency_name
+                            profile.save()
+                    
+                    # Create buyer profile for buyer users
+                    if user.user_type == 'buyer':
+                        from .models import BuyerProfile
+                        BuyerProfile.objects.get_or_create(user=user)
+                    
+                    # Log the user in if email verification is not required
+                    if not settings.EMAIL_VERIFICATION_REQUIRED:
+                        user.is_verified = True
+                        user.save()
+                        login(request, user)
+                        messages.success(request, 'Registration successful! Welcome to our platform.')
+                        return redirect('dashboard')
+                    
+                    # Send verification email
+                    if settings.EMAIL_VERIFICATION_REQUIRED:
+                        if send_verification_email(request, user):
+                            messages.success(
+                                request,
+                                'Registration successful! Please check your email to verify your account.'
+                            )
+                            return redirect('verification_sent')
+                        else:
+                            messages.error(
+                                request,
+                                'Registration successful but we could not send verification email. '
+                                'Please contact support or try logging in.'
+                            )
+                            return redirect('login')
+                            
+            except Exception as e:
+                messages.error(request, f'An error occurred during registration: {str(e)}')
         else:
-            messages.error(request, 'Please correct the errors below.')
+            # Show form errors
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
     else:
         form = UserRegistrationForm()
 
     context = {
         'form': form,
         'title': 'Register',
-        'user_types': CustomUser.USER_TYPE_CHOICES,
     }
     return render(request, 'auth/register.html', context)
 
@@ -139,41 +166,65 @@ def redirect_to_dashboard(user, next_url=None):
     if next_url and is_safe_url(next_url, allowed_hosts=None):
         return redirect(next_url)
     
-    # Determine redirect based on user type
+    # Check if user is superuser - SUPERUSER GETS HIGHEST PRIORITY
+    if user.is_superuser:
+        return redirect('admin_dashboard')
+    
+    # Define redirect URLs for each user type
+    user_type_redirects = {
+        'buyer': 'buyer_dashboard',
+        'seller': 'seller_dashboard',
+        'agent': 'seller_dashboard',
+        'builder': 'seller_dashboard',
+        'admin': 'admin_dashboard',
+        'dealer': 'seller_dashboard',
+    }
+    
+    # Get user type, default to buyer if not set
     user_type = user.user_type.lower() if hasattr(user, 'user_type') else 'buyer'
     
-    if user_type in ['seller', 'agent', 'builder', 'dealer']:
-        # Check if seller/agent has completed profile setup
-        try:
-            if user.user_type in ['agent', 'seller'] and not user.profile.is_complete:
+    # Get redirect URL name
+    redirect_url_name = user_type_redirects.get(user_type, 'buyer_dashboard')
+    
+    # Check if user needs to complete profile
+    try:
+        if user.is_superuser:
+            # Superusers go directly to admin dashboard
+            pass
+            
+        elif user_type in ['seller', 'agent', 'builder', 'dealer']:
+            # For sellers/agents/builders, check if profile is complete
+            if not hasattr(user, 'profile') or not user.profile.is_complete:
                 messages.info(
-                    user, 
+                    request,
                     'Please complete your profile to access all seller features.'
                 )
                 return redirect('seller_profile')
-        except:
-            pass
         
-        return redirect('seller_dashboard')
+        elif user_type == 'buyer':
+            # For buyers, ensure buyer profile exists
+            if not hasattr(user, 'buyer_profile'):
+                from .models import BuyerProfile
+                BuyerProfile.objects.create(user=user)
+            
+            # Check if buyer has set preferences
+            buyer_profile = user.buyer_profile
+            if not buyer_profile.min_budget or not buyer_profile.max_budget:
+                messages.info(
+                    request,
+                    'Please set your property preferences for better recommendations.'
+                )
+                return redirect('buyer_profile')
     
-    elif user_type == 'admin':
-        # Redirect admin users to admin dashboard
-        return redirect('admin_dashboard')  # You'll need to create this view
+    except Exception as e:
+        print(f"Error checking user profile: {e}")
+        # Continue with normal redirect if there's an error
     
-    else:  # buyer, tenant, or any other type
-        # Check if buyer has set preferences
-        try:
-            if hasattr(user, 'buyer_profile') and user.buyer_profile:
-                # Check if basic preferences are set
-                if not user.buyer_profile.min_budget or not user.buyer_profile.max_budget:
-                    messages.info(
-                        user,
-                        'Please set your property preferences for better recommendations.'
-                    )
-                    return redirect('buyer_profile')
-        except:
-            pass
-        
+    # Perform the redirect
+    try:
+        return redirect(redirect_url_name)
+    except:
+        # Fallback to buyer dashboard
         return redirect('buyer_dashboard')
 
 
@@ -192,6 +243,8 @@ def logout_view(request):
         messages.success(request, 'You have been logged out successfully.')
     
     return redirect('login')
+
+
 
 # ==============================================
 #  Email Verification Views
@@ -315,6 +368,7 @@ def verify_email_view(request, uidb64, token):
         user = CustomUser.objects.get(pk=uid)
         print(f"DEBUG: Found user: {user.email} (ID: {user.id})")
         print(f"DEBUG: User is_verified before: {user.is_verified}")
+        print(f"DEBUG: User type: {user.user_type}")
         
     except (TypeError, ValueError, OverflowError):
         print("DEBUG: Error decoding UID (TypeError/ValueError/OverflowError)")
@@ -336,16 +390,74 @@ def verify_email_view(request, uidb64, token):
             
             # Auto-login user if they're not already logged in
             if not request.user.is_authenticated:
-                # Use the appropriate backend
-                # First, try to find which backend to use
-                from django.contrib.auth import authenticate
                 user.backend = 'django.contrib.auth.backends.ModelBackend'
                 login(request, user)
                 print(f"DEBUG: Auto-logged in user: {user.email}")
             
             messages.success(request, f'Email verified successfully! Welcome to {settings.SITE_NAME}.')
             print("DEBUG: Verification successful!")
-            return redirect('dashboard')
+            
+            # ============================================
+            # REDIRECT BASED ON USER TYPE
+            # ============================================
+            
+            # Define redirect URLs for each user type
+            user_type_redirects = {
+                'buyer': 'buyer_dashboard',
+                'seller': 'seller_dashboard',
+                'agent': 'seller_dashboard',  # Agents use seller dashboard
+                'builder': 'seller_dashboard',  # Builders use seller dashboard
+                'admin': 'admin_dashboard',  # Admin users
+                'dealer': 'seller_dashboard',  # Dealers use seller dashboard
+            }
+            
+            # Get the redirect URL based on user type
+            default_redirect = 'dashboard'  # Fallback
+            redirect_url_name = user_type_redirects.get(user.user_type, default_redirect)
+            
+            print(f"DEBUG: User type: {user.user_type}, Redirecting to: {redirect_url_name}")
+            
+            # Check if the user needs to complete their profile
+            try:
+                if user.user_type in ['seller', 'agent', 'builder', 'dealer']:
+                    # For sellers/agents/builders, check if profile is complete
+                    if not hasattr(user, 'profile') or not user.profile.is_complete:
+                        print(f"DEBUG: Seller/Agent profile incomplete, redirecting to profile setup")
+                        messages.info(
+                            request,
+                            'Please complete your profile to access all features.'
+                        )
+                        return redirect('seller_profile')
+                
+                elif user.user_type == 'buyer':
+                    # For buyers, check if buyer profile exists and has basic preferences
+                    if not hasattr(user, 'buyer_profile'):
+                        from .models import BuyerProfile
+                        BuyerProfile.objects.create(user=user)
+                        print(f"DEBUG: Created buyer profile for user")
+                    
+                    # Check if buyer has set preferences
+                    buyer_profile = user.buyer_profile
+                    if not buyer_profile.min_budget or not buyer_profile.max_budget:
+                        print(f"DEBUG: Buyer preferences not set, redirecting to buyer profile")
+                        messages.info(
+                            request,
+                            'Please set your property preferences for better recommendations.'
+                        )
+                        return redirect('buyer_profile')
+            
+            except Exception as e:
+                print(f"DEBUG: Error checking user profile: {e}")
+                # Continue with normal redirect if there's an error
+            
+            # Perform the redirect
+            try:
+                return redirect(redirect_url_name)
+            except:
+                # Fallback to generic dashboard if named URL doesn't exist
+                print(f"DEBUG: Redirect URL {redirect_url_name} not found, using fallback")
+                return redirect('dashboard')
+            
         else:
             print("DEBUG: Token is invalid or expired")
             messages.error(request, 'Verification link is invalid or has expired.')
@@ -406,49 +518,49 @@ def resend_verification_view(request):
 #  User Profile Views
 # ==============================================
 
-@login_required
-def profile_view(request):
-    """Display user profile"""
-    user = request.user
-    profile = user.profile
+# @login_required
+# def profile_view(request):
+#     """Display user profile"""
+#     user = request.user
+#     profile = user.profile
     
-    context = {
-        'user': user,
-        'profile': profile,
-        'title': 'My Profile',
-    }
-    return render(request, 'dashboard/profile/profile.html', context)
+#     context = {
+#         'user': user,
+#         'profile': profile,
+#         'title': 'My Profile',
+#     }
+#     return render(request, 'dashboard/profile/profile.html', context)
 
 
-@login_required
-def edit_profile_view(request):
-    """Edit user profile"""
-    user = request.user
-    profile = user.profile
+# @login_required
+# def edit_profile_view(request):
+#     """Edit user profile"""
+#     user = request.user
+#     profile = user.profile
 
-    if request.method == 'POST':
-        form = UserProfileForm(request.POST, request.FILES, instance=profile)
-        if form.is_valid():
-            form.save()
+#     if request.method == 'POST':
+#         form = UserProfileForm(request.POST, request.FILES, instance=profile)
+#         if form.is_valid():
+#             form.save()
 
-            # Update user phone if changed
-            if 'phone' in request.POST:
-                user.phone = request.POST.get('phone')
-                user.save()
+#             # Update user phone if changed
+#             if 'phone' in request.POST:
+#                 user.phone = request.POST.get('phone')
+#                 user.save()
 
-            messages.success(request, 'Profile updated successfully!')
-            return redirect('profile')
-        else:
-            messages.error(request, 'Please correct the errors below.')
-    else:
-        form = UserProfileForm(instance=profile)
+#             messages.success(request, 'Profile updated successfully!')
+#             return redirect('profile')
+#         else:
+#             messages.error(request, 'Please correct the errors below.')
+#     else:
+#         form = UserProfileForm(instance=profile)
 
-    context = {
-        'form': form,
-        'user': user,
-        'title': 'Edit Profile',
-    }
-    return render(request, 'dashboard/profile/edit_profile.html', context)
+#     context = {
+#         'form': form,
+#         'user': user,
+#         'title': 'Edit Profile',
+#     }
+#     return render(request, 'dashboard/profile/edit_profile.html', context)
 
 
 @login_required
@@ -483,243 +595,241 @@ def change_password_view(request):
     return JsonResponse({'success': False, 'error': 'Invalid request method.'})
 
 
+# # ==============================================
+# #  Seller/Agent Settings Views
+# # ==============================================
+
+# # views.py
+# from django.shortcuts import render, redirect, get_object_or_404
+# from django.contrib.auth.decorators import login_required
+# from django.contrib import messages
+# from django.views.decorators.http import require_POST
+# from django.http import JsonResponse
+# import json
+# from .forms import UserProfileForm, ProfileSettingsForm
+# from .models import UserProfile
+
+# @login_required
+# def seller_settings(request):
+#     """Main settings page with tabs"""
+#     user = request.user
+#     profile = user.profile
+    
+#     # Initialize forms
+#     profile_form = UserProfileForm(instance=profile)
+#     user_form = ProfileSettingsForm(instance=user)
+#     privacy_form = PrivacySettingsForm(instance=user)
+    
+#     # Get active tab from query params
+#     active_tab = request.GET.get('tab', 'profile')
+    
+#     # Initialize notification form with user preferences
+#     notification_prefs = user.notification_preferences or {}
+    
+#     context = {
+#         'user': user,
+#         'profile': profile,
+#         'profile_form': profile_form,
+#         'user_form': user_form,
+#         'privacy_form': privacy_form,
+#         'active_tab': active_tab,
+#         'notification_prefs': notification_prefs,
+#         'title': 'Settings',
+#     }
+#     return render(request, 'dashboard/seller/settings.html', context)
+
+# @login_required
+# @require_POST
+# def update_profile(request):
+#     """Update profile settings"""
+#     user = request.user
+#     profile = user.profile
+    
+#     profile_form = UserProfileForm(request.POST, request.FILES, instance=profile)
+#     user_form = ProfileSettingsForm(request.POST, instance=user)
+    
+#     if profile_form.is_valid() and user_form.is_valid():
+#         profile_form.save()
+#         user_form.save()
+        
+#         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+#             return JsonResponse({
+#                 'success': True,
+#                 'message': 'Profile updated successfully!'
+#             })
+#         else:
+#             messages.success(request, 'Profile updated successfully!')
+#             return redirect('seller_settings')
+    
+#     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+#         return JsonResponse({
+#             'success': False,
+#             'errors': profile_form.errors,
+#             'user_errors': user_form.errors
+#         })
+#     else:
+#         messages.error(request, 'Please correct the errors below.')
+#         return redirect('seller_settings')
+
+# @login_required
+# @require_POST
+# def update_privacy(request):
+#     """Update privacy settings"""
+#     user = request.user
+#     form = PrivacySettingsForm(request.POST, instance=user)
+    
+#     if form.is_valid():
+#         form.save()
+        
+#         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+#             return JsonResponse({
+#                 'success': True,
+#                 'message': 'Privacy settings updated successfully!'
+#             })
+#         else:
+#             messages.success(request, 'Privacy settings updated successfully!')
+#             return redirect('seller_settings?tab=privacy')
+    
+#     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+#         return JsonResponse({
+#             'success': False,
+#             'errors': form.errors
+#         })
+#     else:
+#         messages.error(request, 'Please correct the errors below.')
+#         return redirect('seller_settings?tab=privacy')
+
+# @login_required
+# @require_POST
+# def update_notifications(request):
+#     """Update notification preferences"""
+#     user = request.user
+#     form = NotificationSettingsForm(request.POST)
+    
+#     if form.is_valid():
+#         form.save_to_user(user)
+        
+#         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+#             return JsonResponse({
+#                 'success': True,
+#                 'message': 'Notification preferences updated successfully!'
+#             })
+#         else:
+#             messages.success(request, 'Notification preferences updated successfully!')
+#             return redirect('seller_settings?tab=notifications')
+    
+#     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+#         return JsonResponse({
+#             'success': False,
+#             'errors': form.errors
+#         })
+#     else:
+#         messages.error(request, 'Please correct the errors below.')
+#         return redirect('seller_settings?tab=notifications')
+
+# @login_required
+# @require_POST
+# def update_password(request):
+#     """Change password"""
+#     from django.contrib.auth import update_session_auth_hash
+    
+#     current_password = request.POST.get('current_password')
+#     new_password = request.POST.get('new_password')
+#     confirm_password = request.POST.get('confirm_password')
+    
+#     # Validate current password
+#     if not request.user.check_password(current_password):
+#         return JsonResponse({
+#             'success': False,
+#             'error': 'Current password is incorrect.'
+#         })
+    
+#     # Validate new password
+#     if len(new_password) < 8:
+#         return JsonResponse({
+#             'success': False,
+#             'error': 'New password must be at least 8 characters long.'
+#         })
+    
+#     # Check if passwords match
+#     if new_password != confirm_password:
+#         return JsonResponse({
+#             'success': False,
+#             'error': 'New passwords do not match.'
+#         })
+    
+#     # Change password
+#     request.user.set_password(new_password)
+#     request.user.save()
+    
+#     # Update session to prevent logout
+#     update_session_auth_hash(request, request.user)
+    
+#     return JsonResponse({
+#         'success': True,
+#         'message': 'Password changed successfully!'
+#     })
+
+# @login_required
+# @require_POST
+# def update_account(request):
+#     """Update account settings including theme and notifications"""
+#     user = request.user
+    
+#     # Update dashboard theme
+#     theme = request.POST.get('dashboard_theme')
+#     if theme in ['light', 'dark']:
+#         user.dashboard_theme = theme
+#         user.save(update_fields=['dashboard_theme'])
+    
+#     # Update notification preferences
+#     notification_data = request.POST.get('notification_preferences')
+#     if notification_data:
+#         try:
+#             user.notification_preferences = json.loads(notification_data)
+#             user.save(update_fields=['notification_preferences'])
+#         except json.JSONDecodeError:
+#             pass
+    
+#     return JsonResponse({
+#         'success': True,
+#         'message': 'Account settings updated successfully!'
+#     })
+
+# @login_required
+# def dashboard_view(request):
+#     """User dashboard based on role"""
+#     user = request.user
+    
+#     # Prepare context based on user type
+#     context = {
+#         'user': user,
+#         'title': 'Dashboard',
+#     }
+    
+#     if user.user_type == 'admin':
+#         template = 'dashboard/admin_dashboard.html'
+#         # Add admin-specific context
+#     elif user.user_type in ['seller', 'agent']:
+#         template = 'dashboard/seller_dashboard.html'
+#         # Add seller/agent specific context
+#         try:
+#             context['membership'] = user.usermembership
+#             context['active_listings'] = user.property_set.filter(is_active=True).count()
+#         except:
+#             pass
+#     else:  # buyer/tenant
+#         template = 'core/dashboard/buyer_dashboard.html'
+#         # Add buyer-specific context
+#         # context['favorites'] = user.propertyfavorite_set.all()[:5]
+#         context['recent_searches'] = []  # Implement search history if needed
+    
+#     return render(request, template, context)
+
+
 # ==============================================
-#  Seller/Agent Settings Views
+#  Home Page View
 # ==============================================
-
-# views.py
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.views.decorators.http import require_POST
-from django.http import JsonResponse
-import json
-from .forms import UserProfileForm, ProfileSettingsForm
-from .models import UserProfile
-
-@login_required
-def seller_settings(request):
-    """Main settings page with tabs"""
-    user = request.user
-    profile = user.profile
-    
-    # Initialize forms
-    profile_form = UserProfileForm(instance=profile)
-    user_form = ProfileSettingsForm(instance=user)
-    privacy_form = PrivacySettingsForm(instance=user)
-    
-    # Get active tab from query params
-    active_tab = request.GET.get('tab', 'profile')
-    
-    # Initialize notification form with user preferences
-    notification_prefs = user.notification_preferences or {}
-    
-    context = {
-        'user': user,
-        'profile': profile,
-        'profile_form': profile_form,
-        'user_form': user_form,
-        'privacy_form': privacy_form,
-        'active_tab': active_tab,
-        'notification_prefs': notification_prefs,
-        'title': 'Settings',
-    }
-    return render(request, 'dashboard/seller/settings.html', context)
-
-@login_required
-@require_POST
-def update_profile(request):
-    """Update profile settings"""
-    user = request.user
-    profile = user.profile
-    
-    profile_form = UserProfileForm(request.POST, request.FILES, instance=profile)
-    user_form = ProfileSettingsForm(request.POST, instance=user)
-    
-    if profile_form.is_valid() and user_form.is_valid():
-        profile_form.save()
-        user_form.save()
-        
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({
-                'success': True,
-                'message': 'Profile updated successfully!'
-            })
-        else:
-            messages.success(request, 'Profile updated successfully!')
-            return redirect('seller_settings')
-    
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return JsonResponse({
-            'success': False,
-            'errors': profile_form.errors,
-            'user_errors': user_form.errors
-        })
-    else:
-        messages.error(request, 'Please correct the errors below.')
-        return redirect('seller_settings')
-
-@login_required
-@require_POST
-def update_privacy(request):
-    """Update privacy settings"""
-    user = request.user
-    form = PrivacySettingsForm(request.POST, instance=user)
-    
-    if form.is_valid():
-        form.save()
-        
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({
-                'success': True,
-                'message': 'Privacy settings updated successfully!'
-            })
-        else:
-            messages.success(request, 'Privacy settings updated successfully!')
-            return redirect('seller_settings?tab=privacy')
-    
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return JsonResponse({
-            'success': False,
-            'errors': form.errors
-        })
-    else:
-        messages.error(request, 'Please correct the errors below.')
-        return redirect('seller_settings?tab=privacy')
-
-@login_required
-@require_POST
-def update_notifications(request):
-    """Update notification preferences"""
-    user = request.user
-    form = NotificationSettingsForm(request.POST)
-    
-    if form.is_valid():
-        form.save_to_user(user)
-        
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({
-                'success': True,
-                'message': 'Notification preferences updated successfully!'
-            })
-        else:
-            messages.success(request, 'Notification preferences updated successfully!')
-            return redirect('seller_settings?tab=notifications')
-    
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return JsonResponse({
-            'success': False,
-            'errors': form.errors
-        })
-    else:
-        messages.error(request, 'Please correct the errors below.')
-        return redirect('seller_settings?tab=notifications')
-
-@login_required
-@require_POST
-def update_password(request):
-    """Change password"""
-    from django.contrib.auth import update_session_auth_hash
-    
-    current_password = request.POST.get('current_password')
-    new_password = request.POST.get('new_password')
-    confirm_password = request.POST.get('confirm_password')
-    
-    # Validate current password
-    if not request.user.check_password(current_password):
-        return JsonResponse({
-            'success': False,
-            'error': 'Current password is incorrect.'
-        })
-    
-    # Validate new password
-    if len(new_password) < 8:
-        return JsonResponse({
-            'success': False,
-            'error': 'New password must be at least 8 characters long.'
-        })
-    
-    # Check if passwords match
-    if new_password != confirm_password:
-        return JsonResponse({
-            'success': False,
-            'error': 'New passwords do not match.'
-        })
-    
-    # Change password
-    request.user.set_password(new_password)
-    request.user.save()
-    
-    # Update session to prevent logout
-    update_session_auth_hash(request, request.user)
-    
-    return JsonResponse({
-        'success': True,
-        'message': 'Password changed successfully!'
-    })
-
-@login_required
-@require_POST
-def update_account(request):
-    """Update account settings including theme and notifications"""
-    user = request.user
-    
-    # Update dashboard theme
-    theme = request.POST.get('dashboard_theme')
-    if theme in ['light', 'dark']:
-        user.dashboard_theme = theme
-        user.save(update_fields=['dashboard_theme'])
-    
-    # Update notification preferences
-    notification_data = request.POST.get('notification_preferences')
-    if notification_data:
-        try:
-            user.notification_preferences = json.loads(notification_data)
-            user.save(update_fields=['notification_preferences'])
-        except json.JSONDecodeError:
-            pass
-    
-    return JsonResponse({
-        'success': True,
-        'message': 'Account settings updated successfully!'
-    })
-    
-    
-    
-    
-    
-
-
-@login_required
-def dashboard_view(request):
-    """User dashboard based on role"""
-    user = request.user
-    
-    # Prepare context based on user type
-    context = {
-        'user': user,
-        'title': 'Dashboard',
-    }
-    
-    if user.user_type == 'admin':
-        template = 'dashboard/admin_dashboard.html'
-        # Add admin-specific context
-    elif user.user_type in ['seller', 'agent']:
-        template = 'dashboard/seller_dashboard.html'
-        # Add seller/agent specific context
-        try:
-            context['membership'] = user.usermembership
-            context['active_listings'] = user.property_set.filter(is_active=True).count()
-        except:
-            pass
-    else:  # buyer/tenant
-        template = 'core/dashboard/buyer_dashboard.html'
-        # Add buyer-specific context
-        # context['favorites'] = user.propertyfavorite_set.all()[:5]
-        context['recent_searches'] = []  # Implement search history if needed
-    
-    return render(request, template, context)
-
 
 """
 Home page view with featured properties, statistics, and sections
@@ -741,8 +851,7 @@ from datetime import datetime, timedelta
 
 
 
-# @cache_page(6
-# 0 * 15)  # Cache for 15 minutes
+@cache_page(60 * 15)  # Cache for 15 minutes
 def home_view(request):
     """Home page view with dynamic content"""
     

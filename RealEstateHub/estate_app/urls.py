@@ -13,13 +13,6 @@ from .views import change_password_view
     
 urlpatterns = [
     
-    # path("buyer/", TemplateView.as_view(template_name="dashboard/buyer/dashboard.html"), name="dashboard"),
-    # path("price_trends/", TemplateView.as_view(template_name="dashboard/buyer/price_trends.html"), name="trends"),
-    # path("saved_properties/", TemplateView.as_view(template_name="dashboard/buyer/saved_properties.html"), name="saved"),
-    # path("buyer_search/", TemplateView.as_view(template_name="dashboard/buyer/buyer_search.html"), name="search"),
-    # path("compare_properties/", TemplateView.as_view(template_name="dashboard/buyer/compare_properties.html"), name="compare"),
-    # path("settings/", TemplateView.as_view(template_name="dashboard/buyer/settings.html"), name="buyer_settings"),
-    # path("recent_views/", TemplateView.as_view(template_name="dashboard/buyer/recent_views.html"), name="recent_views"),
     
     # ======================================================
     # Buyer dashboard URLs
@@ -42,7 +35,7 @@ urlpatterns = [
     # Buyer AJAX URLs
     path('buyer/ajax/toggle-favorite/', buyer_views.ajax_toggle_favorite, name='ajax_toggle_favorite'),
     path('buyer/ajax/send-inquiry/', buyer_views.ajax_send_inquiry, name='ajax_send_inquiry'),
-    path('buyer/ajax/send-followup/<int:inquiry_id>/', buyer_views.ajax_send_followup, name='ajax_send_followup'),
+    path('buyer/ajax/send-followup/', buyer_views.ajax_send_followup, name='ajax_send_followup'),
     path('buyer/ajax/delete-inquiry/<int:inquiry_id>/', buyer_views.ajax_delete_inquiry, name='ajax_delete_inquiry'),
     path('buyer/ajax/update-favorite-status/', buyer_views.ajax_update_favorite_status, name='ajax_update_favorite_status'),
     
@@ -69,7 +62,6 @@ urlpatterns = [
     
     # Property management URLs
     path('seller/properties/', seller_views.seller_properties, name='seller_properties'),
-    # path('seller/properties/', seller_views.seller_properties, name='seller_property'),
     path('seller/properties/create/', seller_views.seller_property_create, name='seller_property_create'),
     path('seller/properties/<int:pk>/edit/', seller_views.seller_property_edit, name='seller_property_edit'),
     path('seller/properties/<int:pk>/delete/', seller_views.seller_property_delete, name='seller_property_delete'),
@@ -95,12 +87,6 @@ urlpatterns = [
     path("terms/", TemplateView.as_view(template_name="core/terms.html"), name="terms"),
     path("properties_list/", TemplateView.as_view(template_name="core/properties_list.html"), name="properties_list"),
 
-    # ======================================================
-    # USER PROFILE
-    # ======================================================
-    path("profile/", views.profile_view, name="profile"),
-    path("profile/edit/", views.edit_profile_view, name="edit_profile"),
-    path("change-password/", change_password_view, name="change_password"),
 
     # ======================================================
     # AUTHENTICATION
@@ -111,42 +97,7 @@ urlpatterns = [
 
     # Allauth (Social Login)
     path("accounts/", include("allauth.urls")),
-
-
-    # ======================================================
-    # PASSWORD RESET
-    # ======================================================
-    path(
-        "password-reset/",
-        auth_views.PasswordResetView.as_view(
-            template_name="auth/email/password_reset.html",
-            email_template_name="auth/email/password_reset_email.html",
-            subject_template_name="auth/email/password_reset_subject.txt",
-        ),
-        name="password_reset",
-    ),
-    path(
-        "password-reset/done/",
-        auth_views.PasswordResetDoneView.as_view(
-            template_name="auth/email/password_reset_done.html"
-        ),
-        name="password_reset_done",
-    ),
-    path(
-        "password-reset-confirm/<uidb64>/<token>/",
-        auth_views.PasswordResetConfirmView.as_view(
-            template_name="auth/email/password_reset_confirm.html"
-        ),
-        name="password_reset_confirm",
-    ),
-    path(
-        "password-reset-complete/",
-        auth_views.PasswordResetCompleteView.as_view(
-            template_name="auth/email/password_reset_complete.html"
-        ),
-        name="password_reset_complete",
-    ),
-
+    
     # ======================================================
     # EMAIL VERIFICATION
     # ======================================================
@@ -154,8 +105,25 @@ urlpatterns = [
     path("verification-sent/", views.verification_sent_view, name="verification_sent"),
     path("resend-verification/", views.resend_verification_view, name="resend_verification"),
 
-    
-
+    # ======================================================
+    # PASSWORD RESET
+    # ======================================================
+    path("change-password/", change_password_view, name="change_password"),
+    path("password-reset/",
+        auth_views.PasswordResetView.as_view(
+            template_name="auth/email/password_reset.html",
+            email_template_name="auth/email/password_reset_email.html",
+            subject_template_name="auth/email/password_reset_subject.txt",
+        ),name="password_reset",),
+    path("password-reset/done/",
+        auth_views.PasswordResetDoneView.as_view(template_name="auth/email/password_reset_done.html"),
+        name="password_reset_done",),
+    path("password-reset-confirm/<uidb64>/<token>/",
+        auth_views.PasswordResetConfirmView.as_view(template_name="auth/email/password_reset_confirm.html"),
+        name="password_reset_confirm",),
+    path("password-reset-complete/",
+        auth_views.PasswordResetCompleteView.as_view(template_name="auth/email/password_reset_complete.html"),
+        name="password_reset_complete",),
    
       
 ]
