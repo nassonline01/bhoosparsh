@@ -12,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings
 SECRET_KEY = 'django-insecure-k#vqkokik41zeh!2_&%bub^8yi10a&_rvta4gfq=bw71287k*i'
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']  # Allow all hosts for development, change in production
 
 # Application definition
 INSTALLED_APPS = [
@@ -98,12 +98,28 @@ TEMPLATES = [
 WSGI_APPLICATION = 'RealEstateHub.wsgi.application'
 
 # Database
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+# Database
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'nassonline_bhoosparsh',
+        'USER': 'nassonline_django',
+        'PASSWORD': 'Nassarudeen@2025',
+        'HOST': 'localhost',
+        'PORT': '3306',
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     }
 }
+
 
 # Password validation (KEEP ONLY THIS ONE)
 AUTH_PASSWORD_VALIDATORS = [
