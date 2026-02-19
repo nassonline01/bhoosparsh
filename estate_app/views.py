@@ -12,6 +12,9 @@ from django.utils import timezone
 from django.db import transaction
 from django.urls import reverse
 import uuid
+from django.core.paginator import Paginator
+from django.db.models import Q, Count
+from .models import Property, PropertyType, PropertyInquiry
 
 from .models import CustomUser, UserProfile, Property, PropertyCategory, PropertyInquiry, PropertyView, PropertyFavorite, PropertyType, PropertyImage
 from .forms import UserRegistrationForm, UserLoginForm, UserProfileForm, EmailVerificationForm
@@ -831,387 +834,567 @@ def change_password_view(request):
 #  Home Page View
 # ==============================================
 
-"""
-Home page view with featured properties, statistics, and sections
-"""
-from django.shortcuts import render
-from django.db.models import Count, Q
-from django.utils import timezone
-from django.core.cache import cache
-from django.db.models.functions import TruncMonth
-from django.db.models import Avg, Max, Min, Sum
-from django.contrib.gis.geoip2 import GeoIP2
-# from django.contrib.gis.geos import Point
-# from django.contrib.gis.db.models.functions import Distance
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
-from django.views.decorators.cache import cache_page
-from django.views.decorators.vary import vary_on_cookie
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.contrib.auth.decorators import login_required
+from django.core.mail import send_mail
+from django.conf import settings
 import json
-from datetime import datetime, timedelta
 
+from .models import Property, PropertyType
 
-
-@cache_page(60 * 15)  # Cache for 15 minutes
 def home_view(request):
-    """Home page view with dynamic content"""
+    """Home page with featured properties and premier houses"""
     
-    # Get user's location for personalized content
-    user_location = get_user_location(request)
-    
-    # Featured properties (cached for performance)
-    cache_key = f'home_featured_properties_{user_location}'
-    featured_properties = cache.get(cache_key)
-    
-    if featured_properties is None:
-        featured_properties = get_featured_properties(user_location)
-        cache.set(cache_key, featured_properties, 60 * 30)  # 30 minutes cache
-    
-    # Recently added properties
-    recent_properties = get_recent_properties(user_location)
-    
-    # Popular categories
-    popular_categories = get_popular_categories()
-    
-    # Statistics
-    stats = get_home_statistics()
-    
-    # Testimonials
-    testimonials = get_testimonials()
-    
-    # City statistics for location selector
-    city_stats = get_city_statistics()
-    
-    # For logged in users, show personalized recommendations
-    personalized_recommendations = []
-    if request.user.is_authenticated:
-        personalized_recommendations = get_personalized_recommendations(request.user)
-    
-    context = {
-        'title': 'RealEstatePro - Find Your Dream Property',
-        'featured_properties': featured_properties,
-        'recent_properties': recent_properties,
-        'popular_categories': popular_categories,
-        'stats': stats,
-        'testimonials': testimonials,
-        'city_stats': city_stats,
-        'personalized_recommendations': personalized_recommendations,
-        'user_location': user_location,
-        'current_year': timezone.now().year,
-    }
-    
-    return render(request, 'home.html', context)
-
-
-def get_user_location(request):
-    """Get user's location based on IP or session"""
-    location = None
-    
-    # Check session first
-    if 'user_location' in request.session:
-        location = request.session['user_location']
-    else:
-        # Try to get location from IP
-        try:
-            g = GeoIP2()
-            ip = get_client_ip(request)
-            if ip:
-                location_data = g.city(ip)
-                if location_data:
-                    location = {
-                        'city': location_data['city'],
-                        'country': location_data['country_name'],
-                        'lat': location_data['latitude'],
-                        'lng': location_data['longitude']
-                    }
-                    request.session['user_location'] = location
-        except Exception as e:
-            # Fallback to default location
-            location = {'city': 'Mumbai', 'country': 'India', 'lat': 19.0760, 'lng': 72.8777}
-    
-    return location
-
-
-def get_client_ip(request):
-    """Get client IP address"""
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
-
-
-def get_featured_properties(location=None, limit=8):
-    """Get featured properties with optimization"""
-    queryset = Property.objects.filter(
+    # Get featured properties (no login required)
+    featured_properties = Property.objects.filter(
         status='active',
         is_featured=True
-    ).select_related(
-        'owner'
-    ).prefetch_related(
-        'images'
-    ).only(
-        'id', 'title', 'slug', 'price', 'city',
-        'bedrooms', 'bathrooms', 'carpet_area', 'status', 'created_at',
-        'is_featured', 'is_verified', 'owner__id'
-    ).order_by('-created_at')[:limit]
+    ).select_related('owner').prefetch_related('images')[:3]  # Limit to 3
     
-    # If location is available, prioritize nearby properties
-    if location and location.get('lat') and location.get('lng'):
-        # This is a simplified version - in production, use PostGIS
-        queryset = list(queryset)
-        queryset.sort(key=lambda x: (
-            0 if x.city == location['city'] else 1,
-            -x.created_at.timestamp()
-        ))
+    # Get all active properties for premier section (will be filtered by JS)
+    premier_properties = Property.objects.filter(
+        status='active'
+    ).select_related('owner').prefetch_related('images')
     
-    return queryset
-
-
-def get_recent_properties(location=None, limit=6):
-    """Get recently added properties"""
-    queryset = Property.objects.filter(
-        status='active',
-        created_at__gte=timezone.now() - timedelta(days=30)
-    ).select_related(
-        'owner'
-    ).prefetch_related(
-        'images'
-    ).only(
-        'id', 'title', 'slug', 'price', 'city',
-        'bedrooms', 'bathrooms', 'carpet_area', 'status', 'created_at',
-        'is_featured', 'owner__id'
-    ).order_by('-created_at')[:limit]
+    # Order by urgent first, then by upload date
+    premier_properties = premier_properties.order_by(
+        '-is_urgent', '-created_at'
+    )[:8]  # Limit to 8
     
-    return queryset
+    context = {
+        'featured_properties': featured_properties,
+        'premier_properties': premier_properties,
+        'property_types': PropertyType.objects.filter(is_active=True)[:8],
+    }
+    
+    return render(request, 'core/home.html', context)
 
 
-def get_popular_categories(limit=6):
-    """Get popular property categories"""
-    cache_key = 'popular_categories'
-    categories = cache.get(cache_key)
-
-    if categories is None:
-        categories = PropertyCategory.objects.filter(
-            is_active=True
-        ).annotate(
-            property_count=Count('properties', filter=Q(properties__status='active'))
-        ).filter(
-            property_count__gt=0
-        ).order_by('-property_count')[:limit]
-
-        cache.set(cache_key, categories, 60 * 60)  # 1 hour cache
-
-    return categories
-
-
-def get_home_statistics():
-    """Get home page statistics"""
-    cache_key = 'home_statistics'
-    stats = cache.get(cache_key)
-
-    if stats is None:
-        total_properties = Property.objects.filter(status='active').count()
-        total_users = CustomUser.objects.filter(is_active=True).count()
-
-        # Properties added this month
-        this_month_start = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        new_this_month = Property.objects.filter(
-            status='active',
-            created_at__gte=this_month_start
-        ).count()
-
-        # Success stories (properties marked as sold/rented)
-        success_stories = Property.objects.filter(
-            status__in=['sold', 'rented']
-        ).count()
-
-        # Average time to sell (simplified)
-        sold_properties = Property.objects.filter(
-            status='sold',
-            created_at__isnull=False,
-            updated_at__isnull=False
+def api_filter_properties(request):
+    """API endpoint for filtering properties (no login required)"""
+    
+    # Get filter parameters
+    property_type = request.GET.get('property_type', '')
+    price_range = request.GET.get('price_range', '')
+    location = request.GET.get('location', '')
+    bedrooms = request.GET.get('bedrooms', '')
+    
+    # Base queryset - only active properties
+    properties = Property.objects.filter(status='active')
+    
+    # Apply filters
+    if property_type:
+        properties = properties.filter(
+            Q(title__icontains=property_type) |
+            Q(property_type__name__icontains=property_type)
         )
-
-        avg_time_to_sell = None
-        if sold_properties.exists():
-            # This is a simplified calculation
-            avg_time_to_sell = 45  # days
-
-        stats = {
-            'total_properties': f"{total_properties:,}",
-            'total_users': f"{total_users:,}",
-            'new_this_month': f"{new_this_month:,}",
-            'success_stories': f"{success_stories:,}",
-            'avg_time_to_sell': avg_time_to_sell,
-        }
-
-        cache.set(cache_key, stats, 60 * 30)  # 30 minutes cache
-
-    return stats
-
-
-def get_testimonials():
-    """Get testimonials for home page"""
-    testimonials = [
-        {
-            'name': 'Rajesh Kumar',
-            'role': 'Property Buyer',
-            'city': 'Mumbai',
-            'avatar_color': 'bg-blue-500',
-            'content': 'Found my dream home in just 2 weeks! The platform made it so easy to compare properties and connect with sellers.',
-            'rating': 5,
-            'property_type': '3BHK Apartment',
-        },
-        {
-            'name': 'Priya Sharma',
-            'role': 'Real Estate Agent',
-            'city': 'Delhi',
-            'avatar_color': 'bg-purple-500',
-            'content': 'As an agent, this platform has helped me reach more clients. The analytics and tools are incredibly useful.',
-            'rating': 5,
-            'property_type': 'Commercial Space',
-        },
-        {
-            'name': 'Michael Chen',
-            'role': 'NRI Investor',
-            'city': 'Bangalore',
-            'avatar_color': 'bg-green-500',
-            'content': 'Investing from abroad was challenging until I found RealEstatePro. The virtual tours and detailed documentation made it seamless.',
-            'rating': 5,
-            'property_type': 'Luxury Villa',
-        },
-    ]
     
-    return testimonials
-
-
-def get_city_statistics():
-    """Get statistics for popular cities"""
-    cache_key = 'city_statistics'
-    city_stats = cache.get(cache_key)
-
-    if city_stats is None:
-        # Get top 6 cities with most properties
-        cities = Property.objects.filter(
-            status='active'
-        ).values('city').annotate(
-            property_count=Count('id'),
-            avg_price=Avg('price'),
-            min_price=Min('price'),
-            max_price=Max('price')
-        ).order_by('-property_count')[:6]
-
-        city_stats = list(cities)
-        cache.set(cache_key, city_stats, 60 * 60)  # 1 hour cache
-
-    return city_stats
-
-
-def get_personalized_recommendations(user, limit=4):
-    """Get personalized property recommendations based on user behavior"""
-    if not user.is_authenticated:
-        return []
-
-    recommendations = []
-
-    # Get user's saved searches or favorite properties
-    try:
-        # If user has favorites, recommend similar properties
-        favorites = user.favorites.select_related('property').all()[:3]
-        if favorites.exists():
-            favorite_categories = set([fav.property.category_id for fav in favorites])
-            favorite_cities = set([fav.property.city for fav in favorites])
-
-            recommendations = Property.objects.filter(
-                status='active',
-                category_id__in=list(favorite_categories)[:2],
-                city__in=list(favorite_cities)[:2]
-            ).exclude(
-                id__in=[fav.property_id for fav in favorites]
-            ).select_related(
-                'owner'
-            ).prefetch_related(
-                'images'
-            ).order_by('-created_at')[:limit]
-
-    except Exception as e:
-        # Log error and return empty
-        pass
-
-    return recommendations
-
-
-def search_suggestions_view(request):
-    """AJAX endpoint for search suggestions"""
-    query = request.GET.get('q', '').strip().lower()
-
-    if len(query) < 2:
-        return JsonResponse({'suggestions': []})
-
-    cache_key = f'search_suggestions_{query}'
-    suggestions = cache.get(cache_key)
-
-    if suggestions is None:
-        # Search in properties
-        properties = Property.objects.filter(
-            Q(title__icontains=query) |
-            Q(description__icontains=query) |
-            Q(city__icontains=query)
-        ).filter(status='active').values('title', 'slug', 'city', 'price')[:5]
-
-        # Search in cities
-        cities = Property.objects.filter(
-            city__icontains=query
-        ).values_list('city', flat=True).distinct()[:5]
-
-        # Search in categories
-        categories = PropertyCategory.objects.filter(
-            Q(name__icontains=query) |
-            Q(description__icontains=query)
-        ).filter(is_active=True).values('name', 'slug')[:5]
-
-        suggestions = {
-            'properties': list(properties),
-            'cities': list(cities),
-            'categories': list(categories),
-        }
-
-        cache.set(cache_key, suggestions, 60 * 5)  # 5 minutes cache
-
-    return JsonResponse(suggestions)
-
-
-def city_properties_view(request, city):
-    """Get properties for a specific city"""
-    properties = Property.objects.filter(
-        city=city,
-        status='active'
-    ).select_related('owner').prefetch_related('images')[:8]
-
-    city_stats = Property.objects.filter(
-        city=city,
-        status='active'
-    ).aggregate(
-        total=Count('id'),
-        avg_price=Avg('price'),
-        for_sale=Count('id', filter=Q(status='for_sale')),
-        for_rent=Count('id', filter=Q(status='for_rent'))
-    )
-
+    if price_range:
+        try:
+            if price_range == '1000000+':
+                properties = properties.filter(price__gte=1000000)
+            else:
+                min_price, max_price = map(int, price_range.split('-'))
+                properties = properties.filter(price__gte=min_price, price__lte=max_price)
+        except (ValueError, TypeError):
+            pass
+    
+    if location:
+        properties = properties.filter(
+            Q(city__icontains=location) |
+            Q(locality__icontains=location) |
+            Q(address__icontains=location)
+        )
+    
+    if bedrooms and bedrooms != '0':
+        if bedrooms == '4':
+            properties = properties.filter(bedrooms__gte=4)
+        else:
+            try:
+                properties = properties.filter(bedrooms=int(bedrooms))
+            except ValueError:
+                pass
+    
+    # Limit to 20 results for performance
+    properties = properties[:20]
+    
+    # Format properties for JSON
+    properties_data = []
+    for prop in properties:
+        properties_data.append({
+            'id': prop.id,
+            'title': prop.title,
+            'description': prop.description[:150] + '...' if len(prop.description) > 150 else prop.description,
+            'price': float(prop.price),
+            'price_formatted': f"₹{prop.price:,.0f}" if prop.property_for != 'rent' else f"₹{prop.price:,.0f}/mo",
+            'bedrooms': prop.bedrooms,
+            'bathrooms': prop.bathrooms,
+            'address': f"{prop.locality or ''} {prop.city}",
+            'city': prop.city,
+            'property_for': prop.get_property_for_display(),
+            'image': prop.primary_image.url if prop.primary_image else '/static/images/property-placeholder.jpg',
+            'is_urgent': prop.is_urgent,
+            'is_featured': prop.is_featured,
+        })
+    
     return JsonResponse({
-        'properties': [
-            {
-                'title': p.title,
-                'slug': p.slug,
-                'price': p.price,
-                'city': p.city,
-                'bedrooms': p.bedrooms,
-                'bathrooms': p.bathrooms,
-                'image': p.primary_image.url if p.primary_image else None
-            }
-            for p in properties
-        ],
-        'stats': city_stats
+        'success': True,
+        'properties': properties_data,
+        'count': len(properties_data),
     })
 
+
+def api_property_details(request, property_id):
+    """API endpoint for property details"""
+    try:
+        property = Property.objects.get(id=property_id, status='active')
+        
+        # Increment view count
+        property.view_count += 1
+        property.save(update_fields=['view_count'])
+        
+        data = {
+            'success': True,
+            'property': {
+                'id': property.id,
+                'title': property.title,
+                'description': property.description,
+                'price': float(property.price),
+                'price_formatted': f"₹{property.price:,.0f}" if property.property_for != 'rent' else f"₹{property.price:,.0f}/mo",
+                'price_per_sqft': float(property.price_per_sqft) if property.price_per_sqft else None,
+                'carpet_area': float(property.carpet_area) if property.carpet_area else None,
+                'bedrooms': property.bedrooms,
+                'bathrooms': property.bathrooms,
+                'balconies': property.balconies,
+                'city': property.city,
+                'locality': property.locality,
+                'address': property.address,
+                'property_for': property.get_property_for_display(),
+                'furnishing': property.get_furnishing_display() if property.furnishing else None,
+                'amenities': property.amenities,
+                'possession_status': property.possession_status,
+                'age_of_property': property.age_of_property,
+                'contact_person': property.contact_person,
+                'contact_phone': property.contact_phone,
+                'contact_email': property.contact_email,
+                'image': property.primary_image.url if property.primary_image else '/static/images/property-placeholder.jpg',
+                'is_urgent': property.is_urgent,
+                'is_featured': property.is_featured,
+            }
+        }
+        
+        return JsonResponse(data)
+    except Property.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Property not found'}, status=404)
+
+
+def api_send_contact(request):
+    """API endpoint for contact form (no login required)"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            
+            # Extract form data
+            first_name = data.get('first_name', '')
+            last_name = data.get('last_name', '')
+            email = data.get('email', '')
+            phone = data.get('phone', '')
+            inquiry_type = data.get('inquiry_type', '')
+            message = data.get('message', '')
+            property_id = data.get('property_id')
+            
+            # Get property info if provided
+            property_info = ""
+            if property_id:
+                try:
+                    property = Property.objects.get(id=property_id)
+                    property_info = f"\n\nRegarding Property: {property.title} (ID: {property.property_id})"
+                except Property.DoesNotExist:
+                    pass
+            
+            # Prepare email content
+            subject = f"New Contact Form Inquiry: {inquiry_type}"
+            email_message = f"""
+            New contact form submission:
+            
+            Name: {first_name} {last_name}
+            Email: {email}
+            Phone: {phone}
+            Inquiry Type: {inquiry_type}
+            Message: {message}
+            {property_info}
+            """
+            
+            # Send email
+            send_mail(
+                subject,
+                email_message,
+                settings.DEFAULT_FROM_EMAIL,
+                [settings.CONTACT_EMAIL],
+                fail_silently=False,
+            )
+            
+            # Also save to database if you have a Contact model
+            # Contact.objects.create(...)
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Your message has been sent successfully! We will contact you within 24 hours.'
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=400)
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+
+
+@login_required
+def premier_properties_view(request):
+    """View for premier properties (login required)"""
+    # Get all urgent properties first, then others
+    properties = Property.objects.filter(
+        status='active'
+    ).order_by('-is_urgent', '-created_at')
+    
+    # Paginate
+    paginator = Paginator(properties, 12)
+    page = request.GET.get('page', 1)
+    properties_page = paginator.get_page(page)
+    
+    context = {
+        'properties': properties_page,
+        'is_premier': True,
+    }
+    
+    return render(request, 'core/premier_properties.html', context)
+
+# ==============================================
+#  Properties List View with Filters
+# ==============================================
+
+def properties_list_view(request):
+    """Display featured properties with filters"""
+    
+    # Base queryset - only active and featured properties
+    properties = Property.objects.filter(
+        status='active',
+        is_featured=True
+    ).select_related('owner', 'owner__profile').prefetch_related('images')
+    
+    # Apply search filters
+    search_query = request.GET.get('q', '')
+    if search_query:
+        properties = properties.filter(
+            Q(title__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(address__icontains=search_query) |
+            Q(city__icontains=search_query) |
+            Q(locality__icontains=search_query)
+        )
+    
+    # City filter
+    city = request.GET.get('city', '')
+    if city:
+        properties = properties.filter(city__icontains=city)
+    
+    # Property for filter (sale/rent)
+    property_for = request.GET.get('property_for', '')
+    if property_for:
+        properties = properties.filter(property_for=property_for)
+    
+    # Price range filter
+    price_range = request.GET.get('price_range', '')
+    if price_range:
+        if price_range == 'under_50l':
+            properties = properties.filter(price__lt=5000000)
+        elif price_range == '50l_1cr':
+            properties = properties.filter(price__gte=5000000, price__lt=10000000)
+        elif price_range == '1cr_2cr':
+            properties = properties.filter(price__gte=10000000, price__lt=20000000)
+        elif price_range == 'above_2cr':
+            properties = properties.filter(price__gte=20000000)
+    
+    # Min/Max price
+    min_price = request.GET.get('min_price')
+    if min_price:
+        try:
+            properties = properties.filter(price__gte=float(min_price))
+        except ValueError:
+            pass
+    
+    max_price = request.GET.get('max_price')
+    if max_price:
+        try:
+            properties = properties.filter(price__lte=float(max_price))
+        except ValueError:
+            pass
+    
+    # Property type filter
+    property_type_ids = request.GET.getlist('property_type')
+    if property_type_ids:
+        properties = properties.filter(property_type_id__in=property_type_ids)
+    
+    # BHK filter
+    bhk = request.GET.get('bhk')
+    if bhk:
+        if bhk == '4plus':
+            properties = properties.filter(bedrooms__gte=4)
+        else:
+            try:
+                properties = properties.filter(bedrooms=int(bhk))
+            except ValueError:
+                pass
+    
+    # Amenities filter
+    amenities = request.GET.getlist('amenities')
+    if amenities:
+        for amenity in amenities:
+            properties = properties.filter(amenities__selected__contains=[amenity])
+    
+    # Possession filter
+    possession = request.GET.get('possession')
+    if possession == 'ready':
+        properties = properties.filter(possession_status__icontains='ready')
+    elif possession == 'under_construction':
+        properties = properties.filter(possession_status__icontains='construction')
+    
+    # Sorting
+    sort_by = request.GET.get('sort', '-created_at')
+    valid_sort_fields = ['price', '-price', 'created_at', '-created_at', 'view_count', '-view_count', 'inquiry_count', '-inquiry_count']
+    if sort_by in valid_sort_fields:
+        properties = properties.order_by(sort_by)
+    else:
+        properties = properties.order_by('-created_at')
+    
+    # Get user favorites if logged in
+    user_favorites = []
+    if request.user.is_authenticated:
+        user_favorites = request.user.favorites.values_list('property_id', flat=True)
+    
+    # Pagination
+    paginator = Paginator(properties, 10)  # Show 10 properties per page
+    page_number = request.GET.get('page')
+    featured_properties = paginator.get_page(page_number)
+    
+    # Get all property types for filter
+    property_types = PropertyType.objects.filter(is_active=True)
+    
+    context = {
+        'featured_properties': featured_properties,
+        'property_types': property_types,
+        'user_favorites': list(user_favorites),
+    }
+    
+    return render(request, 'core/properties_list.html', context)
+
+from django.http import JsonResponse
+from django.core.paginator import Paginator
+from django.db.models import Q
+from .models import Property, PropertyType
+
+def api_featured_properties(request):
+    """API endpoint for featured properties with filters - returns JSON"""
+    
+    # Base queryset - only active and featured properties
+    properties = Property.objects.filter(
+        status='active',
+        is_featured=True
+    ).select_related('owner').prefetch_related('images')
+    
+    # Apply filters
+    search_query = request.GET.get('q', '')
+    if search_query:
+        properties = properties.filter(
+            Q(title__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(address__icontains=search_query) |
+            Q(city__icontains=search_query) |
+            Q(locality__icontains=search_query)
+        )
+    
+    city = request.GET.get('city', '')
+    if city:
+        properties = properties.filter(city__icontains=city)
+    
+    property_for = request.GET.get('property_for', '')
+    if property_for:
+        properties = properties.filter(property_for=property_for)
+    
+    # Price range
+    price_range = request.GET.get('price_range', '')
+    if price_range:
+        if price_range == 'under_50l':
+            properties = properties.filter(price__lt=5000000)
+        elif price_range == '50l_1cr':
+            properties = properties.filter(price__gte=5000000, price__lt=10000000)
+        elif price_range == '1cr_2cr':
+            properties = properties.filter(price__gte=10000000, price__lt=20000000)
+        elif price_range == 'above_2cr':
+            properties = properties.filter(price__gte=20000000)
+    
+    # Min/Max price
+    min_price = request.GET.get('min_price')
+    if min_price:
+        try:
+            properties = properties.filter(price__gte=float(min_price))
+        except ValueError:
+            pass
+    
+    max_price = request.GET.get('max_price')
+    if max_price:
+        try:
+            properties = properties.filter(price__lte=float(max_price))
+        except ValueError:
+            pass
+    
+    # Property types
+    property_type_ids = request.GET.getlist('property_type')
+    if property_type_ids:
+        properties = properties.filter(property_type_id__in=property_type_ids)
+    
+    # BHK
+    bhk = request.GET.get('bhk')
+    if bhk:
+        if bhk == '4plus':
+            properties = properties.filter(bedrooms__gte=4)
+        else:
+            try:
+                properties = properties.filter(bedrooms=int(bhk))
+            except ValueError:
+                pass
+    
+    # Amenities
+    amenities = request.GET.getlist('amenities')
+    if amenities:
+        for amenity in amenities:
+            properties = properties.filter(amenities__selected__contains=[amenity])
+    
+    # Possession
+    possession = request.GET.get('possession')
+    if possession == 'ready':
+        properties = properties.filter(possession_status__icontains='ready')
+    elif possession == 'under_construction':
+        properties = properties.filter(possession_status__icontains='construction')
+    
+    # Sorting
+    sort_by = request.GET.get('sort', '-created_at')
+    valid_sort_fields = ['price', '-price', 'created_at', '-created_at', 'view_count', '-view_count']
+    if sort_by in valid_sort_fields:
+        properties = properties.order_by(sort_by)
+    else:
+        properties = properties.order_by('-created_at')
+    
+    # Pagination
+    page = int(request.GET.get('page', 1))
+    page_size = int(request.GET.get('page_size', 8))
+    
+    paginator = Paginator(properties, page_size)
+    total_pages = paginator.num_pages
+    total_count = paginator.count
+    
+    if page > total_pages:
+        page = total_pages
+    
+    page_obj = paginator.get_page(page)
+    
+    # Format properties for JSON
+    properties_data = []
+    for prop in page_obj:
+        prop_data = {
+            'id': prop.id,
+            'title': prop.title,
+            'description': prop.description,
+            'price': float(prop.price),
+            'price_per_sqft': float(prop.price_per_sqft) if prop.price_per_sqft else None,
+            'carpet_area': float(prop.carpet_area) if prop.carpet_area else None,
+            'bedrooms': prop.bedrooms,
+            'bathrooms': prop.bathrooms,
+            'city': prop.city,
+            'locality': prop.locality,
+            'address': prop.address,
+            'property_for': prop.property_for,
+            'furnishing': prop.furnishing,
+            'furnishing_display': prop.get_furnishing_display() if prop.furnishing else None,
+            'amenities': prop.amenities,
+            'is_featured': prop.is_featured,
+            'is_premium': prop.is_premium,
+            'is_verified': prop.is_verified,
+            'is_urgent': prop.is_urgent,
+            'contact_person': prop.contact_person,
+            'contact_phone': prop.contact_phone,
+            'contact_email': prop.contact_email,
+            'primary_image': prop.primary_image.url if prop.primary_image else None,
+            'images_count': prop.images.count(),
+            'owner_initials': prop.owner.first_name[0] + prop.owner.last_name[0] if prop.owner.first_name and prop.owner.last_name else 'U',
+            'owner_type': prop.owner.get_user_type_display() if prop.owner else 'Individual Owner',
+            'status_display': prop.get_status_display(),
+        }
+        
+        # Add images if needed
+        if prop.images.exists():
+            prop_data['images'] = [{'image': img.image.url} for img in prop.images.all()[:5]]
+        
+        properties_data.append(prop_data)
+    
+    return JsonResponse({
+        'properties': properties_data,
+        'total_pages': total_pages,
+        'total_count': total_count,
+        'current_page': page,
+        'has_next': page_obj.has_next(),
+        'has_previous': page_obj.has_previous(),
+    })
+
+def api_property_types(request):
+    """API endpoint to get all property types"""
+    types = PropertyType.objects.filter(is_active=True).values('id', 'name')
+    return JsonResponse(list(types), safe=False)
+
+def api_property_details(request, id):
+    """API endpoint to get single property details"""
+    try:
+        property = Property.objects.get(id=id, status='active')
+        
+        data = {
+            'success': True,
+            'property': {
+                'id': property.id,
+                'title': property.title,
+                'description': property.description,
+                'price': float(property.price),
+                'price_per_sqft': float(property.price_per_sqft) if property.price_per_sqft else None,
+                'carpet_area': float(property.carpet_area) if property.carpet_area else None,
+                'builtup_area': float(property.builtup_area) if property.builtup_area else None,
+                'bedrooms': property.bedrooms,
+                'bathrooms': property.bathrooms,
+                'balconies': property.balconies,
+                'city': property.city,
+                'locality': property.locality,
+                'address': property.address,
+                'property_for': property.property_for,
+                'furnishing': property.furnishing,
+                'furnishing_display': property.get_furnishing_display() if property.furnishing else None,
+                'amenities': property.amenities,
+                'possession_status': property.possession_status,
+                'age_of_property': property.age_of_property,
+                'contact_person': property.contact_person,
+                'contact_phone': property.contact_phone,
+                'contact_email': property.contact_email,
+                'status_display': property.get_status_display(),
+                'primary_image': property.primary_image.url if property.primary_image else None,
+            }
+        }
+        
+        # Increment view count
+        property.view_count += 1
+        property.save(update_fields=['view_count'])
+        
+        return JsonResponse(data)
+    except Property.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Property not found'}, status=404)

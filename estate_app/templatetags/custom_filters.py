@@ -18,6 +18,10 @@ def replace(value, arg):
 
 
 @register.filter
+def split(value, key):
+    return value.split(key)
+
+@register.filter
 def status_filter(queryset, status):
     """Filter inquiries by status"""
     return queryset.filter(status=status)

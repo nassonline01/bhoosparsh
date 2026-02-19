@@ -409,18 +409,66 @@ class PropertyInquiryForm(forms.ModelForm):
 
 class LeadResponseForm(forms.ModelForm):
     """Form for responding to leads"""
-    response = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': 4, 'placeholder': 'Type your response here...'}),
-        label='Your Response'
-    )
     
     class Meta:
         model = PropertyInquiry
-        fields = ['response', 'status']
+        fields = ['response', 'status', 'priority']
         widgets = {
-            'status': forms.Select(attrs={'class': 'w-full p-2 border rounded'}),
+            'response': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 5,
+                'placeholder': 'Type your response here...'
+            }),
+            'status': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'priority': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': 1,
+                'max': 5
+            })
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['response'].required = True
+        self.fields['status'].required = False
+        self.fields['priority'].required = False
+        
 
+class LeadFilterForm(forms.Form):
+    """Form for filtering leads"""
+    STATUS_CHOICES = [('all', 'All Statuses')] + list(PropertyInquiry.STATUS_CHOICES)
+    
+    status = forms.ChoiceField(choices=STATUS_CHOICES, required=False)
+    property = forms.ChoiceField(choices=[], required=False)
+    date_from = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+    date_to = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+    search = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Search leads...'}))
+    
+    def __init__(self, *args, **kwargs):
+        properties = kwargs.pop('properties', [])
+        super().__init__(*args, **kwargs)
+        
+        property_choices = [('all', 'All Properties')]
+        property_choices.extend([(p.id, p.title) for p in properties])
+        self.fields['property'].choices = property_choices
+
+class BuyerFollowupForm(forms.Form):
+    """Form for buyer follow-up messages"""
+    message = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 4,
+            'placeholder': 'Type your follow-up message here...'
+        }),
+        required=True
+    )
+    status = forms.ChoiceField(
+        choices=[('', 'Keep Current Status')] + list(PropertyInquiry.STATUS_CHOICES),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
 
 class PackageSelectionForm(forms.Form):
     """Form for selecting membership packages"""

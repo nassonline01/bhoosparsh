@@ -634,7 +634,7 @@
                         <span>Edit Property</span>
                     </a>
                     
-                    {% if property.is_active %}
+                    <!-- {% if property.is_active %}
                     <a href="#" onclick="togglePropertyStatus('{{ property.id }}', 'inactive')" 
                        class="action-menu-item dark:action-menu-item dark">
                         <i class="fas fa-pause text-yellow-500 text-sm w-4"></i>
@@ -646,19 +646,8 @@
                         <i class="fas fa-play text-green-500 text-sm w-4"></i>
                         <span>Activate</span>
                     </a>
-                    {% endif %}
+                    {% endif %} -->
                     
-                    <a href="#" onclick="duplicateProperty('{{ property.id }}')" 
-                       class="action-menu-item dark:action-menu-item dark">
-                        <i class="fas fa-copy text-purple-500 text-sm w-4"></i>
-                        <span>Duplicate</span>
-                    </a>
-                    
-                    <a href="#" onclick="openBoostModal('{{ property.id }}')" 
-                       class="action-menu-item dark:action-menu-item dark">
-                        <i class="fas fa-bolt text-orange-500 text-sm w-4"></i>
-                        <span>Boost Property</span>
-                    </a>
                     
                     <a href="#" onclick="showDeleteModal('{{ property.id }}', '{{ property.title }}')" 
                        class="action-menu-item dark:action-menu-item dark text-red-600 hover:text-red-700">

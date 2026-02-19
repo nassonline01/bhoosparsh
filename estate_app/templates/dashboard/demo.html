@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>Bryzos Buyer — mobile: icons small + label below, full responsive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ---------- global styles ---------- */
+        * { font-family: 'Inter', sans-serif; }
+
+        /* ----- 🌟 DESKTOP STYLES (applied above 768px) ----- */
+        @media (min-width: 769px) {
+            .nav-icon-wrapper {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 44px;
+                height: 44px;
+                border-radius: 9999px;
+                transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+                background: transparent;
+                color: #4b5563;
+                position: relative;
+                z-index: 10;
+            }
+
+            .nav-icon-wrapper:hover {
+                background: white !important;
+                color: #6b21a8 !important;
+                box-shadow: 0 10px 25px -5px rgba(168, 85, 247, 0.3), 0 0 0 3px rgba(255,255,255,0.8);
+                transform: scale(1.12);
+                transition: all 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.2);
+                z-index: 50;
+            }
+
+            .nav-icon-wrapper svg {
+                width: 22px;
+                height: 22px;
+                stroke-width: 1.8;
+                transition: transform 0.5s ease, stroke 0.3s;
+            }
+
+            .nav-icon-wrapper:hover svg {
+                transform: scale(1.08) rotate(1deg);
+                stroke-width: 2;
+                transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            }
+
+            /* desktop hover label */
+            .icon-label {
+                position: absolute;
+                top: 100%;
+                margin-top: 12px;
+                padding: 6px 14px;
+                background: rgba(25, 20, 35, 0.85);
+                backdrop-filter: blur(8px);
+                color: white;
+                font-size: 12px;
+                font-weight: 600;
+                letter-spacing: 0.5px;
+                white-space: nowrap;
+                border-radius: 40px;
+                box-shadow: 0 12px 22px -10px rgba(0,0,0,0.3);
+                opacity: 0;
+                transform: translateY(-12px) scale(0.92);
+                transition: opacity 0.5s cubic-bezier(0.23, 1, 0.32, 1), 
+                            transform 0.6s cubic-bezier(0.18, 0.89, 0.32, 1);
+                pointer-events: none;
+                z-index: 100;
+                border: 0.5px solid rgba(255,255,255,0.25);
+                line-height: 1.2;
+            }
+
+            .nav-icon-wrapper:hover .icon-label {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.18, 0.89, 0.32, 1);
+            }
+        }
+
+        /* ----- 📱 MOBILE STYLES (max-width: 768px) ----- */
+        @media (max-width: 768px) {
+            /* icons smaller, no hover circle, label always visible below */
+            .nav-icon-wrapper {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                width: auto;
+                height: auto;
+                background: transparent !important;
+                color: #4b5563;
+                position: relative;
+                transition: none; /* remove hover transitions */
+                transform: none !important;
+                box-shadow: none !important;
+                gap: 4px;
+                padding: 6px 0;
+            }
+
+            .nav-icon-wrapper svg {
+                width: 24px;
+                height: 24px;
+                stroke-width: 1.8;
+                color: #4b5563;
+                transition: none;
+            }
+
+            /* label always visible, small, below icon */
+            .icon-label {
+                position: static;
+                opacity: 1 !important;
+                transform: none !important;
+                background: transparent;
+                color: #6b21a8;
+                font-size: 10px;
+                font-weight: 600;
+                padding: 2px 0;
+                margin: 0;
+                box-shadow: none;
+                backdrop-filter: none;
+                white-space: nowrap;
+                pointer-events: auto;
+                border: none;
+                text-align: center;
+                width: 100%;
+            }
+
+            /* remove any hover effects on mobile */
+            .nav-icon-wrapper:hover,
+            .nav-icon-wrapper:active,
+            .nav-icon-wrapper:focus {
+                background: transparent !important;
+                transform: none !important;
+                box-shadow: none !important;
+            }
+
+            /* adjust mobile toggle drawer icons layout */
+            .mobile-nav-drawer {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 1rem 0.75rem;
+                padding: 1.25rem 0.75rem;
+            }
+
+            .mobile-nav-drawer .nav-icon-wrapper {
+                width: 70px; /* fixed width for alignment */
+                flex: 0 0 auto;
+            }
+
+            .mobile-nav-drawer .nav-icon-wrapper svg {
+                width: 26px;
+                height: 26px;
+            }
+
+            .mobile-nav-drawer .icon-label {
+                font-size: 10px;
+                color: #5b21b6;
+            }
+        }
+
+        /* very small screens */
+        @media (max-width: 480px) {
+            .mobile-nav-drawer .nav-icon-wrapper {
+                width: 60px;
+            }
+            .mobile-nav-drawer .nav-icon-wrapper svg {
+                width: 24px;
+                height: 24px;
+            }
+            .mobile-nav-drawer .icon-label {
+                font-size: 9px;
+            }
+        }
+
+        /* ----- MOBILE TOGGLE BUTTON ----- */
+        .mobile-toggle {
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 30px;
+            height: 24px;
+            cursor: pointer;
+            position: relative;
+            z-index: 200;
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .mobile-toggle:hover {
+            transform: scale(1.1);
+        }
+        .mobile-toggle span {
+            display: block;
+            width: 100%;
+            height: 3px;
+            background: #4b5563;
+            border-radius: 3px;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .mobile-toggle.active span:nth-child(1) {
+            transform: rotate(45deg) translate(7px, 7px);
+            background: #6b21a8;
+        }
+        .mobile-toggle.active span:nth-child(2) {
+            opacity: 0;
+            transform: scale(0.2);
+        }
+        .mobile-toggle.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+            background: #6b21a8;
+        }
+
+        /* ----- MOBILE NAV DRAWER ----- */
+        .mobile-nav-drawer {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 1rem;
+            border-radius: 0 0 24px 24px;
+            box-shadow: 0 20px 30px -10px rgba(0,0,0,0.15);
+            z-index: 150;
+            opacity: 0;
+            transform: translateY(-20px);
+            pointer-events: none;
+            transition: opacity 0.5s cubic-bezier(0.23, 1, 0.32, 1),
+                        transform 0.6s cubic-bezier(0.18, 0.89, 0.32, 1);
+            border-top: 1px solid rgba(168,85,247,0.2);
+        }
+        .mobile-nav-drawer.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+
+        /* ----- responsive breakpoints for toggle visibility ----- */
+        @media (max-width: 1024px) {
+            .desktop-nav-icons { display: none !important; }
+            .mobile-toggle { display: flex !important; }
+        }
+        @media (min-width: 1025px) {
+            .desktop-nav-icons { display: flex !important; }
+            .mobile-toggle { display: none !important; }
+            .mobile-nav-drawer { display: none !important; }
+        }
+
+        /* ----- SLOW HOVER FOR ALL CARDS (smooth motion) ----- */
+        .card-hover {
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1) !important;
+        }
+        .card-hover:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.2);
+            transition: all 0.6s cubic-bezier(0.18, 0.89, 0.32, 1) !important;
+        }
+
+        .button-hover {
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .button-hover:hover {
+            transform: scale(1.06);
+            transition: all 0.6s cubic-bezier(0.18, 0.89, 0.32, 1);
+        }
+
+        .stat-card {
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .stat-card:hover {
+            transform: translateX(8px);
+            transition: all 0.5s cubic-bezier(0.18, 0.89, 0.32, 1);
+        }
+
+        .profile-avatar {
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .profile-avatar:hover {
+            transform: scale(1.18) rotate(6deg);
+            transition: all 0.6s cubic-bezier(0.18, 0.89, 0.32, 1);
+        }
+
+        .circular-progress { 
+            animation: rotateProgress 4s linear infinite; 
+        }
+        @keyframes rotateProgress { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
+
+        .slide-in { animation: slideIn 0.7s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(25px); } to { opacity: 1; transform: translateY(0); } }
+
+        .icon-bounce:hover { animation: bounce 0.8s ease; }
+        @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+        .bryzos-footer {
+            background: white;
+            border-top: 1px solid rgba(168,85,247,0.15);
+            backdrop-filter: blur(2px);
+            animation: borderGlow 6s infinite;
+        }
+        @keyframes borderGlow {
+            0% { border-color: rgba(168,85,247,0.1); }
+            50% { border-color: rgba(168,85,247,0.25); }
+            100% { border-color: rgba(168,85,247,0.1); }
+        }
+
+        .divider-shimmer {
+            background: linear-gradient(90deg, transparent, rgba(168,85,247,0.2), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 4s infinite;
+        }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        .bg-motion {
+            background: linear-gradient(95deg, #ffffff, #faf7ff, #ffffff);
+            background-size: 200% 200%;
+            animation: bgFloat 10s ease infinite;
+        }
+        @keyframes bgFloat { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        .motion-dot { animation: softPulse 3s infinite; }
+        @keyframes softPulse {
+            0% { opacity: 0.5; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.15); }
+            100% { opacity: 0.5; transform: scale(0.95); }
+        }
+
+        .container-adaptive {
+            width: 100%;
+            max-width: 1600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ensure no hover labels on mobile */
+        @media (max-width: 768px) {
+            .nav-icon-wrapper:hover .icon-label {
+                opacity: 1 !important; /* already visible, but keep */
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-100 via-purple-50 to-pink-50 antialiased flex flex-col min-h-screen">
+
+    <!-- ========== MAIN DASHBOARD CONTENT ========== -->
+    <div class="flex-grow container-adaptive px-2 sm:px-4 lg:px-6">
+        <!-- Navigation Header - with mobile toggle, mobile: small icons + label below -->
+        <nav class="bg-gradient-to-r from-purple-200 to-purple-150 shadow-lg px-4 sm:px-6 lg:px-8 py-4 rounded-2xl my-2 sm:my-3 relative" style="z-index: 100;">
+            <div class="flex items-center justify-between flex-wrap lg:flex-nowrap gap-4">
+                
+                <!-- Left Section: Logo & Buyer -->
+                <div class="flex items-center gap-4 sm:gap-6 lg:gap-8">
+                    <div class="flex items-center gap-2 cursor-pointer hover:opacity-80 transition duration-500 group">
+                        <div class="w-8 h-8 bg-black rounded-lg flex items-center justify-center shadow-md group-hover:shadow-purple-400/60 transition-all duration-500">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 10c-2.33 0-4.35-1.45-5.23-3.48.5-.9 1.42-1.64 2.54-1.84.9-.1 1.78-.16 2.69-.16s1.79.06 2.69.16c1.12.2 2.04.94 2.54 1.84-.88 2.03-2.9 3.48-5.23 3.48z"/>
+                            </svg>
+                        </div>
+                        <span class="text-base sm:text-lg font-bold text-gray-800 group-hover:text-purple-800 transition duration-500">BRYZOS</span>
+                    </div>
+                    <span class="text-xs sm:text-sm font-semibold text-gray-700 cursor-pointer hover:text-purple-700 transition duration-500 px-2 py-1 rounded-full hover:bg-white/40">BUYER</span>
+                </div>
+
+                <!-- MOBILE TOGGLE BUTTON (visible only on mobile/tablet) -->
+                <div class="mobile-toggle" id="mobileToggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+
+                <!-- DESKTOP VERSION: icons with hover labels (hidden on mobile) -->
+                <div class="desktop-nav-icons items-center justify-center gap-2 sm:gap-4 md:gap-6 lg:gap-[2.5rem] flex-wrap">
+                    <!-- Home / dashboard -->
+                    <div class="nav-icon-wrapper cursor-pointer">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h12a1 1 0 001-1V10M9 21h6" />
+                        </svg>
+                        <span class="icon-label">Dashboard</span>
+                    </div>
+                    <!-- File / orders -->
+                    <div class="nav-icon-wrapper cursor-pointer">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2-5a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="icon-label">Orders</span>
+                    </div>
+                    <!-- Clock / recent -->
+                    <div class="nav-icon-wrapper cursor-pointer">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="icon-label">Recent</span>
+                    </div>
+                    <!-- Chat / messages -->
+                    <div class="nav-icon-wrapper cursor-pointer">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        <span class="icon-label">Messages</span>
+                    </div>
+                    <!-- Calendar -->
+                    <div class="nav-icon-wrapper cursor-pointer">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span class="icon-label">Calendar</span>
+                    </div>
+                    <!-- Settings / preferences -->
+                    <div class="nav-icon-wrapper cursor-pointer">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span class="icon-label">Settings</span>
+                    </div>
+                </div>
+
+                <!-- Right Section: User Profile (visible on all devices) -->
+                <div class="flex items-center gap-3 sm:gap-4 lg:gap-4 flex-shrink-0">
+                    <span class="text-xs sm:text-sm font-bold text-gray-800 whitespace-nowrap hover:text-purple-800 transition duration-500 cursor-pointer">LINDA W.</span>
+                    <div class="profile-avatar w-7 h-7 sm:w-8 sm:h-8 bg-gray-300 rounded-full flex items-center justify-center cursor-pointer shadow-sm hover:shadow-lg transition-all duration-500">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <!-- settings cog - with label (works on mobile too: shows below) -->
+                    <div class="nav-icon-wrapper cursor-pointer !w-7 !h-7 sm:!w-8 sm:!h-8">
+                        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" class="w-4 h-4 sm:w-5 sm:h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span class="icon-label">Account</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MOBILE NAV DRAWER - icons with labels below (smaller, no hover) -->
+            <div class="mobile-nav-drawer" id="mobileNavDrawer">
+                <!-- Home / dashboard -->
+                <div class="nav-icon-wrapper cursor-pointer">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h12a1 1 0 001-1V10M9 21h6" />
+                    </svg>
+                    <span class="icon-label">Dashboard</span>
+                </div>
+                <!-- File / orders -->
+                <div class="nav-icon-wrapper cursor-pointer">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2-5a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="icon-label">Orders</span>
+                </div>
+                <!-- Clock / recent -->
+                <div class="nav-icon-wrapper cursor-pointer">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="icon-label">Recent</span>
+                </div>
+                <!-- Chat / messages -->
+                <div class="nav-icon-wrapper cursor-pointer">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                    <span class="icon-label">Messages</span>
+                </div>
+                <!-- Calendar -->
+                <div class="nav-icon-wrapper cursor-pointer">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span class="icon-label">Calendar</span>
+                </div>
+                <!-- Settings / preferences -->
+                <div class="nav-icon-wrapper cursor-pointer">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span class="icon-label">Settings</span>
+                </div>
+            </div>
+            <!-- SEARCH SECTION REMOVED -->
+        </nav>
+
+        <!-- ===== MAIN CONTENT GRID — ALL SECTIONS WITH SLOW SMOOTH HOVER ===== -->
+        <div class="px-0 sm:px-2 lg:px-4 py-6 sm:py-8">
+            
+            <!-- Top Section: Profile & Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 mb-6 md:mb-8">
+                
+                <!-- This Month Card -->
+                <div class="col-span-1 md:col-span-4 slide-in">
+                    <div class="bg-white bg-opacity-60 backdrop-blur rounded-2xl p-5 sm:p-6 card-hover shadow-md h-full transition-all duration-500">
+                        <div class="flex items-start gap-3">
+                            <div class="w-14 h-14 sm:w-16 sm:h-16 bg-gray-800 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 hover:scale-110 hover:bg-gray-700">
+                                <svg class="w-7 h-7 sm:w-8 sm:h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="text-2xl sm:text-3xl font-bold text-gray-900">121,491.01</div>
+                                <div class="text-xs text-gray-600 mt-1.5">10 Completed Sales · Averaging <span class="font-semibold">$6,122.21</span></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center mt-4 pt-1 border-t border-gray-200">
+                            <span class="text-xs font-medium text-gray-500">This Month</span>
+                            <svg class="w-4 h-4 text-gray-400 transition-transform duration-500 hover:translate-y-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Challenge Stats Card -->
+                <div class="col-span-1 md:col-span-5 slide-in">
+                    <div class="bg-white bg-opacity-60 backdrop-blur rounded-2xl p-5 sm:p-6 card-hover shadow-md h-full">
+                        <h3 class="text-sm font-bold text-gray-800 mb-4 transition-colors duration-500 hover:text-purple-700">Your 60 Second Challenge Stats</h3>
+                        <div class="space-y-3">
+                            <div class="stat-card flex justify-between items-center py-2 px-1 rounded-lg transition-all duration-500 hover:bg-purple-50/50">
+                                <span class="text-xs text-gray-600">Average</span>
+                                <span class="text-sm font-semibold text-gray-900">01:45</span>
+                            </div>
+                            <div class="stat-card flex justify-between items-center py-2 px-1 rounded-lg transition-all duration-500 hover:bg-purple-50/50 border-t border-gray-200">
+                                <span class="text-xs text-gray-600">Worst</span>
+                                <span class="text-sm font-semibold text-gray-900">24:23</span>
+                            </div>
+                            <div class="stat-card flex justify-between items-center py-2 px-1 rounded-lg transition-all duration-500 hover:bg-purple-50/50 border-t border-gray-200">
+                                <span class="text-xs text-gray-600">Purchases</span>
+                                <span class="text-sm font-semibold text-gray-900">23</span>
+                            </div>
+                            <div class="stat-card flex justify-between items-center py-2 px-1 rounded-lg transition-all duration-500 hover:bg-purple-50/50 border-t border-gray-200">
+                                <span class="text-xs text-gray-600">Time Saved</span>
+                                <span class="text-sm font-semibold text-gray-900">04:23:02</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Circular Progress -->
+                <div class="col-span-1 md:col-span-3 slide-in">
+                    <div class="bg-white bg-opacity-60 backdrop-blur rounded-2xl p-5 sm:p-6 card-hover shadow-md flex flex-col items-center justify-center h-full">
+                        <div class="relative w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center">
+                            <svg class="circular-progress w-full h-full" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(168, 85, 247, 0.1)" stroke-width="7"></circle>
+                                <circle cx="50" cy="50" r="42" fill="none" stroke="url(#gradient)" stroke-width="7" stroke-dasharray="264 264" stroke-dashoffset="128" stroke-linecap="round"></circle>
+                                <defs>
+                                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color: rgb(168, 85, 247); stop-opacity: 1"></stop>
+                                        <stop offset="100%" style="stop-color: rgb(236, 72, 153); stop-opacity: 1"></stop>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                            <div class="absolute text-center">
+                                <div class="text-2xl sm:text-3xl font-bold text-gray-900">52</div>
+                                <div class="text-xs text-gray-600">% Target</div>
+                            </div>
+                        </div>
+                        <div class="mt-3 text-xs text-purple-600 font-semibold transition-all duration-500 hover:scale-105 cursor-default">+12% from last month</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Cards Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
+                
+                <!-- Pipe CS Card -->
+                <div class="bg-gradient-to-br from-gray-400 to-gray-500 rounded-3xl p-6 sm:p-8 card-hover shadow-lg transition-all duration-500">
+                    <div class="flex justify-between items-start mb-6 sm:mb-8">
+                        <div>
+                            <h3 class="text-xl sm:text-2xl font-bold text-white mb-2 transition-all duration-500 hover:translate-x-1">Pipe CS - SMLS</h3>
+                            <p class="text-xs sm:text-sm text-gray-200 mb-1">8" 16.625" x Sch 40 (322) A / SA106-B</p>
+                        </div>
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-white/30 flex items-center justify-center transition-all duration-500 hover:border-white hover:bg-white/20">
+                            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white/60 transition-all duration-500 hover:text-white" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex items-end justify-between">
+                        <div>
+                            <div class="text-3xl sm:text-4xl font-bold text-white">$32,28 <span class="text-base sm:text-lg font-medium">/ Ft</span></div>
+                            <div class="text-xs sm:text-sm text-gray-200 line-through mt-1">$54,26 / Ft</div>
+                        </div>
+                        <button class="icon-bounce bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-2 sm:p-3 rounded-full transition-all duration-500 hover:scale-110">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Make a Purchase Card -->
+                <div class="bg-gradient-to-br from-purple-300 via-pink-200 to-pink-300 rounded-3xl p-6 sm:p-8 card-hover shadow-lg transition-all duration-500">
+                    <div class="mb-6">
+                        <h2 class="text-3xl sm:text-4xl font-bold text-white leading-tight transition-all duration-500 hover:translate-x-2">MAKE A<br>PURCHASE</h2>
+                        <p class="text-xs sm:text-sm text-white opacity-90 mt-2">Reorder a Bill of Material</p>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="relative">
+                            <select class="dropdown-select w-full bg-white border-0 rounded-xl px-4 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm appearance-none font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-300 transition-all duration-500">
+                                <option>Select</option>
+                                <option>Recent BOM #1</option>
+                                <option>Recent BOM #2</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4">
+                                <svg class="w-3 h-3 sm:w-4 sm:h-4 text-gray-500 transition-transform duration-500 group-hover:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
+                        <button class="button-hover w-full bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white font-bold py-3 sm:py-4 px-4 rounded-full text-xs sm:text-sm shadow-md transition-all duration-500 hover:shadow-xl">
+                            CREATE AN ORDER
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders & Disputes Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+                
+                <!-- ORDER #1256 Card -->
+                <div class="bg-white bg-opacity-60 backdrop-blur rounded-3xl p-5 sm:p-7 card-hover shadow-md transition-all duration-500">
+                    <div class="flex items-center justify-between mb-4 sm:mb-5">
+                        <h3 class="text-lg sm:text-xl font-bold text-gray-900 transition-all duration-500 hover:text-purple-700">ORDER #1256</h3>
+                        <span class="bg-yellow-300 text-gray-900 text-xs font-bold px-3 sm:px-4 py-1 sm:py-1.5 rounded-full transition-all duration-500 hover:bg-yellow-400">PAID</span>
+                    </div>
+                    <div class="flex gap-4 sm:gap-5">
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gray-400 rounded-xl flex-shrink-0 transition-all duration-500 hover:scale-105 hover:bg-gray-500"></div>
+                        <div>
+                            <h4 class="font-bold text-gray-900 text-sm sm:text-base">Beam Wide Flange (W) - CS</h4>
+                            <p class="text-xs text-gray-600 mt-1 leading-relaxed">
+                                24" x 279 Lb<br>20' Length(s)<br>A572-50
+                            </p>
+                            <p class="text-lg sm:text-xl font-bold text-gray-900 mt-2">12,249</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600 mt-5 sm:mt-6 pt-4 border-t border-gray-200/70">
+                        <div><span class="font-semibold">Date:</span> Feb 21, 2023</div>
+                        <div><span class="font-semibold">Status:</span> Processing</div>
+                        <div><span class="font-semibold">Distributor:</span> Dist. A</div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 sm:gap-3 mt-5 sm:mt-6">
+                        <button class="flex-1 bg-purple-200 hover:bg-purple-300 text-purple-900 font-semibold py-2 px-2 sm:py-2.5 sm:px-3 rounded-full text-xs transition-all duration-500 hover:scale-105">VIEW DETAILS</button>
+                        <button class="flex-1 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 font-semibold py-2 px-2 sm:py-2.5 sm:px-3 rounded-full text-xs flex items-center justify-center gap-1 transition-all duration-500 hover:bg-gray-50">
+                            <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                            SHIPPED
+                        </button>
+                        <button class="bg-white border border-gray-300 hover:border-gray-400 text-gray-700 font-semibold py-2 px-2 sm:py-2.5 sm:px-3 rounded-full text-xs flex items-center justify-center gap-1 transition-all duration-500 hover:bg-gray-50">
+                            <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5-5 5 5m-5-5v12" /></svg>
+                            DOWNLOAD
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-between mt-5 sm:mt-7">
+                        <span class="text-gray-400 text-xl leading-none transition-all duration-500 hover:scale-150">•</span>
+                        <div class="flex items-center gap-1 text-purple-600 hover:text-purple-800 text-xs sm:text-sm font-semibold transition-all duration-500 hover:gap-2">
+                            <span>SEE ALL ORDERS</span>
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-500 group-hover:translate-x-1" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- DISPUTES Card -->
+                <div class="bg-white bg-opacity-60 backdrop-blur rounded-3xl p-5 sm:p-7 card-hover shadow-md transition-all duration-500">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg sm:text-xl font-bold text-gray-900 transition-all duration-500 hover:text-purple-700">DISPUTES</h3>
+                        <button class="text-gray-500 hover:text-gray-700 transition-all duration-500 hover:rotate-90">
+                            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.99l1.004.827c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.87l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.063-.374-.313-.686-.645-.87a6.52 6.52 0 01-.22-.127c-.324-.196-.72-.257-1.075-.124l-1.217.456a1.125 1.125 0 01-1.37-.49l-1.296-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.296-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.074-.04.148-.083.22-.128.332-.183.582-.495.644-.87l.214-1.28z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="mb-4 sm:mb-5">
+                        <h4 class="text-base sm:text-lg font-bold text-gray-900 mb-2 sm:mb-3 transition-all duration-500 hover:translate-x-1">Order #800</h4>
+                        <div class="space-y-1.5 text-xs sm:text-sm">
+                            <p><span class="font-semibold">Status:</span> <span class="text-orange-600 font-medium">Under Revision</span></p>
+                            <p><span class="font-semibold">Dispute Started:</span> February 21, 2023</p>
+                            <p><span class="font-semibold">Distributor:</span> Distributor A</p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-100/80 rounded-xl p-3 sm:p-4 mb-5 sm:mb-6 text-xs transition-all duration-500 hover:bg-gray-200/80">
+                        <span class="font-semibold text-gray-700">Recent Update:</span> Waiting for distributor response.
+                    </div>
+                    <button class="w-full bg-purple-200 hover:bg-purple-300 text-purple-900 font-bold py-3 sm:py-3.5 px-4 rounded-full text-xs sm:text-sm transition-all duration-500 hover:scale-105 mb-4 sm:mb-5">
+                        VIEW DETAILS
+                    </button>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-400 text-xl leading-none transition-all duration-500 hover:scale-150">•</span>
+                        <div class="flex items-center gap-1 text-purple-600 hover:text-purple-800 text-xs sm:text-sm font-semibold transition-all duration-500 hover:gap-2">
+                            <span>SEE ALL DISPUTES</span>
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-500 group-hover:translate-x-1" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== FOOTER ========== -->
+    <footer class="bryzos-footer w-full py-4 sm:py-5 px-4 sm:px-6 lg:px-8 bg-motion relative overflow-hidden mt-auto">
+        <div class="absolute top-0 left-0 w-full h-[2px] divider-shimmer"></div>
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between flex-wrap gap-4 relative z-10">
+            <!-- LEFT: BRYZOS® + BUYER -->
+            <div class="flex items-center gap-4 sm:gap-5 lg:gap-8">
+                <div class="flex items-center gap-2 brand-float cursor-default">
+                    <div class="w-8 h-8 sm:w-9 sm:h-9 bg-black rounded-lg flex items-center justify-center shadow-md transition-all duration-500 hover:shadow-purple-400/40 hover:scale-105">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 13c-2.33 0-4.35-1.45-5.23-3.48.5-.9 1.42-1.64 2.54-1.84.9-.1 1.78-.16 2.69-.16s1.79.06 2.69.16c1.12.2 2.04.94 2.54 1.84-.88 2.03-2.9 3.48-5.23 3.48z"/>
+                        </svg>
+                    </div>
+                    <span class="text-lg sm:text-xl font-extrabold tracking-tight text-gray-800 transition-all duration-500 hover:text-purple-800">BRYZOS®</span>
+                </div>
+                <div class="buyer-badge px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold text-purple-800 shadow-sm cursor-pointer transition-all duration-500 hover:scale-110">
+                    <span class="uppercase tracking-wide">BUYER</span>
+                </div>
+            </div>
+            <!-- RIGHT: user section -->
+            <div class="flex items-center gap-4 sm:gap-5 lg:gap-6">
+                <div class="user-glow flex items-center gap-2 sm:gap-3 pl-3 sm:pl-4 pr-2 sm:pr-3 py-1 sm:py-1.5 rounded-full cursor-pointer transition-all duration-500 hover:bg-white">
+                    <span class="text-xs sm:text-sm font-bold text-gray-800">LINDA W.</span>
+                    <div class="avatar-hover w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-purple-300 to-indigo-300 rounded-full flex items-center justify-center shadow-md transition-all duration-500 hover:scale-110 hover:border-2 hover:border-purple-400">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-800" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="setting-spin p-1.5 rounded-full cursor-pointer transition-all duration-500 text-gray-600 hover:text-purple-700 hover:rotate-180">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.99l1.004.827c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.87l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.063-.374-.313-.686-.645-.87a6.52 6.52 0 01-.22-.127c-.324-.196-.72-.257-1.075-.124l-1.217.456a1.125 1.125 0 01-1.37-.49l-1.296-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.296-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.074-.04.148-.083.22-.128.332-.183.582-.495.644-.87l.214-1.28z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+        <!-- bottom footer links -->
+        <div class="max-w-7xl mx-auto mt-4 pt-3 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-400 border-t border-gray-200/60 gap-3 sm:gap-0">
+            <div class="flex items-center gap-3">
+                <span class="motion-dot inline-block w-1.5 h-1.5 bg-purple-400 rounded-full"></span>
+                <span class="text-gray-500">© 2026 Bryzos, Inc.</span>
+            </div>
+            <div class="flex items-center gap-4 sm:gap-5">
+                <a href="#" class="footer-link hover:text-purple-700 transition duration-500">Privacy</a>
+                <a href="#" class="footer-link hover:text-purple-700 transition duration-500">Terms</a>
+                <a href="#" class="footer-link hover:text-purple-700 transition duration-500">Help</a>
+                <svg class="footer-icon-hover w-4 h-4 text-gray-400 cursor-pointer transition-all duration-500 hover:text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
+                </svg>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript for mobile toggle -->
+    <script>
+        (function() {
+            const toggle = document.getElementById('mobileToggle');
+            const drawer = document.getElementById('mobileNavDrawer');
+            
+            if (toggle && drawer) {
+                toggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    this.classList.toggle('active');
+                    drawer.classList.toggle('active');
+                });
+
+                // close drawer when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!toggle.contains(event.target) && !drawer.contains(event.target)) {
+                        toggle.classList.remove('active');
+                        drawer.classList.remove('active');
+                    }
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

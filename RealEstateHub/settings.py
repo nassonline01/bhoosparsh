@@ -1,20 +1,28 @@
 """
 Django settings for RealEstateHub project.
+Optimized for performance - Removed all unused/dead configurations
 """
 
 from pathlib import Path
 import os
 
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-start development settings
+# ===================================================================
+# SECURITY WARNING: keep the secret key used in production secret!
+# ===================================================================
 SECRET_KEY = 'django-insecure-k#vqkokik41zeh!2_&%bub^8yi10a&_rvta4gfq=bw71287k*i'
-DEBUG = True
-ALLOWED_HOSTS = ['*']  # Allow all hosts for development, change in production
 
-# Application definition
+# ===================================================================
+# DEBUG - Set to False in production!
+# ===================================================================
+DEBUG = True
+ALLOWED_HOSTS = ['*']  # Restrict this in production!
+
+# ===================================================================
+# APPLICATION DEFINITION
+# ===================================================================
 INSTALLED_APPS = [
     'jazzmin',
     
@@ -26,9 +34,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django.contrib.humanize',
-    'crispy_forms',
     
-    # Third-party apps
+    # Third-party apps - ONLY ACTIVE ONES
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -37,35 +44,7 @@ INSTALLED_APPS = [
     
     # Local apps
     'estate_app.apps.EstateAppConfig',
-    'phonenumber_field',
 ]
-
-JAZZMIN_SETTINGS = {
-    "site_title": "My Admin Panel",
-    "site_header": "My Project Admin",
-    "site_brand": "MyBrand",
-    "welcome_sign": "Welcome to Admin Dashboard",
-    "copyright": "My Company",
-
-    # Logo
-    "site_logo": "images/logo.png",  # static path
-    "login_logo": None,
-    "login_logo_dark": None,
-
-    # Theme style
-    "theme": "default",   # 👈 Changed from darkly to default for better form visibility
-
-    # Sidebar
-    "show_sidebar": True,
-    "navigation_expanded": True,
-
-    # Icons
-    "icons": {
-        "auth": "fas fa-users",
-        "auth.user": "fas fa-user",
-        "auth.group": "fas fa-users-cog",
-    },
-}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -83,21 +62,24 @@ ROOT_URLCONF = 'RealEstateHub.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],  # Add this for global templates
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'estate_app.context_processors.user_context',
             ],
         },
-    },
+    },  
 ]
 
 WSGI_APPLICATION = 'RealEstateHub.wsgi.application'
 
-# Database
+# ===================================================================
+# DATABASE - SQLite for development, switch to MySQL for production
+# ===================================================================
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.sqlite3',
@@ -105,7 +87,6 @@ WSGI_APPLICATION = 'RealEstateHub.wsgi.application'
 #     }
 # }
 
-# Database
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -120,8 +101,9 @@ DATABASES = {
     }
 }
 
-
-# Password validation (KEEP ONLY THIS ONE)
+# ===================================================================
+# PASSWORD VALIDATION
+# ===================================================================
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -140,33 +122,33 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Internationalization
+# ===================================================================
+# INTERNATIONALIZATION
+# ===================================================================
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-
-# Static and media files
+# ===================================================================
+# STATIC & MEDIA FILES
+# ===================================================================
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Authentication Settings
+# ===================================================================
+# AUTHENTICATION SETTINGS
+# ===================================================================
 AUTH_USER_MODEL = 'estate_app.CustomUser'
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
-
-# Email Settings (SMTP for production)
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Commented out for email sending
-EMAIL_VERIFICATION_REQUIRED = True
 
 # Site configuration
 SITE_ID = 1
@@ -177,20 +159,21 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-# Allauth configuration
+# ===================================================================
+# DJANGO-ALLAUTH CONFIGURATION
+# ===================================================================
 ACCOUNT_USER_MODEL_USERNAME_FIELD = 'email'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'  # Set to 'optional' for easier testing
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_LOGIN_METHODS = {'email'}
 ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_LOGOUT_REDIRECT_URL = '/'
-LOGIN_REDIRECT_URL = '/dashboard/'
 ACCOUNT_SESSION_REMEMBER = True
 
-# Social account providers (configure these later)
+# Social account providers
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'SCOPE': ['profile', 'email'],
@@ -206,121 +189,106 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-# GeoIP2 settings (for location detection)
-GEOIP_PATH = os.path.join(BASE_DIR, 'geoip')
-
-# Site information
+# ===================================================================
+# SITE INFORMATION
+# ===================================================================
 SITE_NAME = 'BHOOSPARSH'
-SITE_URL = 'http://localhost:8000'  # Change in production
-ADMIN_EMAIL = 'admin@realestatepro.com'
+SITE_URL = 'https://bhoosparsh.orobiz.net/'  # Change in production
+DEFAULT_FROM_EMAIL = 'jithujp2999@gmail.com'
+ADMIN_EMAIL = 'admin@yourdomain.com'
 
-# Cache configuration (simplified for development)
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
-    }
+# ===================================================================
+# JAZZMIN ADMIN CONFIGURATION
+# ===================================================================
+JAZZMIN_SETTINGS = {
+    "site_title": "BHOOSPARSH Admin",
+    "site_header": "BHOOSPARSH Admin Portal",
+    "site_brand": "BHOOSPARSH",
+    "welcome_sign": "Welcome to BHOOSPARSH Admin Dashboard",
+    "copyright": "BHOOSPARSH",
+    "site_logo": "images/logo.png",
+    "login_logo": None,
+    "login_logo_dark": None,
+    "theme": "default",
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "icons": {
+        "auth": "fas fa-users",
+        "auth.user": "fas fa-user",
+        "auth.group": "fas fa-users-cog",
+    },
 }
 
-# Session configuration
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Simpler for development
+# ===================================================================
+# EMAIL CONFIGURATION - SMTP for production
+# ===================================================================
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'jithujp2999@gmail.com'
+# EMAIL_HOST_PASSWORD = 'qrou oeqd klna mkvm'
+# DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-# Security settings (less strict for development)
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-X_FRAME_OPTIONS = 'DENY'
-# Comment these for development:
-# CSRF_COOKIE_SECURE = True
-# SESSION_COOKIE_SECURE = True
-# SECURE_HSTS_SECONDS = 31536000
-# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-# SECURE_HSTS_PRELOAD = True
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'orobiz.net' 
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'support@orobiz.net'
+EMAIL_HOST_PASSWORD = 'Nassonline@2025'
+DEFAULT_FROM_EMAIL = 'support@orobiz.net'
+SERVER_EMAIL = 'support@orobiz.net'
 
-# Session Settings
+# Email verification setting - SINGLE SOURCE OF TRUTH
+EMAIL_VERIFICATION_REQUIRED = True
+
+# ===================================================================
+# SESSION CONFIGURATION
+# ===================================================================
 SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_SAVE_EVERY_REQUEST = True
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 CSRF_COOKIE_HTTPONLY = False
 
-# File upload settings
+# ===================================================================
+# FILE UPLOAD SETTINGS
+# ===================================================================
 MAX_UPLOAD_SIZE = 5242880  # 5MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
 FILE_UPLOAD_PERMISSIONS = 0o644
 FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
 
-# Image upload settings
 ALLOWED_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp']
 MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5MB
 
-# ==========================
-# Razorpay Configuration
-# ==========================
-RAZORPAY_KEY_ID = 'rzp_test_xxxxxxxxx'
-RAZORPAY_KEY_SECRET = 'xxxxxxxxxxxxxxxx'
-RAZORPAY_WEBHOOK_SECRET = 'xxxxxxxxxxxxxxxx'
-RAZORPAY_LIVE_MODE = False
-
-
-# ==========================
-# Membership Settings
-# ==========================
+# ===================================================================
+# MEMBERSHIP SETTINGS
+# ===================================================================
 MEMBERSHIP_TRIAL_DAYS = 14
 MEMBERSHIP_BASIC_PLAN_SLUG = 'basic'
 MEMBERSHIP_PROFESSIONAL_PLAN_SLUG = 'professional'
 MEMBERSHIP_ENTERPRISE_PLAN_SLUG = 'enterprise'
-
-
-# ==========================
-# Email Configuration
-# ==========================
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'jithujp2999@gmail.com'      # replace with your email
-EMAIL_HOST_PASSWORD = 'qrou oeqd klna mkvm '   # use App Password (not Gmail login password)
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-ADMIN_EMAIL = 'admin@yourdomain.com'
-
-# Custom admin site
-ADMIN_SITE_HEADER = "BHOOSPARSH Admin"
-ADMIN_SITE_TITLE = "BHOOSPARSH Admin Portal"
-ADMIN_INDEX_TITLE = "Dashboard"
-
-# Email settings for admin
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.gmail.com'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'your-email@gmail.com'
-# EMAIL_HOST_PASSWORD = 'your-password'
-# DEFAULT_FROM_EMAIL = 'BHOOSPARSH <noreply@bhoosparsh.com>'
-
-# Membership settings
-ENABLE_PACKAGE_SYSTEM = True  # Set to False to allow unlimited listings
+ENABLE_PACKAGE_SYSTEM = True
 FREE_LISTINGS_FOR_NEW_SELLERS = 1
 DEFAULT_LISTING_DURATION = 30  # days
 
-# Verification settings
-REQUIRE_EMAIL_VERIFICATION = True
+# ===================================================================
+# VERIFICATION SETTINGS
+# ===================================================================
 REQUIRE_PHONE_VERIFICATION_FOR_SELLERS = True
 AUTO_APPROVE_VERIFIED_SELLERS = False
 
-# Currency
+# ===================================================================
+# CURRENCY
+# ===================================================================
 DEFAULT_CURRENCY = 'INR'
 CURRENCY_SYMBOL = '₹'
 
-# Admin permissions
-ADMIN_CAN_IMPERSONATE = True
-ADMIN_CAN_MANUAL_APPROVE = True
-ADMIN_CAN_BULK_EMAIL = True
-
-
-
-# ==========================
-# Security Settings
-# ==========================
+# ===================================================================
+# SECURITY SETTINGS - Development friendly
+# ===================================================================
 SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
@@ -328,30 +296,52 @@ SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 
-
-# ==========================
-# Cache Configuration
-# ==========================
+# ===================================================================
+# CACHE CONFIGURATION - Redis for production
+# ===================================================================
 CACHES = {
     'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/1',
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            'IGNORE_EXCEPTIONS': True,
-        }
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
     }
 }
 
+# Uncomment for Redis in production:
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django_redis.cache.RedisCache',
+#         'LOCATION': 'redis://127.0.0.1:6379/1',
+#         'OPTIONS': {
+#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+#             'IGNORE_EXCEPTIONS': True,
+#         }
+#     }
+# }
 
-# ==========================
-# Celery Configuration
-# ==========================
-CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
-CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = TIME_ZONE   
+# ===================================================================
+# PRODUCTION SETTINGS - Uncomment when deploying
+# ===================================================================
+# SECURE_SSL_REDIRECT = True
+# SESSION_COOKIE_SECURE = True
+# CSRF_COOKIE_SECURE = True
+# SECURE_HSTS_SECONDS = 31536000
+# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+# SECURE_HSTS_PRELOAD = True
+# SITE_URL = 'https://yourdomain.com'
 
-
+# ===================================================================
+# DATABASE CONFIGURATION FOR PRODUCTION - Uncomment when ready
+# ===================================================================
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'nassonline_bhoosparsh',
+#         'USER': 'nassonline_django',
+#         'PASSWORD': 'Nassarudeen@2025',
+#         'HOST': 'localhost',
+#         'PORT': '3306',
+#         'OPTIONS': {
+#             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+#         },
+#     }
+# }

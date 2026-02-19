@@ -1,4 +1,3 @@
-<!-- templates/dashboard/buyer/inquiries.html -->
 {% extends 'dashboard/buyer/base.html' %}
 {% load static %}
 {% load humanize %}
@@ -11,117 +10,160 @@
     /* Inquiries page specific styles */
     .inquiry-card {
         background: white;
-        border-radius: 16px;
+        border-radius: 20px;
         border: 1px solid #e2e8f0;
-        padding: 1.5rem;
+        padding: 1.75rem;
         transition: all 0.3s ease;
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .inquiry-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 4px;
+        background: linear-gradient(135deg, #FF6B35 0%, #FF8B5A 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
     }
 
     .inquiry-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-        border-color: rgba(255, 107, 53, 0.2);
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(255, 107, 53, 0.1);
+        border-color: rgba(255, 107, 53, 0.3);
+    }
+
+    .inquiry-card:hover::before {
+        opacity: 1;
     }
 
     .inquiry-header {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        margin-bottom: 1rem;
+        margin-bottom: 1.25rem;
     }
 
     .inquiry-property {
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 1.25rem;
     }
 
     .property-thumbnail {
-        width: 80px;
-        height: 60px;
-        border-radius: 8px;
+        width: 100px;
+        height: 75px;
+        border-radius: 12px;
         overflow: hidden;
         flex-shrink: 0;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
 
     .property-thumbnail img {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .inquiry-card:hover .property-thumbnail img {
+        transform: scale(1.1);
     }
 
     .property-info h4 {
-        font-size: 1rem;
-        font-weight: 600;
+        font-size: 1.1rem;
+        font-weight: 700;
         color: #111827;
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.35rem;
+        line-height: 1.4;
     }
 
     .property-info p {
         font-size: 0.875rem;
         color: #6b7280;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        margin-bottom: 0.35rem;
+    }
+
+    .property-price {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #FF6B35;
+        margin-top: 0.35rem;
     }
 
     .inquiry-status {
         display: inline-flex;
         align-items: center;
-        padding: 0.375rem 0.75rem;
-        border-radius: 9999px;
+        padding: 0.4rem 1rem;
+        border-radius: 50px;
         font-size: 0.75rem;
         font-weight: 600;
+        letter-spacing: 0.3px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
 
     .status-new {
-        background: #dbeafe;
-        color: #1e40af;
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
     }
 
     .status-contacted {
-        background: #d1fae5;
-        color: #065f46;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
     }
 
     .status-interested {
-        background: #fef3c7;
-        color: #92400e;
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: white;
     }
 
     .status-not_interested {
-        background: #fef2f2;
-        color: #991b1b;
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
     }
 
     .status-converted {
-        background: #f3e8ff;
-        color: #5b21b6;
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
     }
 
     .status-spam {
-        background: #f5f5f5;
-        color: #525252;
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+        color: white;
     }
 
     .inquiry-details {
-        margin-bottom: 1rem;
+        margin-bottom: 1.25rem;
     }
 
     .inquiry-message {
-        color: #4b5563;
-        font-size: 0.875rem;
-        line-height: 1.5;
+        color: #374151;
+        font-size: 0.9375rem;
+        line-height: 1.6;
         margin-bottom: 1rem;
-        padding: 1rem;
-        background: #f9fafb;
-        border-radius: 8px;
-        border-left: 4px solid #3b82f6;
+        padding: 1.25rem;
+        background: #f8fafc;
+        border-radius: 12px;
+        border-left: 4px solid #FF6B35;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
     }
 
     .inquiry-meta {
         display: flex;
+        flex-wrap: wrap;
         gap: 1.5rem;
         font-size: 0.875rem;
         color: #6b7280;
+        background: #f9fafb;
+        padding: 1rem 1.25rem;
+        border-radius: 12px;
     }
 
     .meta-item {
@@ -130,222 +172,259 @@
         gap: 0.5rem;
     }
 
+    .meta-item i {
+        color: #FF6B35;
+        width: 16px;
+    }
+
     .inquiry-response {
-        margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 1px solid #e5e7eb;
+        margin-top: 1.25rem;
+        padding-top: 1.25rem;
+        border-top: 2px solid #e5e7eb;
     }
 
     .response-label {
         font-size: 0.875rem;
         font-weight: 600;
         color: #374151;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.75rem;
         display: flex;
         align-items: center;
         gap: 0.5rem;
     }
 
     .response-content {
-        padding: 1rem;
-        background: #f0fdf4;
-        border-radius: 8px;
-        border: 1px solid #bbf7d0;
-        font-size: 0.875rem;
-        line-height: 1.5;
-        color: #065f46;
+        padding: 1.25rem;
+        background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+        border-radius: 12px;
+        border: 1px solid #86efac;
+        font-size: 0.9375rem;
+        line-height: 1.6;
+        color: #166534;
+        position: relative;
+    }
+
+    .response-content::before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: 20px;
+        width: 20px;
+        height: 20px;
+        background: inherit;
+        transform: rotate(45deg);
+        border-left: 1px solid #86efac;
+        border-top: 1px solid #86efac;
     }
 
     .inquiry-actions {
         display: flex;
-        gap: 0.75rem;
-        margin-top: 1rem;
+        gap: 1rem;
+        margin-top: 1.5rem;
     }
 
     .action-btn {
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
+        padding: 0.6rem 1.25rem;
+        border-radius: 12px;
         font-size: 0.875rem;
-        font-weight: 500;
+        font-weight: 600;
         cursor: pointer;
         transition: all 0.3s ease;
         border: 2px solid transparent;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
     }
 
     .btn-primary {
-        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        background: linear-gradient(135deg, #FF6B35 0%, #FF8B5A 100%);
         color: white;
+        box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
     }
 
     .btn-primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        box-shadow: 0 6px 20px rgba(255, 107, 53, 0.6);
     }
 
     .btn-secondary {
         background: white;
-        border-color: #e5e7eb;
+        border: 2px solid #e5e7eb;
         color: #374151;
     }
 
     .btn-secondary:hover {
-        background: #f9fafb;
-        border-color: #d1d5db;
-    }
-
-    .filters-section {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 242, 0.95));
-        backdrop-filter: blur(10px);
-        border-radius: 16px;
-        border: 1px solid rgba(255, 107, 53, 0.1);
-        box-shadow: 0 4px 20px rgba(255, 107, 53, 0.1);
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-    }
-
-    .filters-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-    }
-
-    .filter-group {
-        margin-bottom: 0;
-    }
-
-    .filter-group label {
-        display: block;
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: #374151;
-        margin-bottom: 0.5rem;
-    }
-
-    .filter-select {
-        width: 100%;
-        padding: 0.625rem 1rem;
-        border: 2px solid #e5e7eb;
-        border-radius: 10px;
-        font-size: 0.875rem;
-        background: white;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .filter-select:focus {
-        outline: none;
         border-color: #FF6B35;
-        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        background: #f9fafb;
+        transform: translateY(-2px);
     }
 
-    .empty-state {
-        text-align: center;
-        padding: 4rem 1rem;
-        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-        border-radius: 16px;
-        border: 2px dashed #d1d5db;
+    .btn-danger {
+        background: white;
+        border: 2px solid #fee2e2;
+        color: #ef4444;
     }
 
-    .empty-state i {
-        font-size: 1rem;
-        color: #9ca3af;
-        margin-top: 1rem;
+    .btn-danger:hover {
+        background: #fee2e2;
+        border-color: #ef4444;
+        transform: translateY(-2px);
     }
 
-    .empty-state a {
-        font-size: .9rem;
-       
-    }
-
-    .empty-state h3 {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: #111827;
-        margin-bottom: 0.5rem;
-    }
-
-    .empty-state p {
-        color: #6b7280;
-        max-width: 400px;
-        margin: 0 auto 2rem;
-        font-size: .8rem;
-    }
-
+    /* Statistics Cards */
     .stats-cards {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
+        gap: 1.5rem;
         margin-bottom: 2rem;
     }
 
     .stat-card {
         background: white;
-        border-radius: 16px;
-        border: 1px solid #e2e8f0;
+        border-radius: 20px;
         padding: 1.5rem;
-        text-align: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
         transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(255, 139, 90, 0.1));
+        border-radius: 50%;
+        transform: translate(30px, -30px);
     }
 
     .stat-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(255, 107, 53, 0.1);
     }
 
     .stat-value {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #FF6B35;
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #111827;
         margin-bottom: 0.5rem;
+        position: relative;
+        z-index: 1;
     }
 
     .stat-label {
         font-size: 0.875rem;
         color: #6b7280;
         font-weight: 500;
+        position: relative;
+        z-index: 1;
     }
 
-    .loading-skeleton {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .skeleton-inquiry {
+    /* Filters Section */
+    .filters-section {
         background: white;
-        border-radius: 16px;
-        border: 1px solid #e2e8f0;
-        padding: 1.5rem;
+        border-radius: 20px;
+        padding: 1.75rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
     }
 
-    .skeleton-line {
-        height: 1rem;
-        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-        background-size: 200% 100%;
-        animation: shimmer 1.5s infinite;
-        border-radius: 4px;
-        margin-bottom: 0.75rem;
+    .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 1rem;
     }
 
-    .skeleton-line.short {
-        width: 40%;
+    .filter-group label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6b7280;
+        margin-bottom: 0.5rem;
     }
 
-    .skeleton-line.medium {
-        width: 60%;
-    }
-
-    .skeleton-line.long {
+    .filter-select, .filter-input {
         width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 0.875rem;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
     }
 
-    @keyframes shimmer {
-        0% {
-            background-position: -200% 0;
-        }
-        100% {
-            background-position: 200% 0;
-        }
+    .filter-select:focus, .filter-input:focus {
+        outline: none;
+        border-color: #FF6B35;
+        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    }
+
+    /* Source Distribution Chart */
+    .sources-section {
+        background: white;
+        border-radius: 20px;
+        padding: 1.75rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    .source-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .source-item:last-child {
+        border-bottom: none;
+    }
+
+    .source-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 4px;
+    }
+
+    .source-name {
+        flex: 1;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #374151;
+    }
+
+    .source-count {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .source-percentage {
+        width: 50px;
+        text-align: right;
+        font-size: 0.75rem;
+        color: #6b7280;
+    }
+
+    .progress-bar {
+        height: 6px;
+        background: #f0f0f0;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 0.5rem;
+    }
+
+    .progress-fill {
+        height: 100%;
+        border-radius: 10px;
+        transition: width 0.3s ease;
     }
 
     /* Modal Styles */
@@ -356,6 +435,7 @@
         right: 0;
         bottom: 0;
         background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
         display: none;
         align-items: center;
         justify-content: center;
@@ -369,11 +449,24 @@
 
     .modal-content {
         background: white;
-        border-radius: 16px;
+        border-radius: 24px;
         width: 100%;
         max-width: 500px;
         max-height: 90vh;
         overflow-y: auto;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        animation: modalSlideIn 0.3s ease;
+    }
+
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .modal-header {
@@ -386,7 +479,7 @@
 
     .modal-header h3 {
         font-size: 1.25rem;
-        font-weight: 600;
+        font-weight: 700;
         color: #111827;
         margin: 0;
     }
@@ -398,7 +491,7 @@
         cursor: pointer;
         font-size: 1.25rem;
         padding: 0.5rem;
-        border-radius: 8px;
+        border-radius: 10px;
         transition: all 0.3s ease;
     }
 
@@ -427,34 +520,28 @@
         width: 100%;
         padding: 0.75rem 1rem;
         border: 2px solid #e5e7eb;
-        border-radius: 8px;
+        border-radius: 12px;
         font-size: 0.875rem;
         resize: vertical;
         min-height: 120px;
         transition: all 0.3s ease;
+        font-family: inherit;
     }
 
     .form-group textarea:focus {
         outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-color: #FF6B35;
+        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
     }
 
     .form-group select {
         width: 100%;
         padding: 0.75rem 1rem;
         border: 2px solid #e5e7eb;
-        border-radius: 8px;
+        border-radius: 12px;
         font-size: 0.875rem;
         background: white;
         cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .form-group select:focus {
-        outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
 
     .modal-footer {
@@ -465,7 +552,74 @@
         gap: 1rem;
     }
 
-    /* Mobile Responsive */
+    /* Loading Spinner */
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(0,0,0,0.1);
+        border-radius: 50%;
+        border-top-color: #FF6B35;
+        animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Toast Notifications - Match base template */
+    .toast-container {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        z-index: 9999;
+    }
+
+    .toast {
+        background: linear-gradient(135deg, #FF6B35, #FF8B5A);
+        color: white;
+        padding: 1rem 1.25rem;
+        border-radius: 0.75rem;
+        margin-bottom: 0.5rem;
+        box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
+        animation: slideInLeft 0.3s ease-out;
+        max-width: 20rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-radius: 24px;
+        border: 2px dashed #d1d5db;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #9ca3af;
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-state h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        color: #6b7280;
+        max-width: 400px;
+        margin: 0 auto 2rem;
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    /* Responsive Design */
     @media (max-width: 767px) {
         .inquiry-header {
             flex-direction: column;
@@ -482,7 +636,7 @@
 
         .inquiry-meta {
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 0.75rem;
         }
 
         .inquiry-actions {
@@ -491,7 +645,7 @@
 
         .action-btn {
             width: 100%;
-            text-align: center;
+            justify-content: center;
         }
 
         .filters-section {
@@ -505,37 +659,75 @@
         .modal-content {
             max-height: 80vh;
         }
+        
+        .stats-cards {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+        
+        .stat-card {
+            padding: 1rem;
+        }
+        
+        .stat-value {
+            font-size: 1.75rem;
+        }
     }
 
     /* Tablet Responsive */
     @media (min-width: 768px) and (max-width: 1023px) {
-        .filters-grid {
-            grid-template-columns: repeat(2, 1fr);
+        .stats-cards {
+            grid-template-columns: repeat(3, 1fr);
         }
     }
+
+    /* Animation Classes */
+    .fade-in-up {
+        animation: fadeInUp 0.6s ease-out;
+        opacity: 0;
+        animation-fill-mode: forwards;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .stagger-1 { animation-delay: 0.1s; }
+    .stagger-2 { animation-delay: 0.2s; }
+    .stagger-3 { animation-delay: 0.3s; }
+    .stagger-4 { animation-delay: 0.4s; }
 </style>
 {% endblock %}
 
 {% block header_title %}
-<h1 class="text-2xl font-bold text-gray-900">
-    <span class="gradient-text">My Inquiries</span>
-</h1>
-<p class="text-sm text-gray-600 mt-2">
-    <i class="fas fa-inbox text-blue-500 mr-2"></i>
-    Track and manage all your property inquiries
-</p>
+<div>
+    <h1 class="text-2xl font-bold text-gray-900">
+        <span class="gradient-text">My Inquiries</span>
+    </h1>
+    <p class="text-sm text-gray-600 mt-1">
+        <i class="fas fa-inbox text-orange-500 mr-2"></i>
+        Track and manage all your property inquiries
+    </p>
+</div>
 {% endblock %}
 
 {% block header_buttons %}
 <div class="flex flex-wrap gap-3">
-    <button onclick="window.history.back()" 
-            class="px-4 py-2 border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-all duration-300 flex items-center gap-2 font-medium">
-        <i class="fas fa-arrow-left"></i>
-        <span class="hidden sm:inline">Back</span>
-    </button>
+    <a href="{% url 'buyer_inquiry_export' %}" 
+       class="px-4 py-2 border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-all duration-300 flex items-center gap-2 font-medium">
+        <i class="fas fa-download"></i>
+        <span class="hidden sm:inline">Export CSV</span>
+    </a>
     
     <a href="{% url 'buyer_properties' %}" 
-       class="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:shadow-lg transition-all hover:scale-105 flex items-center gap-2 font-medium">
+       class="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl hover:shadow-lg transition-all hover:scale-105 flex items-center gap-2 font-medium">
         <i class="fas fa-search"></i>
         <span class="hidden sm:inline">Browse Properties</span>
     </a>
@@ -544,32 +736,80 @@
 
 {% block content %}
 <div class="content-spacing">
-    <!-- Stats Overview -->
+    <!-- Statistics Overview -->
     <div class="stats-cards">
-        <div class="stat-card">
-            <div class="stat-value">{{ inquiries.count }}</div>
+        <div class="stat-card fade-in-up stagger-1">
+            <div class="stat-value">{{ total_inquiries|default:"0" }}</div>
             <div class="stat-label">Total Inquiries</div>
+            <div class="mt-3 text-xs text-gray-500">
+                <i class="fas fa-arrow-up text-green-500 mr-1"></i>
+                Last 30 days
+            </div>
         </div>
         
-        <div class="stat-card">
-            <div class="stat-value">{{ inquiries.filter|status_filter:'new'|length }}</div>
+        <div class="stat-card fade-in-up stagger-2">
+            <div class="stat-value">{{ new_inquiries|default:"0" }}</div>
             <div class="stat-label">New</div>
+            {% if new_inquiries > 0 %}
+            <div class="mt-3 text-xs text-blue-600 animate-pulse">
+                <i class="fas fa-circle mr-1"></i>
+                Needs attention
+            </div>
+            {% endif %}
         </div>
         
-        <div class="stat-card">
-            <div class="stat-value">{{ inquiries.filter|status_filter:'contacted'|length }}</div>
-            <div class="stat-label">Contacted</div>
+        <div class="stat-card fade-in-up stagger-3">
+            <div class="stat-value">{{ response_rate|default:"0" }}%</div>
+            <div class="stat-label">Response Rate</div>
+            <div class="mt-3 text-xs text-gray-500">
+                <i class="fas fa-clock mr-1"></i>
+                {{ avg_response_time|default:"2.3" }} hours avg
+            </div>
         </div>
         
-        <div class="stat-card">
-            <div class="stat-value">{{ inquiries.filter|status_filter:'converted'|length }}</div>
+        <div class="stat-card fade-in-up stagger-4">
+            <div class="stat-value">{{ converted_inquiries|default:"0" }}</div>
             <div class="stat-label">Converted</div>
+            <div class="mt-3 text-xs text-green-600">
+                <i class="fas fa-check-circle mr-1"></i>
+                Successful deals
+            </div>
         </div>
     </div>
 
+    <!-- Source Distribution -->
+    {% if source_data %}
+    <div class="sources-section fade-in-up">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Inquiry Sources</h3>
+        <div class="space-y-3">
+            {% for source in source_data %}
+            <div>
+                <div class="source-item">
+                    <span class="source-color" style="background: {% cycle '#FF6B35' '#10b981' '#3b82f6' '#8b5cf6' '#f59e0b' %}"></span>
+                    <span class="source-name">
+                        {% if source.source == 'website' %}Website
+                        {% elif source.source == 'phone' %}Phone
+                        {% elif source.source == 'whatsapp' %}WhatsApp
+                        {% elif source.source == 'email' %}Email
+                        {% elif source.source == 'walkin' %}Walk-in
+                        {% else %}{{ source.source|title }}
+                        {% endif %}
+                    </span>
+                    <span class="source-count">{{ source.count }}</span>
+                    <span class="source-percentage">{{ source.percentage|floatformat:1 }}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ source.percentage|floatformat:1 }}%; background: {% cycle '#FF6B35' '#10b981' '#3b82f6' '#8b5cf6' '#f59e0b' %}"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Filters Section -->
-    <div class="filters-section">
-        <form method="GET" action="{% url 'buyer_inquiries' %}" id="inquiriesFilterForm" class="space-y-4">
+    <div class="filters-section fade-in-up">
+        <form method="GET" action="{% url 'buyer_inquiries' %}" id="inquiriesFilterForm">
             <div class="filters-grid">
                 <div class="filter-group">
                     <label for="status_filter">Status</label>
@@ -599,7 +839,7 @@
                            name="date_from" 
                            id="date_from"
                            value="{{ date_from|default:'' }}"
-                           class="filter-select"
+                           class="filter-input"
                            onchange="this.form.submit()">
                 </div>
                 
@@ -609,27 +849,62 @@
                            name="date_to" 
                            id="date_to"
                            value="{{ date_to|default:'' }}"
-                           class="filter-select"
+                           class="filter-input"
                            onchange="this.form.submit()">
+                </div>
+                
+                <div class="filter-group">
+                    <label for="search">Search</label>
+                    <input type="text" 
+                           name="q" 
+                           id="search"
+                           value="{{ search_query|default:'' }}"
+                           placeholder="Search inquiries..."
+                           class="filter-input">
                 </div>
             </div>
             
-            <div class="flex justify-end">
+            <div class="flex justify-end gap-3 mt-4">
                 <button type="button" 
                         onclick="resetFilters()" 
-                        class="px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-300 font-medium flex items-center gap-2">
+                        class="px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-medium flex items-center gap-2">
                     <i class="fas fa-redo"></i>
-                    Reset Filters
+                    Reset
+                </button>
+                
+                <button type="submit" 
+                        class="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl hover:shadow-lg transition-all font-medium flex items-center gap-2">
+                    <i class="fas fa-filter"></i>
+                    Apply Filters
                 </button>
             </div>
         </form>
     </div>
 
+    <!-- Search Stats -->
+    {% if search_query or status_filter != 'all' or date_from or date_to %}
+    <div class="flex items-center justify-between bg-orange-50 p-4 rounded-xl fade-in-up">
+        <div class="text-sm text-gray-700">
+            <i class="fas fa-filter mr-2 text-orange-500"></i>
+            Showing filtered results
+            {% if status_filter != 'all' %}
+            <span class="inline-flex items-center ml-2 px-2 py-1 bg-orange-100 rounded-full text-xs">
+                Status: {{ status_filter|title }}
+                <a href="?{% if search_query %}q={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}&sort={{ sort_by }}" class="ml-2 text-orange-600 hover:text-orange-800">×</a>
+            </span>
+            {% endif %}
+        </div>
+        <a href="{% url 'buyer_inquiries' %}" class="text-sm text-orange-600 hover:text-orange-800 font-medium">
+            Clear all filters
+        </a>
+    </div>
+    {% endif %}
+
     <!-- Inquiries List -->
-    {% if inquiries %}
-    <div id="inquiriesList">
-        {% for inquiry in inquiries %}
-        <div class="inquiry-card" id="inquiry-{{ inquiry.id }}">
+    {% if page_obj.object_list %}
+    <div class="space-y-4" id="inquiriesList">
+        {% for inquiry in page_obj.object_list %}
+        <div class="inquiry-card fade-in-up" id="inquiry-{{ inquiry.id }}" data-status="{{ inquiry.status }}">
             <div class="inquiry-header">
                 <div class="inquiry-property">
                     <div class="property-thumbnail">
@@ -637,18 +912,25 @@
                         <img src="{{ inquiry.property.primary_image.url }}" alt="{{ inquiry.property.title }}">
                         {% else %}
                         <div class="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                            <i class="fas fa-home text-gray-400"></i>
+                            <i class="fas fa-home text-gray-400 text-2xl"></i>
                         </div>
                         {% endif %}
                     </div>
                     
                     <div class="property-info">
                         <h4>{{ inquiry.property.title }}</h4>
-                        <p>{{ inquiry.property.city }}, {{ inquiry.property.state }}</p>
-                        <div class="flex items-center gap-2 mt-1">
-                            <span class="text-sm font-bold text-orange-600">₹{{ inquiry.property.price|intcomma }}</span>
+                        <p>
+                            <i class="fas fa-map-marker-alt text-red-500"></i>
+                            {{ inquiry.property.city }}, {{ inquiry.property.state }}
+                        </p>
+                        <p>
+                            <i class="fas fa-user text-gray-500"></i>
+                            {{ inquiry.property.owner.get_full_name|default:inquiry.property.owner.email }}
+                        </p>
+                        <div class="property-price">
+                            ₹{{ inquiry.property.price|intcomma }}
                             {% if inquiry.property.property_for in 'rent,pg' %}
-                            <span class="text-sm text-gray-600">/month</span>
+                            <span class="text-sm font-normal text-gray-600">/month</span>
                             {% endif %}
                         </div>
                     </div>
@@ -661,14 +943,14 @@
             
             <div class="inquiry-details">
                 <div class="inquiry-message">
-                    <strong>Your Message:</strong><br>
-                    {{ inquiry.message }}
+                    <strong class="block mb-2 text-gray-900">Your Message:</strong>
+                    {{ inquiry.message|linebreaks }}
                 </div>
                 
                 <div class="inquiry-meta">
                     <div class="meta-item">
                         <i class="fas fa-calendar-alt"></i>
-                        <span>Sent on {{ inquiry.created_at|date:"M d, Y" }}</span>
+                        <span>Sent: {{ inquiry.created_at|date:"M d, Y g:i A" }}</span>
                     </div>
                     
                     {% if inquiry.preferred_date %}
@@ -684,6 +966,11 @@
                         <span>Budget: ₹{{ inquiry.budget|intcomma }}</span>
                     </div>
                     {% endif %}
+                    
+                    <div class="meta-item">
+                        <i class="fas fa-sync"></i>
+                        <span>Last updated: {{ inquiry.updated_at|timesince }} ago</span>
+                    </div>
                 </div>
             </div>
             
@@ -693,34 +980,40 @@
                     <i class="fas fa-reply text-green-600"></i>
                     Seller's Response
                     {% if inquiry.responded_at %}
-                    <span class="text-xs text-gray-500 ml-auto">
-                        {{ inquiry.responded_at|timesince }} ago
+                    <span class="text-xs text-gray-500 ml-2">
+                        ({{ inquiry.responded_at|timesince }} ago)
                     </span>
                     {% endif %}
                 </div>
                 <div class="response-content">
-                    {{ inquiry.response }}
+                    {{ inquiry.response|linebreaks }}
                 </div>
             </div>
             {% endif %}
             
             <div class="inquiry-actions">
                 <a href="{% url 'buyer_property_detail' inquiry.property.slug %}" 
-                   class="action-btn btn-primary flex items-center justify-center gap-2">
+                   class="action-btn btn-primary">
                     <i class="fas fa-eye"></i>
                     View Property
                 </a>
                 
+                <a href="tel:{{ inquiry.property.owner.phone }}" 
+                   class="action-btn btn-secondary">
+                    <i class="fas fa-phone"></i>
+                    Call Seller
+                </a>
+                
                 {% if inquiry.status == 'new' or inquiry.status == 'contacted' %}
                 <button onclick="openFollowupModal('{{ inquiry.id }}')" 
-                        class="action-btn btn-secondary flex items-center justify-center gap-2">
+                        class="action-btn btn-secondary">
                     <i class="fas fa-envelope"></i>
                     Follow Up
                 </button>
                 {% endif %}
                 
                 <button onclick="deleteInquiry('{{ inquiry.id }}')" 
-                        class="action-btn btn-secondary flex items-center justify-center gap-2 text-red-600 hover:text-red-700">
+                        class="action-btn btn-danger">
                     <i class="fas fa-trash"></i>
                     Delete
                 </button>
@@ -728,22 +1021,61 @@
         </div>
         {% endfor %}
     </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="flex items-center justify-between mt-6 fade-in-up">
+        <div class="text-sm text-gray-700">
+            Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} inquiries
+        </div>
+        
+        <div class="flex items-center gap-2">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
+               class="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-gray-300 hover:border-orange-500 hover:bg-orange-50 transition-all">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <span class="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium">
+                    {{ num }}
+                </span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
+                   class="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-gray-300 hover:border-orange-500 hover:bg-orange-50 transition-all">
+                    {{ num }}
+                </a>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
+               class="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-gray-300 hover:border-orange-500 hover:bg-orange-50 transition-all">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
     {% else %}
     <!-- Empty State -->
-    <div class="empty-state">
+    <div class="empty-state fade-in-up">
         <i class="fas fa-inbox"></i>
         <h3>No Inquiries Yet</h3>
         <p>You haven't made any property inquiries yet. Start exploring properties and send inquiries to property owners.</p>
         
-        <div class="flex flex-wrap gap-3 justify-center mt-6">
+        <div class="flex flex-wrap gap-4 justify-center mt-6">
             <a href="{% url 'buyer_properties' %}" 
-               class="px-6 py-0 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium flex items-center gap-2">
+               class="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl hover:shadow-lg transition-all font-medium inline-flex items-center gap-2">
                 <i class="fas fa-search"></i>
                 <span>Browse Properties</span>
             </a>
             
             <a href="{% url 'buyer_favorites' %}" 
-               class="px-6 py-0 border-2 border-blue-600 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all duration-300 font-medium flex items-center gap-2">
+               class="px-6 py-3 border-2 border-orange-500 text-orange-600 rounded-xl hover:bg-orange-50 transition-all font-medium inline-flex items-center gap-2">
                 <i class="fas fa-heart"></i>
                 <span>View Favorites</span>
             </a>
@@ -774,7 +1106,7 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="followupStatus">Update Status</label>
+                        <label for="followupStatus">Update Status (Optional)</label>
                         <select id="followupStatus" name="status">
                             <option value="">Keep Current Status</option>
                             <option value="contacted">Mark as Contacted</option>
@@ -786,13 +1118,13 @@
                 
                 <div class="modal-footer">
                     <button type="button" 
-                            class="action-btn btn-secondary"
+                            class="px-4 py-2 border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-all"
                             onclick="closeFollowupModal()">
                         Cancel
                     </button>
                     
                     <button type="submit" 
-                            class="action-btn btn-primary">
+                            class="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl hover:shadow-lg transition-all">
                         <i class="fas fa-paper-plane mr-2"></i>
                         Send Follow-up
                     </button>
@@ -805,46 +1137,75 @@
 
 {% block extra_js %}
 <script>
+    // CSRF Token
+    const csrftoken = getCookie('csrftoken');
+    
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize filters
         initializeFilters();
-        
-        // Initialize followup form
         initializeFollowupForm();
+        initializeStatusColors();
+        initInquiryAnimations();
     });
 
     function initializeFilters() {
-        // Auto-submit date filters when both are selected
         const dateFrom = document.getElementById('date_from');
         const dateTo = document.getElementById('date_to');
         
         if (dateFrom && dateTo) {
-            dateFrom.addEventListener('change', function() {
-                if (dateFrom.value && dateTo.value) {
-                    document.getElementById('inquiriesFilterForm').submit();
-                }
+            [dateFrom, dateTo].forEach(input => {
+                input.addEventListener('change', function() {
+                    if (dateFrom.value && dateTo.value) {
+                        document.getElementById('inquiriesFilterForm').submit();
+                    }
+                });
             });
-            
-            dateTo.addEventListener('change', function() {
-                if (dateFrom.value && dateTo.value) {
-                    document.getElementById('inquiriesFilterForm').submit();
-                }
+        }
+        
+        // Auto-submit search after typing (with delay)
+        const searchInput = document.getElementById('search');
+        if (searchInput) {
+            let timeout = null;
+            searchInput.addEventListener('keyup', function() {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    if (this.value.length >= 3 || this.value.length === 0) {
+                        document.getElementById('inquiriesFilterForm').submit();
+                    }
+                }, 500);
             });
         }
     }
 
+    function initializeStatusColors() {
+        const inquiryCards = document.querySelectorAll('.inquiry-card');
+        inquiryCards.forEach(card => {
+            const status = card.dataset.status;
+            const statusBadge = card.querySelector('.inquiry-status');
+            if (statusBadge) {
+                statusBadge.className = `inquiry-status status-${status}`;
+            }
+        });
+    }
+
+    function initInquiryAnimations() {
+        // Add staggered animation to inquiry cards
+        const cards = document.querySelectorAll('.inquiry-card');
+        cards.forEach((card, index) => {
+            card.style.animationDelay = `${index * 0.1}s`;
+        });
+    }
+
     function resetFilters() {
-        // Reset all form fields
         const form = document.getElementById('inquiriesFilterForm');
         form.reset();
         
-        // Reset select values to defaults
+        // Set defaults
         document.getElementById('status_filter').value = 'all';
         document.getElementById('sort_by').value = '-created_at';
         document.getElementById('date_from').value = '';
         document.getElementById('date_to').value = '';
+        document.getElementById('search').value = '';
         
-        // Submit form
         form.submit();
     }
 
@@ -854,26 +1215,24 @@
         
         inquiryIdInput.value = inquiryId;
         modal.classList.add('active');
-        
-        // Prevent body scrolling
         document.body.style.overflow = 'hidden';
+        
+        // Focus on textarea
+        setTimeout(() => {
+            document.getElementById('followupMessage').focus();
+        }, 100);
     }
 
     function closeFollowupModal() {
         const modal = document.getElementById('followupModal');
         modal.classList.remove('active');
-        
-        // Clear form
         document.getElementById('followupForm').reset();
         document.getElementById('followupInquiryId').value = '';
-        
-        // Restore body scrolling
         document.body.style.overflow = '';
     }
 
     function initializeFollowupForm() {
         const form = document.getElementById('followupForm');
-        
         if (form) {
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -884,25 +1243,23 @@
 
     function sendFollowup() {
         const inquiryId = document.getElementById('followupInquiryId').value;
-        const message = document.getElementById('followupMessage').value;
+        const message = document.getElementById('followupMessage').value.trim();
         const status = document.getElementById('followupStatus').value;
         
-        if (!message.trim()) {
-            showToast('Please enter a message', 'error');
+        if (!message) {
+            showToast('Please enter a message', 'warning');
             return;
         }
         
-        // Show loading
-        showLoading('Sending follow-up...');
+        showLoading();
         
-        fetch(`/buyer/ajax/send-followup/${inquiryId}/`, {
+        fetch(`/buyer/inquiry/${inquiryId}/followup/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken'),
+                'X-CSRFToken': csrftoken,
             },
             body: JSON.stringify({
-                inquiry_id: inquiryId,
                 message: message,
                 status: status
             }),
@@ -915,7 +1272,7 @@
                 showToast('Follow-up sent successfully!', 'success');
                 closeFollowupModal();
                 
-                // Reload the page to show updated inquiry
+                // Reload page after 1.5 seconds
                 setTimeout(() => {
                     window.location.reload();
                 }, 1500);
@@ -935,13 +1292,12 @@
             return;
         }
         
-        // Show loading
-        showLoading('Deleting inquiry...');
+        showLoading();
         
-        fetch(`/buyer/ajax/delete-inquiry/${inquiryId}/`, {
-            method: 'DELETE',
+        fetch(`/buyer/inquiry/${inquiryId}/delete/`, {
+            method: 'POST',
             headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
+                'X-CSRFToken': csrftoken,
             },
         })
         .then(response => response.json())
@@ -951,13 +1307,17 @@
             if (data.success) {
                 showToast('Inquiry deleted successfully!', 'success');
                 
-                // Remove inquiry from list
                 const inquiryElement = document.getElementById(`inquiry-${inquiryId}`);
                 if (inquiryElement) {
                     inquiryElement.style.opacity = '0';
                     inquiryElement.style.transform = 'translateX(100px)';
                     setTimeout(() => {
                         inquiryElement.remove();
+                        
+                        // Reload if no inquiries left
+                        if (document.querySelectorAll('.inquiry-card').length === 0) {
+                            window.location.reload();
+                        }
                     }, 300);
                 }
             } else {
@@ -971,42 +1331,53 @@
         });
     }
 
-    function showLoading(message = 'Loading...') {
-        // Remove existing loading overlay if any
-        hideLoading();
-        
-        const loadingOverlay = document.createElement('div');
-        loadingOverlay.id = 'loadingOverlay';
-        loadingOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-        loadingOverlay.innerHTML = `
-            <div class="bg-white rounded-2xl p-8 shadow-2xl">
-                <div class="flex flex-col items-center gap-4">
-                    <div class="loading-spinner">
-                        <div class="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-                    </div>
-                    <p class="text-gray-700 font-medium">${message}</p>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(loadingOverlay);
+    function updateInquiryStatus(inquiryId, newStatus) {
+        fetch('/buyer/ajax/update-inquiry-status/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken,
+            },
+            body: JSON.stringify({
+                inquiry_id: inquiryId,
+                status: newStatus
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(`Status updated to ${data.new_status}`, 'success');
+                
+                // Update status badge
+                const inquiryCard = document.getElementById(`inquiry-${inquiryId}`);
+                if (inquiryCard) {
+                    const statusBadge = inquiryCard.querySelector('.inquiry-status');
+                    if (statusBadge) {
+                        statusBadge.className = `inquiry-status status-${newStatus}`;
+                        statusBadge.textContent = data.new_status;
+                    }
+                    inquiryCard.dataset.status = newStatus;
+                }
+            } else {
+                showToast(data.error, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error updating status', 'error');
+        });
+    }
+
+    function showLoading() {
+        document.getElementById('loadingOverlay').classList.add('active');
     }
 
     function hideLoading() {
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        if (loadingOverlay) {
-            loadingOverlay.remove();
-        }
+        document.getElementById('loadingOverlay').classList.remove('active');
     }
 
     function showToast(message, type = 'info') {
         const container = document.getElementById('toastContainer');
-        if (!container) {
-            const toastContainer = document.createElement('div');
-            toastContainer.id = 'toastContainer';
-            toastContainer.className = 'toast-container';
-            document.body.appendChild(toastContainer);
-            container = toastContainer;
-        }
         
         const toast = document.createElement('div');
         toast.className = 'toast';
@@ -1032,7 +1403,6 @@
         
         container.appendChild(toast);
         
-        // Auto remove after 4 seconds
         setTimeout(() => {
             if (toast.parentElement) {
                 toast.remove();
@@ -1040,20 +1410,38 @@
         }, 4000);
     }
 
-    // Utility function to get CSRF token
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+    // Close modal when clicking outside
+    document.addEventListener('click', function(event) {
+        const modal = document.getElementById('followupModal');
+        if (event.target.classList.contains('modal-overlay')) {
+            closeFollowupModal();
+        }
+    });
+
+    // Handle escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeFollowupModal();
+        }
+    });
+
+    // Helper function to get Cookie (already exists in base template)
+    // But we'll redefine it here to ensure it's available
+    if (typeof getCookie !== 'function') {
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
                 }
             }
+            return cookieValue;
         }
-        return cookieValue;
     }
 </script>
 {% endblock %}

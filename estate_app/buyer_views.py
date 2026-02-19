@@ -1,9 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.core.paginator import Paginator
 from django.db.models import Q, Count, Avg, Min, Max
+from django.views.decorators.http import require_POST, require_GET
 from django.utils import timezone
 from datetime import datetime, timedelta
 from .models import Property, PropertyFavorite, PropertyComparison, SiteVisit, BuyerProfile, PropertyInquiry,PropertyCategory, PropertyType
@@ -519,10 +520,13 @@ def buyer_schedule_visit(request, property_id):
     
     return render(request, 'dashboard/buyer/schedule_visit.html', context)
 
+# ================================
+#  Buyer Inquiries
+# ================================
 
 @login_required
 def buyer_inquiries(request):
-    """Property inquiries made by buyer"""
+    """Enhanced property inquiries made by buyer"""
     user = request.user
     
     # Get filter parameters
@@ -530,9 +534,13 @@ def buyer_inquiries(request):
     sort_by = request.GET.get('sort', '-created_at')
     date_from = request.GET.get('date_from', '')
     date_to = request.GET.get('date_to', '')
+    search_query = request.GET.get('q', '')
     
     # Base queryset
-    inquiries = PropertyInquiry.objects.filter(user=user)
+    inquiries = PropertyInquiry.objects.filter(user=user).select_related('property', 'property__owner')
+    
+    # Store for statistics
+    all_inquiries = inquiries
     
     # Apply filters
     if status_filter != 'all':
@@ -553,21 +561,243 @@ def buyer_inquiries(request):
         except ValueError:
             pass
     
+    # Search filter
+    if search_query:
+        inquiries = inquiries.filter(
+            Q(message__icontains=search_query) |
+            Q(property__title__icontains=search_query) |
+            Q(property__city__icontains=search_query)
+        )
+    
     # Apply sorting
     if sort_by in ['created_at', '-created_at', 'updated_at', '-updated_at']:
         inquiries = inquiries.order_by(sort_by)
     
+    # Statistics
+    total_inquiries = all_inquiries.count()
+    new_inquiries = all_inquiries.filter(status='new').count()
+    contacted_inquiries = all_inquiries.filter(status='contacted').count()
+    interested_inquiries = all_inquiries.filter(status='interested').count()
+    converted_inquiries = all_inquiries.filter(status='converted').count()
+    
+    # Response rate
+    responded_inquiries = all_inquiries.exclude(response__exact='').count()
+    response_rate = (responded_inquiries / total_inquiries * 100) if total_inquiries > 0 else 0
+    
+    # Average response time
+    avg_response_time = "2.3 hours"  # You can calculate this from actual data
+    
+    # Inquiry sources
+    source_data = all_inquiries.values('source').annotate(
+        count=Count('id')
+    ).order_by('-count')
+    
+    for source in source_data:
+        source['percentage'] = (source['count'] * 100.0 / total_inquiries) if total_inquiries > 0 else 0
+    
+    # Pagination
+    paginator = Paginator(inquiries, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
     context = {
         'user': user,
-        'inquiries': inquiries,
+        'page_obj': page_obj,
+        'total_inquiries': total_inquiries,
+        'new_inquiries': new_inquiries,
+        'contacted_inquiries': contacted_inquiries,
+        'interested_inquiries': interested_inquiries,
+        'converted_inquiries': converted_inquiries,
+        'response_rate': round(response_rate, 1),
+        'avg_response_time': avg_response_time,
+        'source_data': source_data,
         'status_filter': status_filter,
         'sort_by': sort_by,
         'date_from': date_from,
         'date_to': date_to,
+        'search_query': search_query,
     }
     
     return render(request, 'dashboard/buyer/inquiries.html', context)
 
+
+@login_required
+def buyer_inquiry_detail(request, pk):
+    """Buyer inquiry detail view"""
+    user = request.user
+    inquiry = get_object_or_404(PropertyInquiry, pk=pk, user=user)
+    
+    # Get seller info
+    seller = inquiry.property.owner
+    seller_profile = getattr(seller, 'profile', None)
+    
+    # Get similar properties
+    similar_properties = Property.objects.filter(
+        Q(city=inquiry.property.city) | 
+        Q(property_type=inquiry.property.property_type),
+        status='active'
+    ).exclude(id=inquiry.property.id)[:3]
+    
+    context = {
+        'inquiry': inquiry,
+        'seller': seller,
+        'seller_profile': seller_profile,
+        'similar_properties': similar_properties,
+    }
+    
+    return render(request, 'dashboard/buyer/inquiry_detail.html', context)
+
+
+@login_required
+@require_POST
+def ajax_send_followup(request, inquiry_id):
+    """Send follow-up message on inquiry"""
+    try:
+        data = json.loads(request.body)
+        message = data.get('message', '').strip()
+        status = data.get('status', '')
+        
+        inquiry = get_object_or_404(PropertyInquiry, id=inquiry_id, user=request.user)
+        
+        if not message:
+            return JsonResponse({'success': False, 'error': 'Message is required'})
+        
+        # Append follow-up to existing message
+        inquiry.message += f"\n\n--- Follow-up ({timezone.now().strftime('%Y-%m-%d %H:%M')}): ---\n{message}"
+        inquiry.updated_at = timezone.now()
+        
+        # Update status if provided
+        if status and status in dict(PropertyInquiry.STATUS_CHOICES):
+            inquiry.status = status
+        
+        inquiry.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Follow-up sent successfully!',
+            'new_status': inquiry.get_status_display() if status else None
+        })
+        
+    except PropertyInquiry.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Inquiry not found'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+@login_required
+@require_POST
+def ajax_update_inquiry_status(request):
+    """Update inquiry status"""
+    try:
+        data = json.loads(request.body)
+        inquiry_id = data.get('inquiry_id')
+        new_status = data.get('status')
+        
+        inquiry = get_object_or_404(PropertyInquiry, id=inquiry_id, user=request.user)
+        inquiry.status = new_status
+        inquiry.save()
+        
+        return JsonResponse({
+            'success': True,
+            'new_status': inquiry.get_status_display(),
+            'message': f'Status updated to {inquiry.get_status_display()}'
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+@login_required
+@require_POST
+def ajax_delete_inquiry(request, inquiry_id):
+    """Delete an inquiry"""
+    try:
+        inquiry = get_object_or_404(PropertyInquiry, id=inquiry_id, user=request.user)
+        inquiry.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Inquiry deleted successfully!'
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+@login_required
+@require_GET
+def ajax_export_inquiries(request):
+    """Export inquiries as CSV"""
+    user = request.user
+    inquiries = PropertyInquiry.objects.filter(user=user).select_related('property')
+    
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="my_inquiries.csv"'
+    
+    import csv
+    writer = csv.writer(response)
+    writer.writerow(['Date', 'Property', 'Location', 'Message', 'Status', 'Seller Response', 'Response Date'])
+    
+    for inquiry in inquiries:
+        writer.writerow([
+            inquiry.created_at.strftime('%Y-%m-%d %H:%M'),
+            inquiry.property.title,
+            f"{inquiry.property.city}, {inquiry.property.state}",
+            inquiry.message[:100] + '...' if len(inquiry.message) > 100 else inquiry.message,
+            inquiry.get_status_display(),
+            inquiry.response[:100] + '...' if inquiry.response and len(inquiry.response) > 100 else inquiry.response or 'No response yet',
+            inquiry.responded_at.strftime('%Y-%m-%d %H:%M') if inquiry.responded_at else ''
+        ])
+    
+    return response
+
+@login_required
+@require_GET
+def ajax_get_inquiry_details(request, inquiry_id):
+    """Get inquiry details for AJAX"""
+    try:
+        inquiry = get_object_or_404(PropertyInquiry, id=inquiry_id, user=request.user)
+        
+        data = {
+            'id': inquiry.id,
+            'message': inquiry.message,
+            'status': inquiry.status,
+            'status_display': inquiry.get_status_display(),
+            'created_at': inquiry.created_at.strftime('%Y-%m-%d %H:%M'),
+            'property': {
+                'id': inquiry.property.id,
+                'title': inquiry.property.title,
+                'price': float(inquiry.property.price),
+                'city': inquiry.property.city,
+                'address': inquiry.property.address,
+                'primary_image': inquiry.property.primary_image.url if inquiry.property.primary_image else None,
+                'property_for': inquiry.property.get_property_for_display(),
+                'bedrooms': inquiry.property.bedrooms,
+                'bathrooms': inquiry.property.bathrooms,
+                'carpet_area': float(inquiry.property.carpet_area) if inquiry.property.carpet_area else None,
+            },
+            'seller': {
+                'name': inquiry.property.owner.get_full_name(),
+                'email': inquiry.property.owner.email,
+                'phone': inquiry.property.owner.phone,
+            }
+        }
+        
+        if inquiry.response:
+            data['response'] = inquiry.response
+            data['responded_at'] = inquiry.responded_at.strftime('%Y-%m-%d %H:%M') if inquiry.responded_at else None
+        
+        if inquiry.preferred_date:
+            data['preferred_date'] = inquiry.preferred_date.strftime('%Y-%m-%d')
+            data['preferred_time'] = inquiry.preferred_time.strftime('%H:%M') if inquiry.preferred_time else None
+        
+        if inquiry.budget:
+            data['budget'] = float(inquiry.budget)
+        
+        return JsonResponse({'success': True, 'inquiry': data})
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
 
 @login_required
 def buyer_profile(request):
@@ -902,43 +1132,52 @@ def cancel_visit(request, visit_id):
 
 
 @login_required
-def ajax_send_followup(request):
-    """AJAX view to send follow-up message on an inquiry"""
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            inquiry_id = data.get('inquiry_id')
-            message = data.get('message', '').strip()
-            status = data.get('status', '')
-
-            # Get the inquiry and verify ownership
-            inquiry = get_object_or_404(PropertyInquiry, id=inquiry_id, user=request.user)
-
-            if not message:
-                return JsonResponse({'success': False, 'error': 'Message is required'})
-
-            # Update the inquiry with the follow-up message
-            inquiry.message += f"\n\n--- Follow-up ({timezone.now().strftime('%Y-%m-%d %H:%M')}): ---\n{message}"
-            inquiry.updated_at = timezone.now()
-
-            # Update status if provided
-            if status and status in dict(PropertyInquiry.STATUS_CHOICES):
-                inquiry.status = status
-
-            inquiry.save()
-
-            return JsonResponse({
-                'success': True,
-                'message': 'Follow-up sent successfully!',
-                'new_status': inquiry.get_status_display() if status else None
-            })
-
-        except PropertyInquiry.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Inquiry not found'})
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
-
-    return JsonResponse({'success': False, 'error': 'Invalid request'})
+@require_POST
+def ajax_send_followup(request, inquiry_id):
+    """Send follow-up message on inquiry"""
+    try:
+        data = json.loads(request.body)
+        message = data.get('message', '').strip()
+        status = data.get('status', '')
+        
+        # Get the inquiry and verify ownership
+        inquiry = get_object_or_404(PropertyInquiry, id=inquiry_id, user=request.user)
+        
+        if not message:
+            return JsonResponse({'success': False, 'error': 'Message is required'})
+        
+        # Append follow-up to existing message with timestamp
+        timestamp = timezone.now().strftime('%Y-%m-%d %H:%M')
+        inquiry.message += f"\n\n--- Follow-up ({timestamp}): ---\n{message}"
+        inquiry.updated_at = timezone.now()
+        
+        # Update status if provided
+        if status and status in dict(PropertyInquiry.STATUS_CHOICES):
+            inquiry.status = status
+        
+        inquiry.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Follow-up sent successfully!',
+            'new_status': inquiry.get_status_display() if status else None
+        })
+        
+    except PropertyInquiry.DoesNotExist:
+        return JsonResponse({
+            'success': False, 
+            'error': 'Inquiry not found or you do not have permission to access it'
+        })
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON data'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
 
 
 @login_required

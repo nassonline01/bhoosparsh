@@ -1,4 +1,3 @@
-<!-- templates/dashboard/seller/leads.html -->
 {% extends 'dashboard/seller/base.html' %}
 {% load static %}
 {% load humanize %}
@@ -7,906 +6,2243 @@
 
 {% block extra_css %}
 <style>
+    /* Small font system - INCREASED BY 1PX */
+    html {
+        font-size: 15px;
+    }
+    
+    body, .text-base, p, span, div, a, button, input, select, textarea {
+        font-size: 0.9375rem;
+    }
+    
+    h1 { font-size: 1.625rem; }
+    h2 { font-size: 1.375rem; }
+    h3 { font-size: 1.25rem; }
+    h4 { font-size: 1.125rem; }
+    h5 { font-size: 1.0625rem; }
+    h6 { font-size: 1rem; }
+    
+    .text-xs { font-size: 0.8125rem; }
+    .text-sm { font-size: 0.875rem; }
+    .text-base { font-size: 0.9375rem; }
+    .text-lg { font-size: 1.0625rem; }
+    .text-xl { font-size: 1.1875rem; }
+    .text-2xl { font-size: 1.375rem; }
+    
+    /* Lead card styles */
+    .leads-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* Statistics Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        transition: all 0.2s ease;
+        border: 1px solid #e5e7eb;
+    }
+
+    .dark .stat-card {
+        background: #1F2937;
+        border-color: #374151;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(14, 104, 185, 0.1);
+        border-color: #0E68B9;
+    }
+
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #0E68B9, #1E90FF);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.25rem;
+        line-height: 1.2;
+    }
+
+    .dark .stat-value {
+        color: #F9FAFB;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: #6b7280;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .dark .stat-label {
+        color: #9CA3AF;
+    }
+
+    .stat-trend {
+        margin-top: 0.5rem;
+        font-size: 0.7rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .trend-up { color: #10b981; }
+    .trend-down { color: #ef4444; }
+
+    /* Sources Section */
+    .sources-section {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .dark .sources-section {
+        background: #1F2937;
+        border-color: #374151;
+    }
+
+    .section-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .dark .section-title {
+        color: #F9FAFB;
+    }
+
+    .section-title i {
+        color: #0E68B9;
+    }
+
+    .source-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .dark .source-item {
+        border-bottom-color: #374151;
+    }
+
+    .source-item:last-child {
+        border-bottom: none;
+    }
+
+    .source-color {
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+    }
+
+    .source-name {
+        flex: 1;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #374151;
+    }
+
+    .dark .source-name {
+        color: #D1D5DB;
+    }
+
+    .source-count {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .dark .source-count {
+        color: #F9FAFB;
+    }
+
+    .source-percentage {
+        width: 45px;
+        text-align: right;
+        font-size: 0.75rem;
+        color: #6b7280;
+    }
+
+    .dark .source-percentage {
+        color: #9CA3AF;
+    }
+
+    .progress-bar {
+        height: 4px;
+        background: #f0f0f0;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 0.25rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .dark .progress-bar {
+        background: #374151;
+    }
+
+    .progress-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+
+    /* Priority Distribution */
+    .priority-section {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #e5e7eb;
+    }
+
+    .dark .priority-section {
+        background: #1F2937;
+        border-color: #374151;
+    }
+
+    .priority-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0.75rem;
+        text-align: center;
+    }
+
+    .priority-item {
+        padding: 0.75rem 0.5rem;
+        background: #F9FAFB;
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .dark .priority-item {
+        background: #374151;
+    }
+
+    .priority-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .priority-badge {
+        display: inline-block;
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        border-radius: 50%;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .priority-1 { background: #ef4444; color: white; }
+    .priority-2 { background: #f97316; color: white; }
+    .priority-3 { background: #f59e0b; color: white; }
+    .priority-4 { background: #10b981; color: white; }
+    .priority-5 { background: #6b7280; color: white; }
+
+    .priority-count {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .dark .priority-count {
+        color: #F9FAFB;
+    }
+
+    .priority-label {
+        font-size: 0.7rem;
+        color: #6b7280;
+    }
+
+    .dark .priority-label {
+        color: #9CA3AF;
+    }
+
+    /* Filters Section */
+    .filters-section {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .dark .filters-section {
+        background: #1F2937;
+        border-color: #374151;
+    }
+
+    .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .filter-group label {
+        display: block;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6b7280;
+        margin-bottom: 0.375rem;
+    }
+
+    .dark .filter-group label {
+        color: #9CA3AF;
+    }
+
+    .filter-select, .filter-input {
+        width: 100%;
+        padding: 0.625rem 0.875rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        background: white;
+        transition: all 0.2s ease;
+    }
+
+    .dark .filter-select, .dark .filter-input {
+        background: #374151;
+        border-color: #4B5563;
+        color: #F9FAFB;
+    }
+
+    .filter-select:focus, .filter-input:focus {
+        outline: none;
+        border-color: #0E68B9;
+        box-shadow: 0 0 0 3px rgba(14, 104, 185, 0.1);
+    }
+
+    .filter-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        margin-top: 1.25rem;
+    }
+
+    .btn-reset {
+        padding: 0.625rem 1.25rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        background: white;
+        color: #374151;
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+    }
+
+    .dark .btn-reset {
+        background: #374151;
+        border-color: #4B5563;
+        color: #D1D5DB;
+    }
+
+    .btn-reset:hover {
+        background: #f3f4f6;
+        border-color: #9ca3af;
+    }
+
+    .dark .btn-reset:hover {
+        background: #4B5563;
+    }
+
+    .btn-apply {
+        padding: 0.625rem 1.25rem;
+        background: linear-gradient(135deg, #0E68B9, #1E90FF);
+        border: none;
+        border-radius: 0.5rem;
+        color: white;
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-apply:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(14, 104, 185, 0.3);
+    }
+
+    /* Active Filters */
+    .active-filters {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1.25rem;
+        padding: 0.75rem 1rem;
+        background: #F9FAFB;
+        border-radius: 0.5rem;
+    }
+
+    .dark .active-filters {
+        background: #374151;
+    }
+
+    .filter-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.375rem 0.875rem;
+        background: #EFF6FF;
+        border: 1px solid #BFDBFE;
+        border-radius: 50px;
+        font-size: 0.8125rem;
+        color: #1E40AF;
+    }
+
+    .dark .filter-chip {
+        background: #1E3A8A;
+        border-color: #2563EB;
+        color: #BFDBFE;
+    }
+
+    .filter-chip-remove {
+        color: #1E40AF;
+        text-decoration: none;
+        font-weight: 700;
+        margin-left: 0.25rem;
+    }
+
+    .dark .filter-chip-remove {
+        color: #BFDBFE;
+    }
+
+    .filter-chip-remove:hover {
+        color: #1E3A8A;
+    }
+
+    /* Search Bar */
+    .search-section {
+        margin-bottom: 1.5rem;
+    }
+
+    .search-wrapper {
+        position: relative;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.75rem;
+        font-size: 0.9375rem;
+        background: white;
+        transition: all 0.2s ease;
+    }
+
+    .dark .search-input {
+        background: #374151;
+        border-color: #4B5563;
+        color: #F9FAFB;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #0E68B9;
+        box-shadow: 0 0 0 3px rgba(14, 104, 185, 0.1);
+    }
+
+    .search-button {
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #0E68B9;
+        cursor: pointer;
+        padding: 0.25rem 0.5rem;
+    }
+
+    /* Lead Cards */
+    .leads-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
     .lead-card {
-        transition: all 0.3s ease;
-        border-left: 4px solid transparent;
+        background: white;
+        border-radius: 0.75rem;
+        border: 1px solid #e5e7eb;
+        padding: 1.5rem;
+        transition: all 0.2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .dark .lead-card {
+        background: #1F2937;
+        border-color: #374151;
+    }
+
+    .lead-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 4px;
+        background: linear-gradient(135deg, #0E68B9, #1E90FF);
+        opacity: 0;
+        transition: opacity 0.2s ease;
     }
 
     .lead-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        border-color: transparent;
     }
 
-    .lead-card.new {
-        border-left-color: #3B82F6;
-        background: linear-gradient(90deg, rgba(59, 130, 246, 0.05) 0%, transparent 100%);
-    }
-
-    .lead-card.contacted {
-        border-left-color: #10B981;
-        background: linear-gradient(90deg, rgba(16, 185, 129, 0.05) 0%, transparent 100%);
-    }
-
-    .lead-card.interested {
-        border-left-color: #8B5CF6;
-        background: linear-gradient(90deg, rgba(139, 92, 246, 0.05) 0%, transparent 100%);
-    }
-
-    .lead-card.converted {
-        border-left-color: #F59E0B;
-        background: linear-gradient(90deg, rgba(245, 158, 11, 0.05) 0%, transparent 100%);
-    }
-
-    .status-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        display: inline-block;
-        margin-right: 6px;
-    }
-
-    .status-new .status-dot { background-color: #3B82F6; }
-    .status-contacted .status-dot { background-color: #10B981; }
-    .status-interested .status-dot { background-color: #8B5CF6; }
-    .status-not_interested .status-dot { background-color: #EF4444; }
-    .status-converted .status-dot { background-color: #F59E0B; }
-    .status-spam .status-dot { background-color: #6B7280; }
-
-    .priority-badge {
-        padding: 2px 8px;
-        border-radius: 10px;
-        font-size: 10px;
-        font-weight: 600;
-    }
-
-    .priority-1 { background-color: #EF4444; color: white; }
-    .priority-2 { background-color: #F59E0B; color: white; }
-    .priority-3 { background-color: #10B981; color: white; }
-    .priority-4 { background-color: #3B82F6; color: white; }
-    .priority-5 { background-color: #8B5CF6; color: white; }
-
-    .time-ago {
-        font-size: 11px;
-        color: #6B7280;
-    }
-
-    .filter-chip {
-        background: #EFF6FF;
-        color: #1E40AF;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 500;
-    }
-
-    .filter-chip:hover {
-        background: #DBEAFE;
-    }
-
-    .stat-card {
-        transition: all 0.3s ease;
-    }
-
-    .stat-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-    }
-
-    .quick-action-btn {
-        transition: all 0.3s ease;
-    }
-
-    .quick-action-btn:hover {
-        transform: scale(1.05);
-    }
-
-    .lead-actions {
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .lead-card:hover .lead-actions {
+    .lead-card:hover::before {
         opacity: 1;
     }
 
-    @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.7; }
+    .lead-card.new { border-left: 4px solid #3b82f6; }
+    .lead-card.contacted { border-left: 4px solid #10b981; }
+    .lead-card.interested { border-left: 4px solid #8b5cf6; }
+    .lead-card.converted { border-left: 4px solid #f59e0b; }
+    .lead-card.not_interested { border-left: 4px solid #ef4444; }
+    .lead-card.spam { border-left: 4px solid #6b7280; }
+
+    .lead-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.25rem;
     }
 
-    .pulse-animation {
-        animation: pulse 2s infinite;
+    .lead-buyer {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .buyer-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0E68B9, #1E90FF);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+
+    .buyer-info h4 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.25rem;
+    }
+
+    .dark .buyer-info h4 {
+        color: #F9FAFB;
+    }
+
+    .buyer-contact {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        font-size: 0.8125rem;
+        color: #6b7280;
+    }
+
+    .dark .buyer-contact {
+        color: #9CA3AF;
+    }
+
+    .buyer-contact span {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .lead-status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+    }
+
+    .status-new { background: #dbeafe; color: #1e40af; }
+    .status-contacted { background: #d1fae5; color: #065f46; }
+    .status-interested { background: #fef3c7; color: #92400e; }
+    .status-not_interested { background: #fee2e2; color: #991b1b; }
+    .status-converted { background: #f3e8ff; color: #5b21b6; }
+    .status-spam { background: #f3f4f6; color: #4b5563; }
+
+    .dark .status-new { background: #1e3a8a; color: #bfdbfe; }
+    .dark .status-contacted { background: #064e3b; color: #a7f3d0; }
+    .dark .status-interested { background: #78350f; color: #fde68a; }
+    .dark .status-not_interested { background: #7f1d1d; color: #fecaca; }
+    .dark .status-converted { background: #4c1d95; color: #ddd6fe; }
+    .dark .status-spam { background: #374151; color: #d1d5db; }
+
+    .lead-property {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+        padding: 0.75rem;
+        background: #F9FAFB;
+        border-radius: 0.5rem;
+    }
+
+    .dark .lead-property {
+        background: #374151;
+    }
+
+    .property-thumb {
+        width: 60px;
+        height: 45px;
+        border-radius: 6px;
+        overflow: hidden;
+        background: #e5e7eb;
+        flex-shrink: 0;
+    }
+
+    .dark .property-thumb {
+        background: #4B5563;
+    }
+
+    .property-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .property-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .property-title {
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 0.25rem;
+        font-size: 0.9375rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .dark .property-title {
+        color: #F9FAFB;
+    }
+
+    .property-location {
+        font-size: 0.7rem;
+        color: #6b7280;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .dark .property-location {
+        color: #9CA3AF;
+    }
+
+    .lead-message {
+        background: #F9FAFB;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1.25rem;
+        border-left: 4px solid #0E68B9;
+    }
+
+    .dark .lead-message {
+        background: #374151;
+    }
+
+    .lead-message p {
+        color: #374151;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        margin-bottom: 0.5rem;
+    }
+
+    .dark .lead-message p {
+        color: #D1D5DB;
+    }
+
+    .message-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.7rem;
+        color: #6b7280;
+    }
+
+    .dark .message-meta {
+        color: #9CA3AF;
+    }
+
+    .lead-response {
+        background: #f0fdf4;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1.25rem;
+        border: 1px solid #86efac;
+        position: relative;
+    }
+
+    .dark .lead-response {
+        background: #064e3b;
+        border-color: #10b981;
+    }
+
+    .lead-response::before {
+        content: '';
+        position: absolute;
+        top: -8px;
+        left: 20px;
+        width: 16px;
+        height: 16px;
+        background: #f0fdf4;
+        transform: rotate(45deg);
+        border-left: 1px solid #86efac;
+        border-top: 1px solid #86efac;
+    }
+
+    .dark .lead-response::before {
+        background: #064e3b;
+        border-color: #10b981;
+    }
+
+    .response-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .response-header strong {
+        color: #166534;
+        font-size: 0.8125rem;
+    }
+
+    .dark .response-header strong {
+        color: #86efac;
+    }
+
+    .response-time {
+        font-size: 0.65rem;
+        color: #6b7280;
+    }
+
+    .dark .response-time {
+        color: #9CA3AF;
+    }
+
+    .lead-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .dark .lead-footer {
+        border-top-color: #374151;
+    }
+
+    .lead-meta {
+        display: flex;
+        gap: 1.25rem;
+        font-size: 0.7rem;
+        color: #6b7280;
+    }
+
+    .dark .lead-meta {
+        color: #9CA3AF;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .lead-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .action-btn.view {
+        background: #e0f2fe;
+        color: #0369a1;
+    }
+
+    .dark .action-btn.view {
+        background: #1e3a8a;
+        color: #93c5fd;
+    }
+
+    .action-btn.view:hover {
+        background: #bae6fd;
+    }
+
+    .dark .action-btn.view:hover {
+        background: #2563eb;
+        color: white;
+    }
+
+    .action-btn.call {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .dark .action-btn.call {
+        background: #064e3b;
+        color: #86efac;
+    }
+
+    .action-btn.call:hover {
+        background: #bbf7d0;
+    }
+
+    .dark .action-btn.call:hover {
+        background: #059669;
+        color: white;
+    }
+
+    .action-btn.email {
+        background: #fef9c3;
+        color: #854d0e;
+    }
+
+    .dark .action-btn.email {
+        background: #78350f;
+        color: #fde047;
+    }
+
+    .action-btn.email:hover {
+        background: #fef08a;
+    }
+
+    .dark .action-btn.email:hover {
+        background: #b45309;
+        color: white;
+    }
+
+    .action-btn.more {
+        background: #f3f4f6;
+        color: #4b5563;
+    }
+
+    .dark .action-btn.more {
+        background: #4B5563;
+        color: #D1D5DB;
+    }
+
+    .action-btn.more:hover {
+        background: #e5e7eb;
+    }
+
+    .dark .action-btn.more:hover {
+        background: #6B7280;
+        color: white;
+    }
+
+    /* Quick Status Update */
+    .quick-status {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .status-select {
+        padding: 0.375rem 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        background: white;
+    }
+
+    .dark .status-select {
+        background: #374151;
+        border-color: #4B5563;
+        color: #F9FAFB;
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background: white;
+        border-radius: 0.75rem;
+        border: 1px solid #e5e7eb;
+    }
+
+    .dark .pagination {
+        background: #1F2937;
+        border-color: #374151;
+    }
+
+    .pagination-info {
+        font-size: 0.8125rem;
+        color: #6b7280;
+    }
+
+    .dark .pagination-info {
+        color: #9CA3AF;
+    }
+
+    .pagination-controls {
+        display: flex;
+        gap: 0.375rem;
+    }
+
+    .page-btn {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        color: #374151;
+        font-size: 0.8125rem;
+        transition: all 0.2s ease;
+    }
+
+    .dark .page-btn {
+        background: #374151;
+        border-color: #4B5563;
+        color: #D1D5DB;
+    }
+
+    .page-btn:hover {
+        background: #fff7ed;
+        border-color: #0E68B9;
+        color: #0E68B9;
+    }
+
+    .dark .page-btn:hover {
+        background: #1E40AF;
+        border-color: #60A5FA;
+        color: white;
+    }
+
+    .page-btn.active {
+        background: linear-gradient(135deg, #0E68B9, #1E90FF);
+        border: none;
+        color: white;
+    }
+
+    .page-btn.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1.5rem;
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-radius: 1rem;
+        border: 2px dashed #d1d5db;
+    }
+
+    .dark .empty-state {
+        background: #1F2937;
+        border-color: #4B5563;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        color: #9ca3af;
+        margin-bottom: 1rem;
+    }
+
+    .dark .empty-state i {
+        color: #6B7280;
+    }
+
+    .empty-state h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.5rem;
+    }
+
+    .dark .empty-state h3 {
+        color: #F9FAFB;
+    }
+
+    .empty-state p {
+        color: #6b7280;
+        max-width: 400px;
+        margin: 0 auto 1.5rem;
+        font-size: 0.9375rem;
+        line-height: 1.5;
+    }
+
+    .dark .empty-state p {
+        color: #9CA3AF;
+    }
+
+    .empty-state-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+
+    .btn-primary {
+        padding: 0.625rem 1.5rem;
+        background: linear-gradient(135deg, #0E68B9, #1E90FF);
+        border-radius: 0.5rem;
+        color: white;
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(14, 104, 185, 0.3);
+    }
+
+    .btn-secondary {
+        padding: 0.625rem 1.5rem;
+        border: 2px solid #0E68B9;
+        border-radius: 0.5rem;
+        color: #0E68B9;
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-secondary:hover {
+        background: #EFF6FF;
+    }
+
+    .dark .btn-secondary {
+        border-color: #60A5FA;
+        color: #93C5FD;
+    }
+
+    .dark .btn-secondary:hover {
+        background: #1E40AF;
+        color: white;
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        padding: 1rem;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 1rem;
+        width: 100%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+        animation: modalSlideIn 0.3s ease;
+    }
+
+    .dark .modal-content {
+        background: #1F2937;
+    }
+
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .modal-header {
+        padding: 1.25rem;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .dark .modal-header {
+        border-bottom-color: #374151;
+    }
+
+    .modal-header h3 {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #111827;
+        margin: 0;
+    }
+
+    .dark .modal-header h3 {
+        color: #F9FAFB;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        color: #6b7280;
+        cursor: pointer;
+        font-size: 1.125rem;
+        padding: 0.5rem;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .dark .modal-close {
+        color: #9CA3AF;
+    }
+
+    .modal-close:hover {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .dark .modal-close:hover {
+        background: #374151;
+        color: #F9FAFB;
+    }
+
+    .modal-body {
+        padding: 1.25rem;
+    }
+
+    .modal-footer {
+        padding: 1.25rem;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+    }
+
+    .dark .modal-footer {
+        border-top-color: #374151;
+    }
+
+    /* Form Controls */
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    .dark .form-label {
+        color: #D1D5DB;
+    }
+
+    .lead-checkbox {
+        width: 1rem;
+        height: 1rem;
+        border-radius: 4px;
+        border: 1px solid #d1d5db;
+        cursor: pointer;
+    }
+
+    .dark .lead-checkbox {
+        background: #374151;
+        border-color: #4B5563;
+    }
+
+    /* Toast Notifications */
+    .toast-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 99999;
+    }
+
+    .toast {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 0.875rem 1.25rem;
+        margin-bottom: 10px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 0.875rem;
+        animation: slideInRight 0.3s ease;
+        min-width: 300px;
+        max-width: 400px;
+        border-left: 4px solid;
+    }
+
+    .dark .toast {
+        background: #1F2937;
+        color: #F9FAFB;
+    }
+
+    .toast.success { border-left-color: #10b981; }
+    .toast.error { border-left-color: #ef4444; }
+    .toast.warning { border-left-color: #f59e0b; }
+    .toast.info { border-left-color: #3b82f6; }
+
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    /* Loading Spinner */
+    .loading-spinner {
+        display: inline-block;
+        width: 32px;
+        height: 32px;
+        border: 3px solid rgba(14, 104, 185, 0.2);
+        border-radius: 50%;
+        border-top-color: #0E68B9;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Hidden utility */
+    .hidden {
+        display: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .filters-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .lead-header {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .lead-buyer {
+            width: 100%;
+        }
+
+        .lead-footer {
+            flex-direction: column;
+            gap: 0.75rem;
+            align-items: flex-start;
+        }
+
+        .lead-actions {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .pagination {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .priority-grid {
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.375rem;
+        }
+
+        .priority-item {
+            padding: 0.5rem 0.25rem;
+        }
     }
 </style>
 {% endblock %}
 
 {% block header_title %}
-<h1 class="text-xl font-bold text-gray-900 dark:text-white">Leads & Inquiries</h1>
-<p class="text-sm text-gray-600 dark:text-gray-400">
-    Manage your property inquiries and customer leads
-</p>
+<div>
+    <h1 class="text-xl font-bold text-gray-900 dark:text-white">
+        <span class="bg-gradient-to-r from-bhoosparsh-blue to-blue-600 bg-clip-text text-transparent">
+            Leads & Inquiries
+        </span>
+    </h1>
+    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+        <i class="fas fa-users text-bhoosparsh-blue mr-2"></i>
+        Manage and respond to customer inquiries
+    </p>
+</div>
 {% endblock %}
 
 {% block header_buttons %}
-<div class="flex flex-wrap gap-2">
-    <a href="{% url 'seller_lead_export' %}" 
-       class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-2">
-        <i class="fas fa-download"></i>
-        <span>Export CSV</span>
-    </a>
+<div class="flex flex-wrap gap-3">
+    <button onclick="openBulkActionsModal()" 
+            class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 flex items-center gap-2 font-medium">
+        <i class="fas fa-tasks"></i>
+        <span class="hidden sm:inline">Bulk Actions</span>
+    </button>
     
-    <div class="relative">
-        <button onclick="toggleFilterDropdown()" 
-                class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-2">
-            <i class="fas fa-filter"></i>
-            <span>Filter</span>
-            {% if status_filter != 'all' or property_filter != 'all' or date_from or date_to %}
-            <span class="w-2 h-2 bg-red-500 rounded-full"></span>
-            {% endif %}
-        </button>
-        
-        <div id="filterDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 z-10">
-            <form method="GET" id="filterForm">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
-                        <select name="status" class="w-full p-2 border rounded-lg">
-                            <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Status</option>
-                            <option value="new" {% if status_filter == 'new' %}selected{% endif %}>New</option>
-                            <option value="contacted" {% if status_filter == 'contacted' %}selected{% endif %}>Contacted</option>
-                            <option value="interested" {% if status_filter == 'interested' %}selected{% endif %}>Interested</option>
-                            <option value="not_interested" {% if status_filter == 'not_interested' %}selected{% endif %}>Not Interested</option>
-                            <option value="converted" {% if status_filter == 'converted' %}selected{% endif %}>Converted</option>
-                            <option value="spam" {% if status_filter == 'spam' %}selected{% endif %}>Spam</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Property</label>
-                        <select name="property" class="w-full p-2 border rounded-lg">
-                            <option value="all" {% if property_filter == 'all' %}selected{% endif %}>All Properties</option>
-                            {% for prop in user_properties %}
-                            <option value="{{ prop.id }}" {% if property_filter == prop.id|stringformat:"s" %}selected{% endif %}>
-                                {{ prop.title|truncatechars:30 }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">From Date</label>
-                            <input type="date" name="date_from" value="{{ date_from }}" 
-                                   class="w-full p-2 border rounded-lg">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">To Date</label>
-                            <input type="date" name="date_to" value="{{ date_to }}" 
-                                   class="w-full p-2 border rounded-lg">
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort By</label>
-                        <select name="sort" class="w-full p-2 border rounded-lg">
-                            <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>Newest First</option>
-                            <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>Oldest First</option>
-                            <option value="priority" {% if sort_by == 'priority' %}selected{% endif %}>Priority (High to Low)</option>
-                            <option value="-priority" {% if sort_by == '-priority' %}selected{% endif %}>Priority (Low to High)</option>
-                        </select>
-                    </div>
-                    
-                    <div class="flex gap-2 pt-2">
-                        <button type="submit" 
-                                class="flex-1 px-3 py-2 bg-bhoosparsh-blue text-white rounded-lg hover:bg-blue-700 transition text-sm">
-                            Apply Filters
-                        </button>
-                        <a href="{% url 'seller_leads' %}" 
-                           class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition text-sm">
-                            Clear All
-                        </a>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
+    <a href="{% url 'seller_lead_export' %}" 
+       class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 flex items-center gap-2 font-medium">
+        <i class="fas fa-download"></i>
+        <span class="hidden sm:inline">Export CSV</span>
+    </a>
 </div>
 {% endblock %}
 
 {% block content %}
-<!-- Stats Overview -->
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-    <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-5">
-        <div class="flex items-center">
-            <div class="rounded-full bg-blue-100 dark:bg-blue-900 p-3 mr-4">
-                <i class="fas fa-inbox text-blue-600 dark:text-blue-400 text-xl"></i>
+<div class="leads-container animate-fade-in">
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card stagger-1">
+            <div class="stat-icon">
+                <i class="fas fa-inbox"></i>
             </div>
-            <div>
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ total_leads }}</h2>
-                <p class="text-sm text-gray-600 dark:text-gray-400">Total Leads</p>
-            </div>
-        </div>
-        <div class="mt-3">
-            <div class="flex items-center text-xs text-blue-600">
-                <i class="fas fa-arrow-up mr-1"></i>
-                <span>From last month</span>
+            <div class="stat-value">{{ total_leads }}</div>
+            <div class="stat-label">Total Leads</div>
+            <div class="stat-trend trend-up">
+                <i class="fas fa-arrow-up"></i>
+                <span>+12% from last month</span>
             </div>
         </div>
-    </div>
 
-    <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-5">
-        <div class="flex items-center">
-            <div class="rounded-full bg-green-100 dark:bg-green-900 p-3 mr-4">
-                <i class="fas fa-bell text-green-600 dark:text-green-400 text-xl"></i>
+        <div class="stat-card stagger-2">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                <i class="fas fa-bell"></i>
             </div>
-            <div>
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ new_leads }}</h2>
-                <p class="text-sm text-gray-600 dark:text-gray-400">New Leads</p>
-            </div>
-        </div>
-        <div class="mt-3">
+            <div class="stat-value">{{ new_leads }}</div>
+            <div class="stat-label">New Leads</div>
             {% if new_leads > 0 %}
-            <div class="flex items-center text-xs text-green-600 pulse-animation">
-                <i class="fas fa-circle mr-1"></i>
+            <div class="stat-trend trend-up">
+                <i class="fas fa-circle"></i>
                 <span>Needs attention</span>
             </div>
-            {% else %}
-            <div class="text-xs text-gray-500">All caught up!</div>
             {% endif %}
         </div>
+
+        <div class="stat-card stagger-3">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                <i class="fas fa-reply"></i>
+            </div>
+            <div class="stat-value">{{ response_rate }}%</div>
+            <div class="stat-label">Response Rate</div>
+            <div class="stat-trend">
+                <i class="far fa-clock"></i>
+                <span>{{ avg_response_time }} avg</span>
+            </div>
+        </div>
+
+        <div class="stat-card stagger-4">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="stat-value">{{ interested_leads }}</div>
+            <div class="stat-label">Interested</div>
+        </div>
+
+        <div class="stat-card stagger-5">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <div class="stat-value">{{ converted_leads }}</div>
+            <div class="stat-label">Converted</div>
+        </div>
+
+        <div class="stat-card stagger-6">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #6b7280, #4b5563);">
+                <i class="fas fa-ban"></i>
+            </div>
+            <div class="stat-value">{{ spam_leads|default:0 }}</div>
+            <div class="stat-label">Spam</div>
+        </div>
     </div>
 
-    <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-5">
-        <div class="flex items-center">
-            <div class="rounded-full bg-yellow-100 dark:bg-yellow-900 p-3 mr-4">
-                <i class="fas fa-reply text-yellow-600 dark:text-yellow-400 text-xl"></i>
-            </div>
+    <!-- Lead Sources Chart -->
+    {% if lead_sources %}
+    <div class="sources-section">
+        <h3 class="section-title">
+            <i class="fas fa-chart-pie"></i>
+            Lead Sources
+        </h3>
+        <div class="space-y-2">
+            {% for source in lead_sources %}
             <div>
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ response_rate }}%</h2>
-                <p class="text-sm text-gray-600 dark:text-gray-400">Response Rate</p>
-            </div>
-        </div>
-        <div class="mt-3">
-            <div class="flex items-center text-xs text-yellow-600">
-                <i class="fas fa-chart-line mr-1"></i>
-                <span>{{ avg_response_time }} avg response</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="stat-card bg-white dark:bg-gray-800 rounded-xl p-5">
-        <div class="flex items-center">
-            <div class="rounded-full bg-purple-100 dark:bg-purple-900 p-3 mr-4">
-                <i class="fas fa-trophy text-purple-600 dark:text-purple-400 text-xl"></i>
-            </div>
-            <div>
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ converted_leads }}</h2>
-                <p class="text-sm text-gray-600 dark:text-gray-400">Converted</p>
-            </div>
-        </div>
-        <div class="mt-3">
-            <div class="flex items-center text-xs text-purple-600">
-                <i class="fas fa-star mr-1"></i>
-                <span>Successful deals</span>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Active Filters -->
-<div class="flex flex-wrap gap-2 mb-6">
-    {% if status_filter != 'all' %}
-    <span class="filter-chip">
-        Status: {{ status_filter|title }}
-        <a href="?{% if property_filter != 'all' %}property={{ property_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
-           class="ml-2 text-xs">×</a>
-    </span>
-    {% endif %}
-    
-    {% if property_filter != 'all' %}
-    {% with selected_property=user_properties|first %}
-    {% if selected_property %}
-    <span class="filter-chip">
-        Property: {{ selected_property.title|truncatechars:20 }}
-        <a href="?{% if status_filter != 'all' %}status={{ status_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
-           class="ml-2 text-xs">×</a>
-    </span>
-    {% endif %}
-    {% endwith %}
-    {% endif %}
-    
-    {% if date_from %}
-    <span class="filter-chip">
-        From: {{ date_from }}
-        <a href="?{% if status_filter != 'all' %}status={{ status_filter }}{% endif %}{% if property_filter != 'all' %}&property={{ property_filter }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
-           class="ml-2 text-xs">×</a>
-    </span>
-    {% endif %}
-    
-    {% if date_to %}
-    <span class="filter-chip">
-        To: {{ date_to }}
-        <a href="?{% if status_filter != 'all' %}status={{ status_filter }}{% endif %}{% if property_filter != 'all' %}&property={{ property_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
-           class="ml-2 text-xs">×</a>
-    </span>
-    {% endif %}
-    
-    {% if search_query %}
-    <span class="filter-chip">
-        Search: "{{ search_query }}"
-        <a href="?{% if status_filter != 'all' %}status={{ status_filter }}{% endif %}{% if property_filter != 'all' %}&property={{ property_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}&sort={{ sort_by }}" 
-           class="ml-2 text-xs">×</a>
-    </span>
-    {% endif %}
-    
-    {% if status_filter != 'all' or property_filter != 'all' or date_from or date_to or search_query %}
-    <a href="{% url 'seller_leads' %}" class="text-sm text-bhoosparsh-blue hover:text-blue-700 flex items-center gap-1">
-        Clear all filters
-        <i class="fas fa-times"></i>
-    </a>
-    {% endif %}
-</div>
-
-<!-- Search Bar -->
-<div class="mb-6">
-    <form method="GET" class="relative">
-        <input type="text" 
-               name="q" 
-               value="{{ search_query }}" 
-               placeholder="Search leads by name, email, phone, or message..." 
-               class="w-full p-3 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
-        <i class="fas fa-search absolute left-3 top-3.5 text-gray-400"></i>
-        <button type="submit" class="absolute right-3 top-3 text-gray-400 hover:text-gray-600">
-            <i class="fas fa-arrow-right"></i>
-        </button>
-    </form>
-</div>
-
-<!-- Quick Actions -->
-<div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl p-6 mb-6 border border-blue-100 dark:border-blue-800">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-            <h3 class="font-bold text-gray-900 dark:text-white mb-2">Quick Actions</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400">
-                Manage your leads efficiently with these actions
-            </p>
-        </div>
-        
-        <div class="flex flex-wrap gap-2">
-            <button onclick="markAllAsContacted()" 
-                    class="quick-action-btn px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-medium flex items-center gap-2">
-                <i class="fas fa-check-circle"></i>
-                <span>Mark All as Contacted</span>
-            </button>
-            
-            <button onclick="sendBulkResponse()" 
-                    class="quick-action-btn px-4 py-2 bg-bhoosparsh-blue text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium flex items-center gap-2">
-                <i class="fas fa-paper-plane"></i>
-                <span>Send Bulk Response</span>
-            </button>
-            
-            <button onclick="scheduleCallbacks()" 
-                    class="quick-action-btn px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm font-medium flex items-center gap-2">
-                <i class="fas fa-phone"></i>
-                <span>Schedule Callbacks</span>
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- Lead Sources Chart -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-    <!-- Lead Sources -->
-    <div class="lg:col-span-1">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 h-full">
-            <h3 class="font-bold text-lg text-gray-900 dark:text-white mb-6">Lead Sources</h3>
-            <div class="space-y-4">
-                {% for source in lead_sources %}
-                <div>
-                    <div class="flex justify-between text-sm mb-1">
-                        <div class="flex items-center">
-                            <div class="w-3 h-3 rounded-full mr-2" 
-                                 style="background-color: {% cycle '#10B981' '#3B82F6' '#8B5CF6' '#F59E0B' '#EF4444' as colors %}"></div>
-                            <span class="text-gray-600 dark:text-gray-400">
-                                {% if source.source == 'website' %}Website Form
-                                {% elif source.source == 'phone' %}Phone Call
-                                {% elif source.source == 'whatsapp' %}WhatsApp
-                                {% elif source.source == 'email' %}Email
-                                {% elif source.source == 'walkin' %}Walk-in
-                                {% else %}{{ source.source|title }}
-                                {% endif %}
-                            </span>
-                        </div>
-                        <span class="font-medium">{{ source.count }} ({{ source.percentage|floatformat:1 }}%)</span>
-                    </div>
-                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                        <div class="h-2 rounded-full" 
-                             style="width: {{ source.percentage|floatformat:1 }}%; background-color: {% cycle '#10B981' '#3B82F6' '#8B5CF6' '#F59E0B' '#EF4444' %}"></div>
-                    </div>
-                </div>
-                {% empty %}
-                <div class="text-center py-4">
-                    <i class="fas fa-chart-pie text-gray-400 text-3xl mb-3"></i>
-                    <p class="text-gray-600 dark:text-gray-400">No lead data available</p>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Conversion Funnel -->
-    <div class="lg:col-span-2">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 h-full">
-            <h3 class="font-bold text-lg text-gray-900 dark:text-white mb-6">Conversion Funnel</h3>
-            <div class="space-y-6">
-                <div class="relative">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Total Leads</span>
-                        <span class="text-sm font-bold text-gray-900 dark:text-white">{{ total_leads }}</span>
-                    </div>
-                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
-                        <div class="bg-blue-600 h-4 rounded-full" style="width: 100%"></div>
-                    </div>
-                </div>
-                
-                <div class="relative">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Contacted</span>
-                        <span class="text-sm font-bold text-gray-900 dark:text-white">{{ contacted_leads }} 
-                            ({% if total_leads > 0 %}{{ contacted_leads|divisibleby:total_leads|floatformat:1 }}{% else %}0{% endif %}%)
-                        </span>
-                    </div>
-                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
-                        <div class="bg-green-600 h-4 rounded-full" 
-                             style="width: {% if total_leads > 0 %}{{ contacted_leads|divisibleby:total_leads|floatformat:0 }}{% else %}0{% endif %}%"></div>
-                    </div>
-                </div>
-                
-                <div class="relative">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Interested</span>
-                        <span class="text-sm font-bold text-gray-900 dark:text-white">
-                            {{ interested_leads }} 
-                            ({% if total_leads > 0 %}{{ interested_leads|divisibleby:total_leads|floatformat:1 }}{% else %}0{% endif %}%)
-                        </span>
-                    </div>
-                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
-                        <div class="bg-yellow-600 h-4 rounded-full" 
-                             style="width: {% if total_leads > 0 %}{{ interested_leads|divisibleby:total_leads|floatformat:0 }}{% else %}0{% endif %}%"></div>
-                    </div>
-                </div>
-                
-                <div class="relative">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Converted</span>
-                        <span class="text-sm font-bold text-gray-900 dark:text-white">
-                            {{ converted_leads }} 
-                            ({% if total_leads > 0 %}{{ converted_leads|divisibleby:total_leads|floatformat:1 }}{% else %}0{% endif %}%)
-                        </span>
-                    </div>
-                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
-                        <div class="bg-purple-600 h-4 rounded-full" 
-                             style="width: {% if total_leads > 0 %}{{ converted_leads|divisibleby:total_leads|floatformat:0 }}{% else %}0{% endif %}%"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Leads List -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden mb-6">
-    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <h3 class="font-bold text-lg text-gray-900 dark:text-white">All Leads ({{ total_leads }})</h3>
-            <div class="text-sm text-gray-600 dark:text-gray-400">
-                Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ total_leads }}
-            </div>
-        </div>
-    </div>
-    
-    {% if page_obj.object_list %}
-    <div class="divide-y divide-gray-100 dark:divide-gray-700">
-        {% for inquiry in page_obj.object_list %}
-        <div class="lead-card p-6 {% if inquiry.status == 'new' %}new{% elif inquiry.status == 'contacted' %}contacted{% elif inquiry.status == 'interested' %}interested{% elif inquiry.status == 'converted' %}converted{% endif %}">
-            <div class="flex flex-col lg:flex-row lg:items-start gap-4">
-                <!-- Lead Info -->
-                <div class="flex-1">
-                    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
-                        <div class="flex items-start gap-3">
-                            <div class="w-12 h-12 rounded-full bg-bhoosparsh-blue flex items-center justify-center text-white font-bold text-lg">
-                                {{ inquiry.name|first|upper }}
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-gray-900 dark:text-white">{{ inquiry.name }}</h4>
-                                <div class="flex flex-wrap items-center gap-2 mt-1">
-                                    <span class="text-sm text-gray-600 dark:text-gray-400">{{ inquiry.email }}</span>
-                                    <span class="text-xs text-gray-500">•</span>
-                                    <span class="text-sm text-gray-600 dark:text-gray-400">{{ inquiry.phone }}</span>
-                                </div>
-                                <div class="flex items-center mt-2">
-                                    <span class="status-{{ inquiry.status }}">
-                                        <span class="status-dot"></span>
-                                        <span class="text-xs font-medium">{{ inquiry.get_status_display }}</span>
-                                    </span>
-                                    <span class="mx-2 text-gray-300">•</span>
-                                    <span class="priority-badge priority-{{ inquiry.priority }}">
-                                        Priority {{ inquiry.priority }}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-start gap-3">
-                            <div class="text-right">
-                                <div class="time-ago mb-2">{{ inquiry.created_at|timesince }} ago</div>
-                                <div class="text-xs text-gray-500">
-                                    {% if inquiry.source == 'website' %}Website Form
-                                    {% elif inquiry.source == 'phone' %}Phone Call
-                                    {% elif inquiry.source == 'whatsapp' %}WhatsApp
-                                    {% elif inquiry.source == 'email' %}Email
-                                    {% elif inquiry.source == 'walkin' %}Walk-in
-                                    {% else %}{{ inquiry.source|title }}
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="lead-actions flex gap-1">
-                                <a href="{% url 'seller_lead_detail' inquiry.id %}" 
-                                   class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-800 transition"
-                                   title="View Details">
-                                    <i class="fas fa-eye text-sm"></i>
-                                </a>
-                                <a href="tel:{{ inquiry.phone }}" 
-                                   class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center text-green-600 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-800 transition"
-                                   title="Call">
-                                    <i class="fas fa-phone text-sm"></i>
-                                </a>
-                                <a href="mailto:{{ inquiry.email }}" 
-                                   class="w-8 h-8 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center text-yellow-600 dark:text-yellow-400 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition"
-                                   title="Email">
-                                    <i class="fas fa-envelope text-sm"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Property Info -->
-                    <div class="mb-4">
-                        <div class="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-1">
-                            <i class="fas fa-home mr-2"></i>
-                            <span class="font-medium text-gray-900 dark:text-white">Property:</span>
-                            <a href="{% url 'seller_property_detail' inquiry.property.pk %}" target="_blank"
-                               class="ml-2 text-bhoosparsh-blue hover:text-blue-700">
-                                {{ inquiry.property.title|truncatechars:40 }}
-                            </a>
-                        </div>
-                        <div class="text-sm text-gray-600 dark:text-gray-400">
-                            <span class="font-medium">Budget:</span>
-                            <span class="ml-2">
-                                {% if inquiry.budget %}
-                                ₹{{ inquiry.budget|intcomma }}
-                                {% else %}
-                                Not specified
-                                {% endif %}
-                            </span>
-                        </div>
-                    </div>
-                    
-                    <!-- Message -->
-                    <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
-                        <p class="text-sm text-gray-700 dark:text-gray-300">
-                            "{{ inquiry.message|truncatechars:200 }}"
-                        </p>
-                        {% if inquiry.preferred_date %}
-                        <div class="flex items-center mt-3 text-sm text-gray-600 dark:text-gray-400">
-                            <i class="fas fa-calendar-alt mr-2"></i>
-                            <span>Preferred: {{ inquiry.preferred_date|date:"M d, Y" }}</span>
-                            {% if inquiry.preferred_time %}
-                            <span class="mx-2">•</span>
-                            <span>{{ inquiry.preferred_time|time:"g:i A" }}</span>
-                            {% endif %}
-                        </div>
+                <div class="source-item">
+                    <span class="source-color" style="background: {% cycle '#0E68B9' '#3b82f6' '#10b981' '#8b5cf6' '#f59e0b' '#ef4444' %}"></span>
+                    <span class="source-name">
+                        {% if source.source == 'website' %}Website Form
+                        {% elif source.source == 'phone' %}Phone Call
+                        {% elif source.source == 'whatsapp' %}WhatsApp
+                        {% elif source.source == 'email' %}Email
+                        {% elif source.source == 'walkin' %}Walk-in
+                        {% else %}{{ source.source|title }}
                         {% endif %}
+                    </span>
+                    <span class="source-count">{{ source.count }}</span>
+                    <span class="source-percentage">{{ source.percentage|floatformat:1 }}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ source.percentage|floatformat:1 }}%; background: {% cycle '#0E68B9' '#3b82f6' '#10b981' '#8b5cf6' '#f59e0b' '#ef4444' %}"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Priority Distribution -->
+    {% if priority_counts %}
+    <div class="priority-section">
+        <h3 class="section-title">
+            <i class="fas fa-sort-amount-up"></i>
+            Priority Distribution
+        </h3>
+        <div class="priority-grid">
+            {% for priority, count in priority_counts.items %}
+            <div class="priority-item">
+                <div class="priority-badge priority-{{ priority }}">P{{ priority }}</div>
+                <div class="priority-count">{{ count }}</div>
+                <div class="priority-label">Priority {{ priority }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Filters Section -->
+    <div class="filters-section">
+        <form method="GET" action="{% url 'seller_leads' %}" id="filterForm">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label for="status">Status</label>
+                    <select name="status" id="status" class="filter-select">
+                        <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Statuses</option>
+                        <option value="new" {% if status_filter == 'new' %}selected{% endif %}>New</option>
+                        <option value="contacted" {% if status_filter == 'contacted' %}selected{% endif %}>Contacted</option>
+                        <option value="interested" {% if status_filter == 'interested' %}selected{% endif %}>Interested</option>
+                        <option value="not_interested" {% if status_filter == 'not_interested' %}selected{% endif %}>Not Interested</option>
+                        <option value="converted" {% if status_filter == 'converted' %}selected{% endif %}>Converted</option>
+                        <option value="spam" {% if status_filter == 'spam' %}selected{% endif %}>Spam</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="property">Property</label>
+                    <select name="property" id="property" class="filter-select">
+                        <option value="all" {% if property_filter == 'all' %}selected{% endif %}>All Properties</option>
+                        {% for property in user_properties %}
+                        <option value="{{ property.id }}" {% if property_filter == property.id|stringformat:"s" %}selected{% endif %}>
+                            {{ property.title|truncatechars:30 }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="date_from">From Date</label>
+                    <input type="date" name="date_from" id="date_from" value="{{ date_from }}" class="filter-input">
+                </div>
+
+                <div class="filter-group">
+                    <label for="date_to">To Date</label>
+                    <input type="date" name="date_to" id="date_to" value="{{ date_to }}" class="filter-input">
+                </div>
+
+                <div class="filter-group">
+                    <label for="sort">Sort By</label>
+                    <select name="sort" id="sort" class="filter-select">
+                        <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>Newest First</option>
+                        <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>Oldest First</option>
+                        <option value="-priority" {% if sort_by == '-priority' %}selected{% endif %}>Priority (High to Low)</option>
+                        <option value="priority" {% if sort_by == 'priority' %}selected{% endif %}>Priority (Low to High)</option>
+                        <option value="-updated_at" {% if sort_by == '-updated_at' %}selected{% endif %}>Recently Updated</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="filter-actions">
+                <button type="button" class="btn-reset" onclick="resetFilters()">
+                    <i class="fas fa-redo mr-2"></i>Reset
+                </button>
+                <button type="submit" class="btn-apply">
+                    <i class="fas fa-filter mr-2"></i>Apply Filters
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Active Filters -->
+    {% if status_filter != 'all' or property_filter != 'all' or date_from or date_to or search_query %}
+    <div class="active-filters">
+        <span class="text-xs text-gray-600 dark:text-gray-400 mr-2">Active filters:</span>
+        
+        {% if status_filter != 'all' %}
+        <span class="filter-chip">
+            Status: {{ status_filter|title }}
+            <a href="?{% if property_filter != 'all' %}property={{ property_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
+               class="filter-chip-remove">×</a>
+        </span>
+        {% endif %}
+        
+        {% if property_filter != 'all' %}
+        {% with property=user_properties|first %}
+        <span class="filter-chip">
+            Property: {{ property.title|truncatechars:20 }}
+            <a href="?{% if status_filter != 'all' %}status={{ status_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
+               class="filter-chip-remove">×</a>
+        </span>
+        {% endwith %}
+        {% endif %}
+        
+        {% if date_from %}
+        <span class="filter-chip">
+            From: {{ date_from }}
+            <a href="?{% if status_filter != 'all' %}status={{ status_filter }}{% endif %}{% if property_filter != 'all' %}&property={{ property_filter }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
+               class="filter-chip-remove">×</a>
+        </span>
+        {% endif %}
+        
+        {% if date_to %}
+        <span class="filter-chip">
+            To: {{ date_to }}
+            <a href="?{% if status_filter != 'all' %}status={{ status_filter }}{% endif %}{% if property_filter != 'all' %}&property={{ property_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
+               class="filter-chip-remove">×</a>
+        </span>
+        {% endif %}
+        
+        {% if search_query %}
+        <span class="filter-chip">
+            Search: "{{ search_query }}"
+            <a href="?{% if status_filter != 'all' %}status={{ status_filter }}{% endif %}{% if property_filter != 'all' %}&property={{ property_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}&sort={{ sort_by }}" 
+               class="filter-chip-remove">×</a>
+        </span>
+        {% endif %}
+        
+        <a href="{% url 'seller_leads' %}" class="text-xs text-bhoosparsh-blue hover:text-blue-700 font-medium ml-auto">
+            Clear all filters <i class="fas fa-times ml-1"></i>
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Search Bar -->
+    <div class="search-section">
+        <form method="GET" action="{% url 'seller_leads' %}">
+            <div class="search-wrapper">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" 
+                       name="q" 
+                       value="{{ search_query }}"
+                       placeholder="Search leads by name, email, phone, or message..." 
+                       class="search-input">
+                <button type="submit" class="search-button">
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+            
+            <!-- Preserve other filters -->
+            <input type="hidden" name="status" value="{{ status_filter }}">
+            <input type="hidden" name="property" value="{{ property_filter }}">
+            <input type="hidden" name="date_from" value="{{ date_from }}">
+            <input type="hidden" name="date_to" value="{{ date_to }}">
+            <input type="hidden" name="sort" value="{{ sort_by }}">
+        </form>
+    </div>
+
+    <!-- Leads List -->
+    {% if page_obj.object_list %}
+    <div class="leads-list">
+        {% for inquiry in page_obj.object_list %}
+        <div class="lead-card {{ inquiry.status }}" id="lead-{{ inquiry.id }}">
+            <div class="lead-header">
+                <div class="lead-buyer">
+                    <div class="buyer-avatar">
+                        {{ inquiry.name|first|upper }}
                     </div>
-                    
-                    <!-- Response (if any) -->
-                    {% if inquiry.response %}
-                    <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-l-4 border-blue-500">
-                        <div class="flex items-start gap-2 mb-2">
-                            <i class="fas fa-reply text-blue-500 mt-1"></i>
-                            <div>
-                                <div class="text-sm font-medium text-gray-900 dark:text-white">Your Response</div>
-                                <div class="text-xs text-gray-500">
-                                    {{ inquiry.responded_at|date:"M d, Y g:i A" }}
-                                </div>
-                            </div>
+                    <div class="buyer-info">
+                        <h4>{{ inquiry.name }}</h4>
+                        <div class="buyer-contact">
+                            <span><i class="fas fa-envelope"></i> {{ inquiry.email }}</span>
+                            <span><i class="fas fa-phone"></i> {{ inquiry.phone }}</span>
                         </div>
-                        <p class="text-sm text-gray-700 dark:text-gray-300 mt-2">
-                            {{ inquiry.response|truncatechars:150 }}
-                        </p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                    <span class="lead-status-badge status-{{ inquiry.status }}">
+                        {{ inquiry.get_status_display }}
+                    </span>
+                    <span class="priority-badge priority-{{ inquiry.priority }}">
+                        P{{ inquiry.priority }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="lead-property">
+                <div class="property-thumb">
+                    {% if inquiry.property.primary_image %}
+                    <img src="{{ inquiry.property.primary_image.url }}" alt="{{ inquiry.property.title }}">
+                    {% else %}
+                    <div class="w-full h-full flex items-center justify-center">
+                        <i class="fas fa-home text-gray-400"></i>
                     </div>
                     {% endif %}
                 </div>
-                
-                <!-- Quick Status Update -->
-                <div class="lg:w-48">
-                    <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4">
-                        <h5 class="text-sm font-medium text-gray-900 dark:text-white mb-3">Update Status</h5>
-                        <div class="space-y-2">
-                            <select class="w-full p-2 text-sm border rounded-lg" 
-                                    onchange="updateLeadStatus('{{ inquiry.id }}', this.value)">
-                                <option value="new" {% if inquiry.status == 'new' %}selected{% endif %}>New</option>
-                                <option value="contacted" {% if inquiry.status == 'contacted' %}selected{% endif %}>Contacted</option>
-                                <option value="interested" {% if inquiry.status == 'interested' %}selected{% endif %}>Interested</option>
-                                <option value="not_interested" {% if inquiry.status == 'not_interested' %}selected{% endif %}>Not Interested</option>
-                                <option value="converted" {% if inquiry.status == 'converted' %}selected{% endif %}>Converted</option>
-                                <option value="spam" {% if inquiry.status == 'spam' %}selected{% endif %}>Spam</option>
-                            </select>
-                            
-                            <div class="flex gap-2">
-                                <a href="{% url 'seller_lead_detail' inquiry.id %}" 
-                                   class="flex-1 px-3 py-2 bg-bhoosparsh-blue text-white rounded-lg hover:bg-blue-700 transition text-sm text-center">
-                                    Respond
-                                </a>
-                                <button onclick="addReminder('{{ inquiry.id }}')" 
-                                        class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition text-sm">
-                                    <i class="fas fa-bell"></i>
-                                </button>
-                            </div>
-                        </div>
+                <div class="property-info">
+                    <div class="property-title">{{ inquiry.property.title }}</div>
+                    <div class="property-location">
+                        <i class="fas fa-map-marker-alt text-red-500"></i>
+                        {{ inquiry.property.locality }}, {{ inquiry.property.city }}
                     </div>
+                </div>
+                <div class="text-right">
+                    <div class="font-bold text-bhoosparsh-blue">₹{{ inquiry.property.price|intcomma }}</div>
+                    {% if inquiry.property.property_for in 'rent,pg' %}
+                    <div class="text-xs text-gray-500 dark:text-gray-400">/month</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="lead-message">
+                <p>{{ inquiry.message|truncatechars:150 }}</p>
+                <div class="message-meta">
+                    <span><i class="far fa-clock"></i> {{ inquiry.created_at|timesince }} ago</span>
+                    {% if inquiry.budget %}
+                    <span><i class="fas fa-rupee-sign"></i> Budget: ₹{{ inquiry.budget|intcomma }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if inquiry.response %}
+            <div class="lead-response">
+                <div class="response-header">
+                    <strong><i class="fas fa-reply text-green-600 dark:text-green-400"></i> Your Response</strong>
+                    {% if inquiry.responded_at %}
+                    <span class="response-time">{{ inquiry.responded_at|timesince }} ago</span>
+                    {% endif %}
+                </div>
+                <p class="text-sm text-gray-700 dark:text-gray-300">{{ inquiry.response|truncatechars:100 }}</p>
+            </div>
+            {% endif %}
+
+            <div class="lead-footer">
+                <div class="lead-meta">
+                    <span class="meta-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        {{ inquiry.created_at|date:"M d, Y" }}
+                    </span>
+                    <span class="meta-item">
+                        <i class="fas fa-globe"></i>
+                        {% if inquiry.source == 'website' %}Website
+                        {% elif inquiry.source == 'phone' %}Phone
+                        {% elif inquiry.source == 'whatsapp' %}WhatsApp
+                        {% elif inquiry.source == 'email' %}Email
+                        {% elif inquiry.source == 'walkin' %}Walk-in
+                        {% else %}{{ inquiry.source|title }}
+                        {% endif %}
+                    </span>
+                    {% if inquiry.preferred_date %}
+                    <span class="meta-item">
+                        <i class="fas fa-clock"></i>
+                        Preferred: {{ inquiry.preferred_date|date:"M d" }}
+                    </span>
+                    {% endif %}
+                </div>
+
+                <div class="lead-actions">
+                    <a href="{% url 'seller_lead_detail' inquiry.id %}" class="action-btn view" title="View Details">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                    <a href="tel:{{ inquiry.phone }}" class="action-btn call" title="Call">
+                        <i class="fas fa-phone"></i>
+                    </a>
+                    <a href="mailto:{{ inquiry.email }}" class="action-btn email" title="Email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                    <button onclick="openQuickActions('{{ inquiry.id }}')" class="action-btn more" title="More Actions">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Status Update (hidden by default) -->
+            <div id="quick-actions-{{ inquiry.id }}" class="hidden mt-4 p-4 bg-gray-50 dark:bg-gray-750 rounded-xl">
+                <div class="flex items-center gap-4">
+                    <select class="status-select flex-1" onchange="updateLeadStatus('{{ inquiry.id }}', this.value)">
+                        <option value="new" {% if inquiry.status == 'new' %}selected{% endif %}>New</option>
+                        <option value="contacted" {% if inquiry.status == 'contacted' %}selected{% endif %}>Contacted</option>
+                        <option value="interested" {% if inquiry.status == 'interested' %}selected{% endif %}>Interested</option>
+                        <option value="not_interested" {% if inquiry.status == 'not_interested' %}selected{% endif %}>Not Interested</option>
+                        <option value="converted" {% if inquiry.status == 'converted' %}selected{% endif %}>Converted</option>
+                        <option value="spam" {% if inquiry.status == 'spam' %}selected{% endif %}>Spam</option>
+                    </select>
+                    
+                    <button onclick="setReminder('{{ inquiry.id }}')" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg text-sm text-gray-700 dark:text-gray-300">
+                        <i class="far fa-bell"></i> Reminder
+                    </button>
+                    
+                    <button onclick="deleteLead('{{ inquiry.id }}')" class="px-4 py-2 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
                 </div>
             </div>
         </div>
         {% endfor %}
     </div>
-    
+
     <!-- Pagination -->
     {% if page_obj.has_other_pages %}
-    <div class="p-6 border-t border-gray-200 dark:border-gray-700">
-        <nav class="flex items-center justify-between">
-            <div class="text-sm text-gray-700 dark:text-gray-300">
-                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-            </div>
+    <div class="pagination">
+        <div class="pagination-info">
+            Showing {{ page_obj.start_index }} - {{ page_obj.end_index }} of {{ page_obj.paginator.count }} leads
+        </div>
+        
+        <div class="pagination-controls">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if property_filter != 'all' %}&property={{ property_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
+               class="page-btn">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+            {% else %}
+            <span class="page-btn disabled">
+                <i class="fas fa-chevron-left"></i>
+            </span>
+            {% endif %}
             
-            <div class="flex items-center gap-1">
-                {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if property_filter != 'all' %}&property={{ property_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
-                   class="px-3 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <i class="fas fa-chevron-left"></i>
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <span class="page-btn active">{{ num }}</span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if property_filter != 'all' %}&property={{ property_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
+                   class="page-btn">
+                    {{ num }}
                 </a>
                 {% endif %}
-                
-                {% for num in page_obj.paginator.page_range %}
-                    {% if page_obj.number == num %}
-                    <span class="px-3 py-2 bg-bhoosparsh-blue text-white rounded-lg">{{ num }}</span>
-                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                    <a href="?page={{ num }}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if property_filter != 'all' %}&property={{ property_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
-                       class="px-3 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-                        {{ num }}
-                    </a>
-                    {% endif %}
-                {% endfor %}
-                
-                {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if property_filter != 'all' %}&property={{ property_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
-                   class="px-3 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <i class="fas fa-chevron-right"></i>
-                </a>
-                {% endif %}
-            </div>
-        </nav>
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if property_filter != 'all' %}&property={{ property_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}&sort={{ sort_by }}" 
+               class="page-btn">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+            {% else %}
+            <span class="page-btn disabled">
+                <i class="fas fa-chevron-right"></i>
+            </span>
+            {% endif %}
+        </div>
     </div>
     {% endif %}
-    
+
     {% else %}
     <!-- Empty State -->
-    <div class="text-center py-16">
-        <div class="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i class="fas fa-inbox text-gray-400 text-3xl"></i>
-        </div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No leads found</h3>
-        <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+    <div class="empty-state">
+        <i class="fas fa-inbox"></i>
+        <h3>No Leads Found</h3>
+        <p>
             {% if status_filter != 'all' or property_filter != 'all' or date_from or date_to or search_query %}
-            Try adjusting your filters or search query
+            No leads match your current filters. Try adjusting your search criteria.
             {% else %}
-            You haven't received any leads yet. Promote your properties to get inquiries!
+            You haven't received any leads yet. Promote your properties to get inquiries from potential buyers!
             {% endif %}
         </p>
         
-        <a href="{% url 'seller_packages' %}" 
-           class="px-6 py-3 bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg hover:opacity-90 transition font-medium inline-flex items-center gap-2">
-            <i class="fas fa-bolt"></i>
-            <span>Boost Your Properties</span>
-        </a>
+        <div class="empty-state-actions">
+            {% if status_filter != 'all' or property_filter != 'all' or date_from or date_to or search_query %}
+            <a href="{% url 'seller_leads' %}" class="btn-primary">
+                <i class="fas fa-times mr-2"></i>Clear Filters
+            </a>
+            {% endif %}
+            
+            <a href="{% url 'seller_packages' %}" class="btn-secondary">
+                <i class="fas fa-bolt mr-2"></i>Boost Properties
+            </a>
+        </div>
     </div>
     {% endif %}
 </div>
 
 <!-- Bulk Actions Modal -->
 <div id="bulkActionsModal" class="modal-overlay">
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full mx-4">
-        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Bulk Actions</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Apply actions to selected leads</p>
-                </div>
-                <button onclick="closeModal('bulkActionsModal')" 
-                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition">
-                    <i class="fas fa-times text-lg"></i>
-                </button>
-            </div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Bulk Actions</h3>
+            <button class="modal-close" onclick="closeModal('bulkActionsModal')">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
         
-        <div class="p-6">
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Update Status
-                    </label>
-                    <select id="bulkStatus" class="w-full p-3 border rounded-lg">
+        <div class="modal-body">
+            <form id="bulkActionsForm">
+                <div class="form-group">
+                    <label class="form-label">Select Action</label>
+                    <select id="bulkAction" class="filter-select">
+                        <option value="">Choose an action...</option>
                         <option value="contacted">Mark as Contacted</option>
                         <option value="interested">Mark as Interested</option>
                         <option value="not_interested">Mark as Not Interested</option>
                         <option value="converted">Mark as Converted</option>
                         <option value="spam">Mark as Spam</option>
+                        <option value="delete">Delete Selected</option>
                     </select>
                 </div>
                 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Send Response Template
-                    </label>
-                    <select id="bulkTemplate" class="w-full p-3 border rounded-lg">
-                        <option value="">Select Template</option>
-                        <option value="thank_you">Thank You for Inquiry</option>
-                        <option value="follow_up">Follow-up Message</option>
-                        <option value="property_details">Property Details</option>
-                        <option value="meeting_request">Meeting Request</option>
-                    </select>
+                <div class="form-group">
+                    <label class="form-label">Select Leads</label>
+                    <div class="space-y-2 max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                        {% for inquiry in page_obj.object_list %}
+                        <label class="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-750 rounded-lg cursor-pointer">
+                            <input type="checkbox" class="lead-checkbox" value="{{ inquiry.id }}">
+                            <span class="text-sm text-gray-700 dark:text-gray-300">{{ inquiry.name }} - {{ inquiry.property.title|truncatechars:30 }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
                 </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Custom Message
-                    </label>
-                    <textarea id="bulkMessage" rows="3" 
-                              class="w-full p-3 border rounded-lg"
-                              placeholder="Enter your message..."></textarea>
-                </div>
-            </div>
+            </form>
         </div>
-
-        <div class="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
-            <button onclick="closeModal('bulkActionsModal')" 
-                    class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+        
+        <div class="modal-footer">
+            <button type="button" class="btn-reset" onclick="closeModal('bulkActionsModal')">
                 Cancel
             </button>
-            <button onclick="applyBulkActions()" 
-                    class="px-4 py-2 bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg hover:opacity-90 transition font-medium">
-                <i class="fas fa-check mr-2"></i>Apply to Selected
+            <button type="button" class="btn-apply" onclick="applyBulkActions()">
+                Apply to Selected
             </button>
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
+<!-- Toast Container -->
+<div id="toastContainer" class="toast-container"></div>
+
 <script>
+    // CSRF Token
+    const csrftoken = getCookie('csrftoken');
+
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize animations
-        const cards = document.querySelectorAll('.stat-card');
-        cards.forEach((card, index) => {
-            setTimeout(() => {
-                card.style.animationDelay = `${index * 0.1}s`;
-                card.style.opacity = '1';
-            }, 100);
+        initializeFilters();
+        
+        // Add animation classes
+        document.querySelectorAll('.stat-card').forEach((card, index) => {
+            card.style.animation = `slideIn 0.5s ease-out ${index * 0.1}s forwards`;
+            card.style.opacity = '0';
         });
     });
 
-    function toggleFilterDropdown() {
-        const dropdown = document.getElementById('filterDropdown');
-        dropdown.classList.toggle('hidden');
+    function initializeFilters() {
+        // Auto-submit when date filters change
+        const dateFrom = document.getElementById('date_from');
+        const dateTo = document.getElementById('date_to');
+        
+        if (dateFrom && dateTo) {
+            [dateFrom, dateTo].forEach(input => {
+                input.addEventListener('change', function() {
+                    if (dateFrom.value && dateTo.value) {
+                        document.getElementById('filterForm').submit();
+                    }
+                });
+            });
+        }
+        
+        // Auto-submit when status or property changes
+        ['status', 'property', 'sort'].forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('change', function() {
+                    document.getElementById('filterForm').submit();
+                });
+            }
+        });
     }
 
-    function markAllAsContacted() {
-        if (confirm('Mark all new leads as contacted?')) {
-            showToast('Marking all new leads as contacted...', 'info');
-            
-            // In real app, make AJAX call
-            setTimeout(() => {
-                showToast('All new leads marked as contacted!', 'success');
-                location.reload();
-            }, 1500);
+    function resetFilters() {
+        window.location.href = "{% url 'seller_leads' %}";
+    }
+
+    function openQuickActions(leadId) {
+        const quickActions = document.getElementById(`quick-actions-${leadId}`);
+        if (quickActions) {
+            quickActions.classList.toggle('hidden');
         }
     }
 
-    function sendBulkResponse() {
-        openModal('bulkActionsModal');
-    }
-
-    function scheduleCallbacks() {
-        showToast('Callback scheduling feature coming soon!', 'info');
-    }
-
     function updateLeadStatus(leadId, newStatus) {
-        // In real app, make AJAX call
+        showLoading('Updating status...');
+        
         fetch('/seller/ajax/update-lead-status/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken'),
+                'X-CSRFToken': csrftoken,
             },
             body: JSON.stringify({
                 lead_id: leadId,
-                status: newStatus,
+                status: newStatus
             }),
         })
         .then(response => response.json())
         .then(data => {
+            hideLoading();
+            
             if (data.success) {
-                showToast(`Status updated to ${data.new_status}`, 'success');
+                showToast(data.message, 'success');
                 
                 // Update UI
-                const leadCard = document.querySelector(`select[onchange*="${leadId}"]`).closest('.lead-card');
-                const statusDot = leadCard.querySelector('.status-dot');
-                const statusText = leadCard.querySelector('.status-new span:last-child, .status-contacted span:last-child, .status-interested span:last-child, .status-converted span:last-child');
+                const leadCard = document.getElementById(`lead-${leadId}`);
+                if (leadCard) {
+                    // Update status badge
+                    const statusBadge = leadCard.querySelector('.lead-status-badge');
+                    if (statusBadge) {
+                        statusBadge.className = `lead-status-badge status-${newStatus}`;
+                        statusBadge.textContent = data.new_status;
+                    }
+                    
+                    // Update card border
+                    leadCard.className = leadCard.className.replace(/lead-card \w+/, `lead-card ${newStatus}`);
+                }
                 
-                // Update colors based on status
-                if (newStatus === 'new') {
-                    statusDot.style.backgroundColor = '#3B82F6';
-                    statusText.textContent = 'New';
-                } else if (newStatus === 'contacted') {
-                    statusDot.style.backgroundColor = '#10B981';
-                    statusText.textContent = 'Contacted';
-                } else if (newStatus === 'interested') {
-                    statusDot.style.backgroundColor = '#8B5CF6';
-                    statusText.textContent = 'Interested';
-                } else if (newStatus === 'converted') {
-                    statusDot.style.backgroundColor = '#F59E0B';
-                    statusText.textContent = 'Converted';
+                // Update select if it exists in quick actions
+                const quickSelect = document.querySelector(`#quick-actions-${leadId} select`);
+                if (quickSelect) {
+                    quickSelect.value = newStatus;
                 }
             } else {
-                showToast(data.error, 'error');
+                showToast(data.error || 'Error updating status', 'error');
             }
         })
         .catch(error => {
-            showToast('Error updating status', 'error');
+            hideLoading();
+            console.error('Error:', error);
+            showToast('Network error. Please try again.', 'error');
         });
     }
 
-    function addReminder(leadId) {
-        const reminderTime = prompt('Set reminder for (e.g., 2 hours, tomorrow 10 AM):', 'tomorrow 10 AM');
+    function setReminder(leadId) {
+        const reminderTime = prompt('Set reminder for (e.g., 2 hours, tomorrow 10 AM, next week):', 'tomorrow 10 AM');
         
-        if (reminderTime) {
+        if (reminderTime && reminderTime.trim()) {
             showToast(`Reminder set for ${reminderTime}`, 'success');
-            
-            // In real app, save reminder to database
-            // For demo, just show toast
         }
     }
 
-    function applyBulkActions() {
-        const status = document.getElementById('bulkStatus').value;
-        const template = document.getElementById('bulkTemplate').value;
-        const message = document.getElementById('bulkMessage').value;
-        
-        if (!message && !template) {
-            showToast('Please select a template or enter a message', 'warning');
+    function deleteLead(leadId) {
+        if (!confirm('Are you sure you want to delete this lead? This action cannot be undone.')) {
             return;
         }
         
-        showToast('Applying bulk actions...', 'info');
-        closeModal('bulkActionsModal');
+        showLoading('Deleting lead...');
         
-        // Simulate processing
-        setTimeout(() => {
-            showToast('Bulk actions applied successfully!', 'success');
-        }, 2000);
+        fetch(`/seller/lead/${leadId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            
+            if (data.success) {
+                showToast(data.message, 'success');
+                
+                // Remove lead from DOM
+                const leadCard = document.getElementById(`lead-${leadId}`);
+                if (leadCard) {
+                    leadCard.style.opacity = '0';
+                    leadCard.style.transform = 'translateX(100px)';
+                    setTimeout(() => {
+                        leadCard.remove();
+                        
+                        // Reload if no leads left
+                        if (document.querySelectorAll('.lead-card').length === 0) {
+                            window.location.reload();
+                        }
+                    }, 300);
+                }
+            } else {
+                showToast(data.error || 'Failed to delete lead', 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            showToast('Network error. Please try again.', 'error');
+        });
     }
 
-    // Helper function to get CSRF token
+    function openBulkActionsModal() {
+        openModal('bulkActionsModal');
+    }
+
+    function applyBulkActions() {
+        const action = document.getElementById('bulkAction').value;
+        const checkboxes = document.querySelectorAll('.lead-checkbox:checked');
+        
+        if (!action) {
+            showToast('Please select an action', 'warning');
+            return;
+        }
+        
+        if (checkboxes.length === 0) {
+            showToast('Please select at least one lead', 'warning');
+            return;
+        }
+        
+        const leadIds = Array.from(checkboxes).map(cb => cb.value);
+        
+        if (action === 'delete') {
+            if (!confirm(`Are you sure you want to delete ${leadIds.length} lead(s)?`)) {
+                return;
+            }
+        }
+        
+        showLoading(`Applying ${action} to ${leadIds.length} lead(s)...`);
+        
+        // Process each lead
+        let completed = 0;
+        let errors = 0;
+        
+        leadIds.forEach(leadId => {
+            if (action === 'delete') {
+                fetch(`/seller/lead/${leadId}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken,
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    completed++;
+                    if (data.success) {
+                        const leadCard = document.getElementById(`lead-${leadId}`);
+                        if (leadCard) leadCard.remove();
+                    } else {
+                        errors++;
+                    }
+                    
+                    if (completed === leadIds.length) {
+                        hideLoading();
+                        showToast(`Completed: ${completed - errors} successful, ${errors} failed`, errors ? 'warning' : 'success');
+                        closeModal('bulkActionsModal');
+                        
+                        if (document.querySelectorAll('.lead-card').length === 0) {
+                            window.location.reload();
+                        }
+                    }
+                });
+            } else {
+                // For status updates
+                fetch('/seller/ajax/update-lead-status/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken,
+                    },
+                    body: JSON.stringify({
+                        lead_id: leadId,
+                        status: action
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    completed++;
+                    if (data.success) {
+                        // Update UI for this lead
+                        const leadCard = document.getElementById(`lead-${leadId}`);
+                        if (leadCard) {
+                            const statusBadge = leadCard.querySelector('.lead-status-badge');
+                            if (statusBadge) {
+                                statusBadge.className = `lead-status-badge status-${action}`;
+                                statusBadge.textContent = data.new_status;
+                            }
+                            leadCard.className = leadCard.className.replace(/lead-card \w+/, `lead-card ${action}`);
+                        }
+                    } else {
+                        errors++;
+                    }
+                    
+                    if (completed === leadIds.length) {
+                        hideLoading();
+                        showToast(`Completed: ${completed - errors} successful, ${errors} failed`, errors ? 'warning' : 'success');
+                        closeModal('bulkActionsModal');
+                    }
+                })
+                .catch(error => {
+                    completed++;
+                    errors++;
+                    console.error('Error:', error);
+                    
+                    if (completed === leadIds.length) {
+                        hideLoading();
+                        showToast(`Completed: ${completed - errors} successful, ${errors} failed`, 'warning');
+                        closeModal('bulkActionsModal');
+                    }
+                });
+            }
+        });
+    }
+
+    function openModal(modalId) {
+        document.getElementById(modalId).classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function showLoading(message) {
+        const overlay = document.createElement('div');
+        overlay.id = 'loadingOverlay';
+        overlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        overlay.innerHTML = `
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-2xl">
+                <div class="flex flex-col items-center gap-4">
+                    <div class="loading-spinner"></div>
+                    <p class="text-gray-700 dark:text-gray-300 font-medium">${message}</p>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    }
+
+    function hideLoading() {
+        const overlay = document.getElementById('loadingOverlay');
+        if (overlay) overlay.remove();
+    }
+
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        const icons = {
+            info: 'fa-info-circle',
+            success: 'fa-check-circle',
+            error: 'fa-exclamation-circle',
+            warning: 'fa-exclamation-triangle'
+        };
+        
+        const colors = {
+            info: 'blue',
+            success: 'green',
+            error: 'red',
+            warning: 'yellow'
+        };
+        
+        toast.innerHTML = `
+            <div class="w-8 h-8 rounded-full bg-${colors[type]}-100 dark:bg-${colors[type]}-900/30 flex items-center justify-center flex-shrink-0">
+                <i class="fas ${icons[type]} text-${colors[type]}-600 dark:text-${colors[type]}-400"></i>
+            </div>
+            <div class="flex-1">
+                <span class="font-medium text-gray-800 dark:text-gray-200">${message}</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        container.appendChild(toast);
+        
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.style.animation = 'slideInRight 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }
+        }, 4000);
+    }
+
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -922,10 +2258,17 @@
         return cookieValue;
     }
 
-    // Close dropdowns when clicking outside
+    // Close modals on outside click
     document.addEventListener('click', function(event) {
-        if (!event.target.closest('.relative')) {
-            document.getElementById('filterDropdown').classList.add('hidden');
+        if (event.target.classList.contains('modal-overlay')) {
+            closeModal('bulkActionsModal');
+        }
+    });
+
+    // Close on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeModal('bulkActionsModal');
         }
     });
 </script>

@@ -1,0 +1,749 @@
+{% extends 'dashboard/buyer/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Inquiry Details - BHOOSPARSH Buyer{% endblock %}
+
+{% block extra_css %}
+<style>
+    .inquiry-detail-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .detail-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .detail-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+
+    .detail-header::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -5%;
+        width: 200px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+
+    .detail-header h1 {
+        position: relative;
+        z-index: 1;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .detail-header p {
+        position: relative;
+        z-index: 1;
+        opacity: 0.9;
+        font-size: 1rem;
+    }
+
+    .detail-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2rem;
+    }
+
+    .detail-card h2 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .detail-card h2 i {
+        color: #667eea;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .info-item {
+        padding: 1rem;
+        background: #f8fafc;
+        border-radius: 12px;
+    }
+
+    .info-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6b7280;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-value {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .message-box {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border-left: 4px solid #667eea;
+        margin-bottom: 1.5rem;
+    }
+
+    .message-box strong {
+        display: block;
+        margin-bottom: 0.75rem;
+        color: #374151;
+    }
+
+    .response-box {
+        background: #f0fdf4;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #86efac;
+        position: relative;
+        margin-top: 2rem;
+    }
+
+    .response-box::before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: 20px;
+        width: 20px;
+        height: 20px;
+        background: #f0fdf4;
+        transform: rotate(45deg);
+        border-left: 1px solid #86efac;
+        border-top: 1px solid #86efac;
+    }
+
+    .property-card {
+        display: flex;
+        gap: 1.5rem;
+        padding: 1.5rem;
+        background: #f8fafc;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .property-image {
+        width: 120px;
+        height: 90px;
+        border-radius: 8px;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    .property-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .property-details h3 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.5rem;
+    }
+
+    .property-details p {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .property-price {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #FF6B35;
+        margin-top: 0.5rem;
+    }
+
+    .seller-card {
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-radius: 12px;
+        padding: 1.5rem;
+    }
+
+    .seller-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    .seller-name {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.25rem;
+    }
+
+    .seller-company {
+        color: #667eea;
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .seller-stats {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .seller-stat {
+        flex: 1;
+        text-align: center;
+        padding: 0.5rem;
+        background: white;
+        border-radius: 8px;
+    }
+
+    .seller-stat-value {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .seller-stat-label {
+        font-size: 0.75rem;
+        color: #6b7280;
+    }
+
+    .contact-btn {
+        display: block;
+        width: 100%;
+        padding: 0.75rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        text-align: center;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .contact-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-left: 2rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: 0.5rem;
+        top: 0.25rem;
+        width: 0.75rem;
+        height: 0.75rem;
+        border-radius: 50%;
+        background: #667eea;
+    }
+
+    .timeline-item::after {
+        content: '';
+        position: absolute;
+        left: 0.85rem;
+        top: 1.25rem;
+        bottom: 0;
+        width: 2px;
+        background: #e5e7eb;
+    }
+
+    .timeline-item:last-child::after {
+        display: none;
+    }
+
+    .timeline-date {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-bottom: 0.25rem;
+    }
+
+    .timeline-content {
+        font-size: 0.875rem;
+        color: #374151;
+    }
+
+    .timeline-content strong {
+        display: block;
+        margin-bottom: 0.25rem;
+        color: #111827;
+    }
+
+    @media (max-width: 767px) {
+        .property-card {
+            flex-direction: column;
+        }
+
+        .property-image {
+            width: 100%;
+            height: 160px;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block header_title %}
+<div>
+    <h1 class="text-2xl font-bold text-gray-900">
+        <span class="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            Inquiry Details
+        </span>
+    </h1>
+    <p class="text-sm text-gray-600 mt-1">
+        <i class="fas fa-inbox text-purple-500 mr-2"></i>
+        View complete inquiry information
+    </p>
+</div>
+{% endblock %}
+
+{% block header_buttons %}
+<div class="flex flex-wrap gap-3">
+    <a href="{% url 'buyer_inquiries' %}" 
+       class="px-4 py-2 border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-all duration-300 flex items-center gap-2 font-medium">
+        <i class="fas fa-arrow-left"></i>
+        <span class="hidden sm:inline">Back to Inquiries</span>
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="inquiry-detail-container">
+    <!-- Header -->
+    <div class="detail-header">
+        <h1>Inquiry #{{ inquiry.id|stringformat:"06d" }}</h1>
+        <p>
+            Sent on {{ inquiry.created_at|date:"F d, Y" }} at {{ inquiry.created_at|time:"g:i A" }}
+        </p>
+        <div class="mt-4 inline-flex items-center px-3 py-1 bg-white/20 rounded-full text-sm">
+            <i class="fas fa-circle mr-2 text-{{ inquiry.status }}"></i>
+            Status: {{ inquiry.get_status_display }}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Content -->
+        <div class="lg:col-span-2">
+            <!-- Inquiry Message -->
+            <div class="detail-card">
+                <h2>
+                    <i class="fas fa-envelope"></i>
+                    Your Message
+                </h2>
+                <div class="message-box">
+                    {{ inquiry.message|linebreaks }}
+                </div>
+                
+                {% if inquiry.response %}
+                <div class="response-box">
+                    <strong class="block mb-2 text-green-800">Seller's Response</strong>
+                    {% if inquiry.responded_at %}
+                    <p class="text-xs text-gray-500 mb-2">
+                        <i class="far fa-clock"></i>
+                        {{ inquiry.responded_at|date:"F d, Y g:i A" }}
+                    </p>
+                    {% endif %}
+                    {{ inquiry.response|linebreaks }}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Inquiry Details -->
+            <div class="detail-card">
+                <h2>
+                    <i class="fas fa-info-circle"></i>
+                    Inquiry Details
+                </h2>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Status</div>
+                        <div class="info-value">
+                            <span class="status-{{ inquiry.status }} px-3 py-1 rounded-full text-sm">
+                                {{ inquiry.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    {% if inquiry.budget %}
+                    <div class="info-item">
+                        <div class="info-label">Budget</div>
+                        <div class="info-value">₹{{ inquiry.budget|intcomma }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="info-item">
+                        <div class="info-label">Source</div>
+                        <div class="info-value">
+                            {% if inquiry.source == 'website' %}Website
+                            {% elif inquiry.source == 'phone' %}Phone
+                            {% elif inquiry.source == 'whatsapp' %}WhatsApp
+                            {% elif inquiry.source == 'email' %}Email
+                            {% elif inquiry.source == 'walkin' %}Walk-in
+                            {% else %}{{ inquiry.source|title }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if inquiry.preferred_date %}
+                    <div class="info-item">
+                        <div class="info-label">Preferred Date</div>
+                        <div class="info-value">
+                            {{ inquiry.preferred_date|date:"M d, Y" }}
+                            {% if inquiry.preferred_time %}
+                            at {{ inquiry.preferred_time|time:"g:i A" }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="info-item">
+                        <div class="info-label">Last Updated</div>
+                        <div class="info-value">{{ inquiry.updated_at|timesince }} ago</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Property ID</div>
+                        <div class="info-value">{{ inquiry.property.property_id }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="detail-card">
+                <h2>
+                    <i class="fas fa-history"></i>
+                    Timeline
+                </h2>
+                
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-date">{{ inquiry.created_at|date:"M d, Y g:i A" }}</div>
+                        <div class="timeline-content">
+                            <strong>Inquiry Sent</strong>
+                            <p>You sent an inquiry for this property</p>
+                        </div>
+                    </div>
+                    
+                    {% if inquiry.responded_at %}
+                    <div class="timeline-item">
+                        <div class="timeline-date">{{ inquiry.responded_at|date:"M d, Y g:i A" }}</div>
+                        <div class="timeline-content">
+                            <strong>Seller Responded</strong>
+                            <p>The seller responded to your inquiry</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-date">{{ inquiry.updated_at|date:"M d, Y g:i A" }}</div>
+                        <div class="timeline-content">
+                            <strong>Last Updated</strong>
+                            <p>Status: {{ inquiry.get_status_display }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="lg:col-span-1 space-y-6">
+            <!-- Property Information -->
+            <div class="detail-card">
+                <h2>
+                    <i class="fas fa-home"></i>
+                    Property
+                </h2>
+                
+                <div class="property-card">
+                    <div class="property-image">
+                        {% if inquiry.property.primary_image %}
+                        <img src="{{ inquiry.property.primary_image.url }}" alt="{{ inquiry.property.title }}">
+                        {% else %}
+                        <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                            <i class="fas fa-home text-gray-400 text-3xl"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="property-details">
+                        <h3>{{ inquiry.property.title }}</h3>
+                        <p>
+                            <i class="fas fa-map-marker-alt text-red-500"></i>
+                            {{ inquiry.property.city }}, {{ inquiry.property.state }}
+                        </p>
+                        <p>
+                            <i class="fas fa-maximize"></i>
+                            {{ inquiry.property.carpet_area }} sq.ft
+                        </p>
+                        {% if inquiry.property.bedrooms %}
+                        <p>
+                            <i class="fas fa-bed"></i>
+                            {{ inquiry.property.bedrooms }} BHK
+                        </p>
+                        {% endif %}
+                        <div class="property-price">
+                            ₹{{ inquiry.property.price|intcomma }}
+                            {% if inquiry.property.property_for in 'rent,pg' %}
+                            <span class="text-sm font-normal text-gray-600">/month</span>
+                            {% endif %}
+                        </div>
+                        
+                        <a href="{% url 'buyer_property_detail' inquiry.property.slug %}" 
+                           class="inline-block mt-3 text-sm text-purple-600 hover:text-purple-800 font-medium">
+                            View Full Details <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seller Information -->
+            <div class="detail-card">
+                <h2>
+                    <i class="fas fa-user"></i>
+                    Seller
+                </h2>
+                
+                <div class="seller-card">
+                    <div class="seller-avatar">
+                        {{ seller.first_name|first|upper }}{{ seller.last_name|first|upper }}
+                    </div>
+                    
+                    <div class="seller-name">{{ seller.get_full_name }}</div>
+                    {% if seller_profile.agency_name %}
+                    <div class="seller-company">{{ seller_profile.agency_name }}</div>
+                    {% endif %}
+                    
+                    <div class="seller-stats">
+                        <div class="seller-stat">
+                            <div class="seller-stat-value">{{ seller.properties.count }}</div>
+                            <div class="seller-stat-label">Listings</div>
+                        </div>
+                        <div class="seller-stat">
+                            <div class="seller-stat-value">{{ seller.properties.aggregate.total_views|default:0 }}</div>
+                            <div class="seller-stat-label">Views</div>
+                        </div>
+                    </div>
+                    
+                    <a href="tel:{{ seller.phone }}" class="contact-btn mb-2">
+                        <i class="fas fa-phone-alt mr-2"></i>
+                        Call Seller
+                    </a>
+                    
+                    <a href="mailto:{{ seller.email }}" class="contact-btn" style="background: linear-gradient(135deg, #10b981, #059669);">
+                        <i class="fas fa-envelope mr-2"></i>
+                        Email Seller
+                    </a>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="detail-card">
+                <h2>
+                    <i class="fas fa-cog"></i>
+                    Actions
+                </h2>
+                
+                <div class="space-y-3">
+                    {% if inquiry.status == 'new' or inquiry.status == 'contacted' %}
+                    <button onclick="openFollowupModal()" 
+                            class="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all font-medium">
+                        <i class="fas fa-paper-plane mr-2"></i>
+                        Send Follow-up
+                    </button>
+                    {% endif %}
+                    
+                    <button onclick="addToFavorites()" 
+                            class="w-full py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-medium">
+                        <i class="far fa-star mr-2"></i>
+                        Save to Favorites
+                    </button>
+                    
+                    <button onclick="deleteInquiry('{{ inquiry.id }}')" 
+                            class="w-full py-3 border-2 border-red-300 text-red-600 rounded-xl hover:bg-red-50 transition-all font-medium">
+                        <i class="fas fa-trash mr-2"></i>
+                        Delete Inquiry
+                    </button>
+                </div>
+            </div>
+
+            <!-- Similar Properties -->
+            {% if similar_properties %}
+            <div class="detail-card">
+                <h2>
+                    <i class="fas fa-building"></i>
+                    Similar Properties
+                </h2>
+                
+                <div class="space-y-4">
+                    {% for property in similar_properties %}
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                        <div class="w-16 h-12 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
+                            {% if property.primary_image %}
+                            <img src="{{ property.primary_image.url }}" alt="" class="w-full h-full object-cover">
+                            {% else %}
+                            <div class="w-full h-full flex items-center justify-center">
+                                <i class="fas fa-home text-gray-400"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="text-sm font-semibold text-gray-900 truncate">{{ property.title }}</h4>
+                            <p class="text-xs text-gray-600">₹{{ property.price|intcomma }}</p>
+                        </div>
+                        <a href="{% url 'buyer_property_detail' property.slug %}" 
+                           class="text-purple-600 hover:text-purple-800">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Follow-up Modal -->
+<div id="followupModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3>Send Follow-up Message</h3>
+            <button class="modal-close" onclick="closeFollowupModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <form id="followupForm">
+            <div class="modal-body">
+                <input type="hidden" id="followupInquiryId" value="{{ inquiry.id }}">
+                
+                <div class="form-group">
+                    <label for="followupMessage">Your Message</label>
+                    <textarea id="followupMessage" 
+                              name="message"
+                              placeholder="Type your follow-up message here..."
+                              required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="followupStatus">Update Status (Optional)</label>
+                    <select id="followupStatus" name="status">
+                        <option value="">Keep Current Status</option>
+                        <option value="contacted">Mark as Contacted</option>
+                        <option value="interested">Mark as Interested</option>
+                        <option value="not_interested">Mark as Not Interested</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" 
+                        class="px-4 py-2 border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-all"
+                        onclick="closeFollowupModal()">
+                    Cancel
+                </button>
+                
+                <button type="submit" 
+                        class="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all">
+                    <i class="fas fa-paper-plane mr-2"></i>
+                    Send Follow-up
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div id="toastContainer" class="toast-container"></div>
+
+<script>
+    // Include the same JavaScript functions from the main inquiries page
+    // Plus any additional functions needed for this page
+    
+    function openFollowupModal() {
+        const modal = document.getElementById('followupModal');
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeFollowupModal() {
+        const modal = document.getElementById('followupModal');
+        modal.classList.remove('active');
+        document.getElementById('followupForm').reset();
+        document.body.style.overflow = '';
+    }
+
+    function addToFavorites() {
+        fetch('/buyer/ajax/toggle-favorite/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify({
+                property_id: '{{ inquiry.property.id }}',
+                action: 'add'
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Property added to favorites!', 'success');
+            } else {
+                showToast(data.error || 'Error adding to favorites', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Network error. Please try again.', 'error');
+        });
+    }
+</script>
+{% endblock %}

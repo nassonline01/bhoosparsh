@@ -1,0 +1,1361 @@
+<!-- templates/dashboard/seller/lead_detail.html -->
+{% extends 'dashboard/seller/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Lead Details - BHOOSPARSH Seller{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Small font system - INCREASED BY 1PX */
+    html {
+        font-size: 15px;
+    }
+    
+    body, .text-base, p, span, div, a, button, input, select, textarea {
+        font-size: 0.9375rem;
+    }
+    
+    h1 { font-size: 1.625rem; }
+    h2 { font-size: 1.375rem; }
+    h3 { font-size: 1.25rem; }
+    h4 { font-size: 1.125rem; }
+    h5 { font-size: 1.0625rem; }
+    h6 { font-size: 1rem; }
+    
+    .text-xs { font-size: 0.8125rem; }
+    .text-sm { font-size: 0.875rem; }
+    .text-base { font-size: 0.9375rem; }
+    .text-lg { font-size: 1.0625rem; }
+    .text-xl { font-size: 1.1875rem; }
+    .text-2xl { font-size: 1.375rem; }
+    
+    /* Lead detail styles */
+    .detail-card {
+        transition: all 0.2s ease;
+        border-left: 4px solid transparent;
+    }
+    
+    .detail-card.new { border-left-color: #3B82F6; }
+    .detail-card.contacted { border-left-color: #10B981; }
+    .detail-card.interested { border-left-color: #8B5CF6; }
+    .detail-card.converted { border-left-color: #F59E0B; }
+    .detail-card.not_interested { border-left-color: #EF4444; }
+    .detail-card.spam { border-left-color: #6B7280; }
+    
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 6px;
+    }
+    
+    .status-new .status-dot { background-color: #3B82F6; }
+    .status-contacted .status-dot { background-color: #10B981; }
+    .status-interested .status-dot { background-color: #8B5CF6; }
+    .status-not_interested .status-dot { background-color: #EF4444; }
+    .status-converted .status-dot { background-color: #F59E0B; }
+    .status-spam .status-dot { background-color: #6B7280; }
+    
+    .priority-badge {
+        padding: 3px 8px;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .priority-1 { background-color: #EF4444; color: white; }
+    .priority-2 { background-color: #F59E0B; color: white; }
+    .priority-3 { background-color: #10B981; color: white; }
+    .priority-4 { background-color: #3B82F6; color: white; }
+    .priority-5 { background-color: #8B5CF6; color: white; }
+    
+    .timeline-item {
+        position: relative;
+        padding-left: 1.75rem;
+        padding-bottom: 1.25rem;
+    }
+    
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: 0.4375rem;
+        top: 0.3125rem;
+        width: 0.625rem;
+        height: 0.625rem;
+        border-radius: 50%;
+        background-color: #3B82F6;
+    }
+    
+    .timeline-item::after {
+        content: '';
+        position: absolute;
+        left: 0.6875rem;
+        top: 1rem;
+        bottom: -0.625rem;
+        width: 1.5px;
+        background-color: #E5E7EB;
+    }
+    
+    .timeline-item:last-child::after {
+        display: none;
+    }
+    
+    .timeline-date {
+        font-size: 0.75rem;
+        color: #6B7280;
+    }
+    
+    .timeline-content {
+        font-size: 0.875rem;
+    }
+    
+    .detail-section {
+        background-color: white;
+        border-radius: 0.625rem;
+        padding: 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+    
+    .dark .detail-section {
+        background-color: #1F2937;
+    }
+    
+    .detail-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #6B7280;
+        margin-bottom: 0.375rem;
+    }
+    
+    .detail-value {
+        font-size: 0.9375rem;
+        color: #111827;
+    }
+    
+    .dark .detail-value {
+        color: #F9FAFB;
+    }
+    
+    .action-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.8125rem;
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
+    }
+    
+    .action-btn i {
+        font-size: 0.8125rem;
+        margin-right: 0.375rem;
+    }
+    
+    .response-box {
+        background-color: #F9FAFB;
+        border-radius: 0.625rem;
+        padding: 1.25rem;
+        border-left: 4px solid #3B82F6;
+    }
+    
+    .dark .response-box {
+        background-color: #374151;
+    }
+    
+    .property-card {
+        background-color: #F9FAFB;
+        border-radius: 0.625rem;
+        padding: 1rem;
+    }
+    
+    .dark .property-card {
+        background-color: #374151;
+    }
+    
+    .property-title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .property-meta {
+        font-size: 0.8125rem;
+        color: #6B7280;
+    }
+    
+    .similar-lead-item {
+        padding: 0.875rem;
+        border-bottom: 1px solid #E5E7EB;
+    }
+    
+    .similar-lead-item:last-child {
+        border-bottom: none;
+    }
+    
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+    
+    .form-label {
+        display: block;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+    
+    .dark .form-label {
+        color: #D1D5DB;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 0.625rem 0.875rem;
+        font-size: 0.875rem;
+        border: 1px solid #D1D5DB;
+        border-radius: 0.5rem;
+        background-color: white;
+    }
+    
+    .dark .form-control {
+        background-color: #4B5563;
+        border-color: #6B7280;
+        color: white;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #0E68B9;
+        box-shadow: 0 0 0 3px rgba(14, 104, 185, 0.1);
+    }
+    
+    .form-control-sm {
+        padding: 0.375rem 0.625rem;
+        font-size: 0.8125rem;
+    }
+    
+    .btn-sm {
+        padding: 0.5rem 0.875rem;
+        font-size: 0.8125rem;
+    }
+    
+    .btn-group {
+        display: flex;
+        gap: 0.625rem;
+    }
+    
+    .badge {
+        padding: 0.3125rem 0.625rem;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        border-radius: 1.25rem;
+    }
+    
+    .badge-sm {
+        padding: 0.1875rem 0.5rem;
+        font-size: 0.625rem;
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease-out forwards;
+    }
+    
+    /* Loading spinner */
+    .loading-spinner {
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid rgba(0,0,0,0.1);
+        border-radius: 50%;
+        border-top-color: #0E68B9;
+        animation: spin 0.6s linear infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+    
+    .modal-overlay.active {
+        display: flex;
+    }
+    
+    .toast-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 99999;
+    }
+    
+    .toast {
+        padding: 12px 20px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        color: white;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        animation: slideIn 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .toast.success { background-color: #10B981; }
+    .toast.error { background-color: #EF4444; }
+    .toast.warning { background-color: #F59E0B; }
+    .toast.info { background-color: #3B82F6; }
+    
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+</style>
+{% endblock %}
+
+{% block header_title %}
+<div class="flex items-center gap-3">
+    <a href="{% url 'seller_leads' %}" class="text-gray-600 dark:text-gray-400 hover:text-bhoosparsh-blue transition">
+        <i class="fas fa-arrow-left text-sm"></i>
+    </a>
+    <div>
+        <h1 class="text-xl font-bold text-gray-900 dark:text-white">Lead Details</h1>
+        <p class="text-sm text-gray-600 dark:text-gray-400">
+            View and manage customer inquiry
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block header_buttons %}
+<div class="btn-group">
+    <a href="tel:{{ inquiry.phone }}" 
+       class="action-btn bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900 dark:text-green-300 dark:hover:bg-green-800">
+        <i class="fas fa-phone-alt"></i>
+        Call
+    </a>
+    <a href="mailto:{{ inquiry.email }}" 
+       class="action-btn bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300 dark:hover:bg-blue-800">
+        <i class="fas fa-envelope"></i>
+        Email
+    </a>
+    <button onclick="window.print()" 
+            class="action-btn bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+        <i class="fas fa-print"></i>
+        Print
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5 animate-fade-in">
+    <!-- Main Content - Left Column (2/3) -->
+    <div class="lg:col-span-2 space-y-5">
+        <!-- Lead Information Card -->
+        <div class="detail-card {% if inquiry.status == 'new' %}new{% elif inquiry.status == 'contacted' %}contacted{% elif inquiry.status == 'interested' %}interested{% elif inquiry.status == 'converted' %}converted{% elif inquiry.status == 'not_interested' %}not_interested{% elif inquiry.status == 'spam' %}spam{% endif %} bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-start justify-between">
+                    <div class="flex items-start gap-4">
+                        <!-- Avatar -->
+                        <div class="w-12 h-12 rounded-full bg-bhoosparsh-blue flex items-center justify-center text-white font-bold text-lg">
+                            {{ inquiry.name|first|upper }}
+                        </div>
+                        
+                        <!-- Basic Info -->
+                        <div>
+                            <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ inquiry.name }}</h2>
+                            <div class="flex flex-wrap items-center gap-3 mt-1.5">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">{{ inquiry.email }}</span>
+                                <span class="text-sm text-gray-400">•</span>
+                                <span class="text-sm text-gray-600 dark:text-gray-400">{{ inquiry.phone }}</span>
+                            </div>
+                            
+                            <div class="flex items-center gap-4 mt-2.5">
+                                <span class="status-{{ inquiry.status }}">
+                                    <span class="status-dot"></span>
+                                    <span class="text-sm font-medium">{{ inquiry.get_status_display }}</span>
+                                </span>
+                                <span class="priority-badge priority-{{ inquiry.priority }}">
+                                    Priority {{ inquiry.priority }}
+                                </span>
+                                <span class="text-sm text-gray-500">
+                                    <i class="far fa-clock mr-1.5"></i>
+                                    {{ inquiry.created_at|timesince }} ago
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Lead Score -->
+                    <div class="text-right">
+                        <div class="bg-blue-100 dark:bg-blue-900 rounded-lg px-4 py-2.5">
+                            <span class="text-xs text-blue-700 dark:text-blue-300 block">Lead Score</span>
+                            <span class="text-xl font-bold text-blue-800 dark:text-blue-200">85</span>
+                            <span class="text-xs text-blue-600 dark:text-blue-400">/100</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contact Details Grid -->
+            <div class="p-5 bg-gray-50 dark:bg-gray-750 grid grid-cols-2 md:grid-cols-4 gap-5">
+                <div>
+                    <div class="detail-label">Phone</div>
+                    <div style="color: #333a43;" class="detail-value text-base flex items-center gap-1.5">
+                        <i class="fas fa-phone-alt text-sm text-gray-400"></i>
+                        {{ inquiry.phone }}
+                    </div>
+                </div>
+                <div>
+                    <div class="detail-label">Email</div>
+                    <div style="color: #333a43;" class="detail-value text-base truncate">
+                        <i class="fas fa-envelope text-sm text-gray-400 mr-1.5"></i>
+                        {{ inquiry.email }}
+                    </div>
+                </div>
+                <div>
+                    <div class="detail-label">Source</div>
+                    <div style="color: #333a43;" class="detail-value text-base">
+                        <i class="fas fa-globe text-sm text-gray-400 mr-1.5"></i>
+                        {% if inquiry.source == 'website' %}Website Form
+                        {% elif inquiry.source == 'phone' %}Phone Call
+                        {% elif inquiry.source == 'whatsapp' %}WhatsApp
+                        {% elif inquiry.source == 'email' %}Email
+                        {% elif inquiry.source == 'walkin' %}Walk-in
+                        {% else %}{{ inquiry.source|title }}
+                        {% endif %}
+                    </div>
+                </div>
+                <div>
+                    <div class="detail-label">Lead ID</div>
+                    <div style="color: #333a43;" class="detail-value text-base font-mono">
+                        #LD-{{ inquiry.id|stringformat:"06d" }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Message and Details -->
+            <div class="p-5 space-y-5">
+                <!-- Inquiry Message -->
+                <div>
+                    <div class="detail-label mb-2.5">Inquiry Message</div>
+                    <div class="bg-gray-50 dark:bg-gray-750 rounded-lg p-4 border-l-4 border-bhoosparsh-blue">
+                        <p style="color: #333a43;" class="text-base text-gray-800 dark:text-gray-200 leading-relaxed">
+                            "{{ inquiry.message }}"
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Additional Details Grid -->
+                <div class="grid grid-cols-2 gap-5">
+                    {% if inquiry.budget %}
+                    <div>
+                        <div class="detail-label">Budget Range</div>
+                        <div class="text-base font-medium text-gray-900 dark:text-white">
+                            ₹{{ inquiry.budget|intcomma }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if inquiry.preferred_date %}
+                    <div>
+                        <div class="detail-label">Preferred Date</div>
+                        <div class="text-base text-gray-900 dark:text-white">
+                            {{ inquiry.preferred_date|date:"M d, Y" }}
+                            {% if inquiry.preferred_time %}
+                            at {{ inquiry.preferred_time|time:"g:i A" }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if inquiry.location %}
+                    <div>
+                        <div class="detail-label">Preferred Location</div>
+                        <div class="text-base text-gray-900 dark:text-white">
+                            {{ inquiry.location }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if inquiry.property_type %}
+                    <div>
+                        <div class="detail-label">Property Type</div>
+                        <div class="text-base text-gray-900 dark:text-white">
+                            {{ inquiry.property_type }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Response Form Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-base font-bold text-gray-900 dark:text-white">
+                    <i class="fas fa-reply mr-2 text-bhoosparsh-blue"></i>
+                    Respond to Lead
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1.5">
+                    Quick responses improve conversion rate by 40%
+                </p>
+            </div>
+            
+            <div class="p-5">
+                <form method="POST" id="leadResponseForm" action="{% url 'seller_lead_detail' inquiry.id %}">
+                    {% csrf_token %}
+                    
+                    <div class="space-y-5">
+                        <!-- Response Templates -->
+                        <div class="flex flex-wrap gap-2.5">
+                            <button type="button" 
+                                    onclick="insertTemplate('thankyou')"
+                                    class="px-4 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded-full transition">
+                                <i class="far fa-smile mr-1.5"></i>
+                                Thank You
+                            </button>
+                            <button type="button" 
+                                    onclick="insertTemplate('followup')"
+                                    class="px-4 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded-full transition">
+                                <i class="far fa-clock mr-1.5"></i>
+                                Follow-up
+                            </button>
+                            <button type="button" 
+                                    onclick="insertTemplate('meeting')"
+                                    class="px-4 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded-full transition">
+                                <i class="fas fa-calendar-alt mr-1.5"></i>
+                                Schedule Meeting
+                            </button>
+                            <button type="button" 
+                                    onclick="insertTemplate('details')"
+                                    class="px-4 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded-full transition">
+                                <i class="fas fa-home mr-1.5"></i>
+                                Property Details
+                            </button>
+                        </div>
+                        
+                        <!-- Response Message Field -->
+                        <div class="form-group">
+                            <label class="form-label" for="responseField">Your Response</label>
+                            <textarea name="response" 
+                                      id="responseField"
+                                      rows="5" 
+                                      class="form-control text-base"
+                                      placeholder="Type your response here...">{{ form.response.value|default:'' }}</textarea>
+                            <p class="text-sm text-gray-500 mt-2">
+                                <i class="fas fa-info-circle mr-1.5"></i>
+                                Your response will be sent to the customer via email
+                            </p>
+                        </div>
+                        
+                        <!-- Follow-up Options -->
+                        <div class="grid grid-cols-2 gap-5">
+                            <div>
+                                <label class="form-label">Set Reminder</label>
+                                <select name="reminder" id="reminderSelect" class="form-control form-control-sm">
+                                    <option value="">No reminder</option>
+                                    <option value="1h">In 1 hour</option>
+                                    <option value="3h">In 3 hours</option>
+                                    <option value="tomorrow">Tomorrow morning</option>
+                                    <option value="week">In 1 week</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label">Update Status</label>
+                                <select name="status" id="statusSelect" class="form-control form-control-sm">
+                                    <option value="contacted" {% if inquiry.status == 'contacted' %}selected{% endif %}>
+                                        Contacted
+                                    </option>
+                                    <option value="interested" {% if inquiry.status == 'interested' %}selected{% endif %}>
+                                        Interested
+                                    </option>
+                                    <option value="not_interested" {% if inquiry.status == 'not_interested' %}selected{% endif %}>
+                                        Not Interested
+                                    </option>
+                                    <option value="converted" {% if inquiry.status == 'converted' %}selected{% endif %}>
+                                        Converted
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Form Actions -->
+                        <div class="flex items-center justify-between pt-3">
+                            <div class="flex items-center gap-4">
+                                <label class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                                    <input type="checkbox" name="send_copy" class="rounded">
+                                    <span>Send me a copy</span>
+                                </label>
+                                <label class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                                    <input type="checkbox" name="mark_completed" checked class="rounded">
+                                    <span>Mark as completed</span>
+                                </label>
+                            </div>
+                            
+                            <div class="btn-group">
+                                <button type="submit" 
+                                        class="px-5 py-2.5 bg-bhoosparsh-blue text-white text-sm rounded-lg hover:bg-blue-700 transition font-medium flex items-center gap-2">
+                                    <i class="fas fa-paper-plane"></i>
+                                    Send Response
+                                </button>
+                                <a href="{% url 'seller_leads' %}" 
+                                   class="px-5 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                                    Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Previous Responses Timeline -->
+        {% if inquiry.response %}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-base font-bold text-gray-900 dark:text-white">
+                    <i class="fas fa-history mr-2 text-gray-500"></i>
+                    Response History
+                </h3>
+            </div>
+            
+            <div class="p-5">
+                <div class="timeline-item">
+                    <span class="timeline-date">{{ inquiry.responded_at|date:"M d, Y g:i A" }}</span>
+                    <div class="timeline-content mt-1.5">
+                        <div class="flex items-start gap-3">
+                            <div class="w-7 h-7 rounded-full bg-bhoosparsh-blue flex items-center justify-center text-white text-sm">
+                                {{ request.user.first_name|first|upper }}
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">You</p>
+                                <div class="response-box mt-2.5">
+                                    <p class="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">
+                                        {{ inquiry.response }}
+                                    </p>
+                                </div>
+                                <div class="flex items-center gap-3 mt-2.5">
+                                    <span class="badge bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                                        Response sent
+                                    </span>
+                                    <span class="text-sm text-gray-500">
+                                        via Email & SMS
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Right Sidebar (1/3) -->
+    <div class="space-y-5">
+        <!-- Property Information Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-base font-bold text-gray-900 dark:text-white">
+                    <i class="fas fa-home mr-2 text-bhoosparsh-orange"></i>
+                    Property Information
+                </h3>
+            </div>
+            
+            <div class="p-5">
+                <div class="property-card">
+                    <div class="flex gap-4">
+                        <!-- Property Image -->
+                        <div class="w-24 h-24 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
+                            {% if inquiry.property.primary_image %}
+                                <img src="{{ inquiry.property.primary_image.url }}" 
+                                     alt="{{ inquiry.property.title }}" 
+                                     class="w-full h-full object-cover">
+                            {% else %}
+                                <div class="w-full h-full flex items-center justify-center">
+                                    <i class="fas fa-building text-3xl text-gray-400"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Property Details -->
+                        <div class="flex-1 min-w-0">
+                            <a href="{% url 'seller_property_detail' inquiry.property.pk %}" 
+                               class="property-title text-bhoosparsh-blue hover:text-blue-700 block truncate">
+                                {{ inquiry.property.title }}
+                            </a>
+                            
+                            <div class="space-y-1.5 mt-2">
+                                <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                                    <i class="fas fa-map-marker-alt w-4 text-gray-400 mr-2"></i>
+                                    <span class="truncate">{{ inquiry.property.locality }}, {{ inquiry.property.city }}</span>
+                                </div>
+                                <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                                    <i class="fas fa-tag w-4 text-gray-400 mr-2"></i>
+                                    <span>₹{{ inquiry.property.price|intcomma }}</span>
+                                    {% if inquiry.property.price_per_sqft %}
+                                    <span class="mx-1.5">•</span>
+                                    <span>₹{{ inquiry.property.price_per_sqft|floatformat:0 }}/sq.ft</span>
+                                    {% endif %}
+                                </div>
+                                <div class="flex items-center gap-2.5 mt-1.5">
+                                    <span class="badge-sm bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                                        {{ inquiry.property.get_property_for_display }}
+                                    </span>
+                                    <span class="badge-sm bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                                        {{ inquiry.property.get_status_display }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Property Stats -->
+                    <div class="grid grid-cols-3 gap-3 mt-5 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <div class="text-center">
+                            <span class="text-sm text-gray-500 block">Views</span>
+                            <span class="text-base font-bold text-gray-900 dark:text-white">{{ inquiry.property.view_count }}</span>
+                        </div>
+                        <div class="text-center">
+                            <span class="text-sm text-gray-500 block">Inquiries</span>
+                            <span class="text-base font-bold text-gray-900 dark:text-white">{{ inquiry.property.inquiry_count }}</span>
+                        </div>
+                        <div class="text-center">
+                            <span class="text-sm text-gray-500 block">Listed</span>
+                            <span class="text-base font-bold text-gray-900 dark:text-white">{{ inquiry.property.created_at|date:"M d" }}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions - Fixed Share Button -->
+                    <div class="mt-5 flex gap-2.5">
+                        <a href="{% url 'seller_property_detail' inquiry.property.pk %}" 
+                           class="flex-1 px-4 py-2 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition text-center">
+                            View Property
+                        </a>
+                        <button type="button"
+                                onclick="showPropertyDetails('{{ inquiry.property.id }}')"
+                                class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Lead Status & Actions -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-base font-bold text-gray-900 dark:text-white">
+                    <i class="fas fa-tasks mr-2 text-purple-500"></i>
+                    Lead Management
+                </h3>
+            </div>
+            
+            <div class="p-5">
+                <!-- Current Status -->
+                <div class="mb-5">
+                    <label class="detail-label mb-2.5">Current Status</label>
+                    <div class="flex items-center justify-between">
+                        <span class="status-{{ inquiry.status }} text-base font-medium">
+                            <span class="status-dot" id="currentStatusDot"></span>
+                            <span id="currentStatusText">{{ inquiry.get_status_display }}</span>
+                        </span>
+                        <span class="text-sm text-gray-500">
+                            Updated {{ inquiry.updated_at|timesince }} ago
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Status Update Dropdown -->
+                <div class="mb-5">
+                    <label class="detail-label mb-2.5">Update Status</label>
+                    <select id="leadStatus" class="form-control form-control-sm" onchange="updateLeadStatus('{{ inquiry.id }}', this.value)">
+                        <option value="new" {% if inquiry.status == 'new' %}selected{% endif %}>New</option>
+                        <option value="contacted" {% if inquiry.status == 'contacted' %}selected{% endif %}>Contacted</option>
+                        <option value="interested" {% if inquiry.status == 'interested' %}selected{% endif %}>Interested</option>
+                        <option value="not_interested" {% if inquiry.status == 'not_interested' %}selected{% endif %}>Not Interested</option>
+                        <option value="converted" {% if inquiry.status == 'converted' %}selected{% endif %}>Converted</option>
+                        <option value="spam" {% if inquiry.status == 'spam' %}selected{% endif %}>Spam</option>
+                    </select>
+                    <div id="statusUpdateStatus" class="mt-2 text-xs hidden"></div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="space-y-2.5">
+                    <button onclick="addToFavorites()" 
+                            class="w-full px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-sm rounded-lg transition flex items-center justify-center gap-2">
+                        <i class="far fa-star"></i>
+                        Add to Favorites
+                    </button>
+                    <button onclick="createTask()" 
+                            class="w-full px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-sm rounded-lg transition flex items-center justify-center gap-2">
+                        <i class="far fa-check-circle"></i>
+                        Create Task
+                    </button>
+                    <button onclick="scheduleFollowUp()" 
+                            class="w-full px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-sm rounded-lg transition flex items-center justify-center gap-2">
+                        <i class="far fa-clock"></i>
+                        Schedule Follow-up
+                    </button>
+                </div>
+                
+                <!-- Danger Zone -->
+                <div class="mt-6 pt-5 border-t border-gray-200 dark:border-gray-700">
+                    <button onclick="markAsSpam()" 
+                            class="w-full px-4 py-2.5 bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30 text-sm rounded-lg transition flex items-center justify-center gap-2">
+                        <i class="fas fa-ban"></i>
+                        Mark as Spam
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Similar Leads -->
+        {% if similar_inquiries %}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-base font-bold text-gray-900 dark:text-white">
+                    <i class="fas fa-users mr-2 text-green-500"></i>
+                    Similar Leads
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1.5">
+                    From same property or similar interest
+                </p>
+            </div>
+            
+            <div class="divide-y divide-gray-100 dark:divide-gray-700">
+                {% for similar in similar_inquiries %}
+                <div class="similar-lead-item hover:bg-gray-50 dark:hover:bg-gray-750 transition">
+                    <a href="{% url 'seller_lead_detail' similar.id %}" class="block">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-sm">
+                                    {{ similar.name|first|upper }}
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-medium text-gray-900 dark:text-white">{{ similar.name }}</h4>
+                                    <span class="status-{{ similar.status }}">
+                                        <span class="status-dot"></span>
+                                        <span class="text-sm">{{ similar.get_status_display }}</span>
+                                    </span>
+                                </div>
+                            </div>
+                            <span class="text-sm text-gray-500">
+                                {{ similar.created_at|timesince }} ago
+                            </span>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="p-4 bg-gray-50 dark:bg-gray-750 text-center">
+                <a href="{% url 'seller_leads' %}?property={{ inquiry.property.id }}" 
+                   class="text-sm text-bhoosparsh-blue hover:text-blue-700">
+                    View all leads for this property
+                    <i class="fas fa-arrow-right ml-1.5 text-sm"></i>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Activity Timeline -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-base font-bold text-gray-900 dark:text-white">
+                    <i class="fas fa-chart-line mr-2 text-indigo-500"></i>
+                    Activity Timeline
+                </h3>
+            </div>
+            
+            <div class="p-5">
+                <div class="space-y-4">
+                    <div class="timeline-item">
+                        <span class="timeline-date">{{ inquiry.created_at|date:"M d, Y g:i A" }}</span>
+                        <div class="timeline-content mt-1">
+                            <p class="text-sm text-gray-900 dark:text-white font-medium">Lead Created</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                Inquiry received via {% if inquiry.source == 'website' %}Website Form{% else %}{{ inquiry.source }}{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    {% if inquiry.responded_at %}
+                    <div class="timeline-item">
+                        <span class="timeline-date">{{ inquiry.responded_at|date:"M d, Y g:i A" }}</span>
+                        <div class="timeline-content mt-1">
+                            <p class="text-sm text-gray-900 dark:text-white font-medium">Response Sent</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                You responded to this inquiry
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if inquiry.status == 'converted' %}
+                    <div class="timeline-item">
+                        <span class="timeline-date">{{ inquiry.updated_at|date:"M d, Y g:i A" }}</span>
+                        <div class="timeline-content mt-1">
+                            <p class="text-sm text-gray-900 dark:text-white font-medium">Lead Converted</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                Status changed to Converted
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="timeline-item">
+                        <span class="timeline-date">{{ inquiry.updated_at|date:"M d, Y g:i A" }}</span>
+                        <div class="timeline-content mt-1">
+                            <p class="text-sm text-gray-900 dark:text-white font-medium">Last Updated</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                Status: {{ inquiry.get_status_display }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Property Details Modal -->
+<div id="propertyDetailsModal" class="modal-overlay">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full mx-4">
+        <div class="p-5 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <h3 class="text-base font-bold text-gray-900 dark:text-white">Property Details</h3>
+            <button onclick="closeModal('propertyDetailsModal')" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-5" id="propertyDetailsContent">
+            <div class="flex justify-center items-center py-8">
+                <div class="loading-spinner"></div>
+                <span class="ml-3 text-sm text-gray-600 dark:text-gray-400">Loading property details...</span>
+            </div>
+        </div>
+        <div class="p-5 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+            <button onclick="closeModal('propertyDetailsModal')" 
+                    class="px-5 py-2.5 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div id="toast-container" class="toast-container"></div>
+
+<script>
+    // Response Templates with actual Django template variables - FIXED escaping
+    const templates = {
+        thankyou: "Thank you for your interest in {{ inquiry.property.title|escapejs }}. We appreciate your inquiry and will get back to you shortly with more details. Please feel free to reach out if you have any specific questions.",
+        
+        followup: "Following up on your recent inquiry about {{ inquiry.property.title|escapejs }}. Would you like to schedule a site visit or need any additional information? We're here to help!",
+        
+        meeting: "Thank you for your interest in {{ inquiry.property.title|escapejs }}! I'd be happy to schedule a meeting to discuss this property in detail. Please let me know what date and time works best for you, and I'll confirm availability.",
+        
+        details: "Here are the key details of {{ inquiry.property.title|escapejs }}:\n\n- Price: ₹{{ inquiry.property.price|intcomma }}\n- Area: {{ inquiry.property.carpet_area }} sq.ft\n- Bedrooms: {{ inquiry.property.bedrooms }}\n- Bathrooms: {{ inquiry.property.bathrooms }}\n- Location: {{ inquiry.property.locality }}, {{ inquiry.property.city }}\n\nWould you like to schedule a site visit?"
+    };
+
+    // CSRF Token
+    const csrftoken = getCookie('csrftoken');
+    
+    // Store inquiry data for JavaScript
+    const inquiryData = {
+        id: '{{ inquiry.id }}',
+        currentStatus: '{{ inquiry.status }}',
+        statusDisplay: '{{ inquiry.get_status_display|escapejs }}',
+        propertyId: '{{ inquiry.property.id }}'
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize form with any existing data
+        const responseField = document.getElementById('responseField');
+        if (responseField) {
+            // Auto-resize textarea
+            responseField.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+            
+            // Trigger initial resize if has content
+            if (responseField.value) {
+                responseField.style.height = 'auto';
+                responseField.style.height = (responseField.scrollHeight) + 'px';
+            }
+        }
+        
+        // Set up reminder change handler
+        const reminderSelect = document.getElementById('reminderSelect');
+        if (reminderSelect) {
+            reminderSelect.addEventListener('change', function() {
+                if (this.value) {
+                    const reminderText = this.options[this.selectedIndex].text;
+                    showToast(`Reminder set for ${reminderText}`, 'info');
+                }
+            });
+        }
+        
+        // Form validation - FIXED
+        const leadResponseForm = document.getElementById('leadResponseForm');
+        if (leadResponseForm) {
+            leadResponseForm.addEventListener('submit', function(e) {
+                const responseField = document.getElementById('responseField');
+                if (!responseField.value.trim()) {
+                    e.preventDefault();
+                    showToast('Please enter a response message', 'warning');
+                    responseField.focus();
+                }
+            });
+        }
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modals = document.querySelectorAll('.modal-overlay.active');
+                modals.forEach(modal => {
+                    modal.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            }
+        });
+        
+        // Initialize status dot color
+        updateStatusDotColor(inquiryData.currentStatus);
+    });
+
+    function insertTemplate(templateKey) {
+        const responseField = document.getElementById('responseField');
+        const template = templates[templateKey] || '';
+        
+        if (responseField) {
+            responseField.value = template;
+            responseField.style.height = 'auto';
+            responseField.style.height = (responseField.scrollHeight) + 'px';
+            
+            showToast('Template inserted successfully', 'success');
+        }
+    }
+
+    function updateStatusDotColor(status) {
+        const statusDot = document.getElementById('currentStatusDot');
+        if (statusDot) {
+            const statusColors = {
+                'new': '#3B82F6',
+                'contacted': '#10B981',
+                'interested': '#8B5CF6',
+                'not_interested': '#EF4444',
+                'converted': '#F59E0B',
+                'spam': '#6B7280'
+            };
+            statusDot.style.backgroundColor = statusColors[status] || '#3B82F6';
+        }
+    }
+
+    function updateLeadStatus(leadId, newStatus) {
+        // Show loading state
+        const statusSelect = document.getElementById('leadStatus');
+        const statusUpdateDiv = document.getElementById('statusUpdateStatus');
+        
+        if (!statusSelect || !statusUpdateDiv) return;
+        
+        statusSelect.disabled = true;
+        statusUpdateDiv.className = 'mt-2 text-xs text-blue-600 dark:text-blue-400';
+        statusUpdateDiv.innerHTML = '<span class="loading-spinner mr-1"></span> Updating status...';
+        statusUpdateDiv.classList.remove('hidden');
+        
+        // Get CSRF token
+        const csrftoken = getCookie('csrftoken');
+        
+        fetch('/seller/ajax/update-lead-status/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken,
+            },
+            body: JSON.stringify({
+                lead_id: leadId,
+                status: newStatus,
+            }),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showToast(`Status updated to ${data.new_status}`, 'success');
+                
+                // Update UI
+                const statusText = document.getElementById('currentStatusText');
+                if (statusText) {
+                    statusText.textContent = data.new_status;
+                }
+                
+                // Update status dot color
+                updateStatusDotColor(newStatus);
+                
+                // Update status in the select dropdown
+                const options = statusSelect.options;
+                for (let i = 0; i < options.length; i++) {
+                    options[i].selected = (options[i].value === newStatus);
+                }
+                
+                statusUpdateDiv.className = 'mt-2 text-xs text-green-600 dark:text-green-400';
+                statusUpdateDiv.innerHTML = '<i class="fas fa-check-circle mr-1"></i> Status updated successfully!';
+                
+                // Hide success message after 3 seconds
+                setTimeout(() => {
+                    statusUpdateDiv.classList.add('hidden');
+                }, 3000);
+            } else {
+                showToast(data.error || 'Error updating status', 'error');
+                statusUpdateDiv.className = 'mt-2 text-xs text-red-600 dark:text-red-400';
+                statusUpdateDiv.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i> ' + (data.error || 'Failed to update status');
+                
+                // Revert select to previous value
+                const options = statusSelect.options;
+                for (let i = 0; i < options.length; i++) {
+                    options[i].selected = (options[i].value === inquiryData.currentStatus);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error updating status. Please try again.', 'error');
+            statusUpdateDiv.className = 'mt-2 text-xs text-red-600 dark:text-red-400';
+            statusUpdateDiv.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i> Network error. Please try again.';
+            
+            // Revert select to previous value
+            const options = statusSelect.options;
+            for (let i = 0; i < options.length; i++) {
+                options[i].selected = (options[i].value === inquiryData.currentStatus);
+            }
+        })
+        .finally(() => {
+            statusSelect.disabled = false;
+        });
+    }
+
+    function showPropertyDetails(propertyId) {
+        // FIXED: Use absolute URL with proper path
+        openModal('propertyDetailsModal');
+        
+        const content = document.getElementById('propertyDetailsContent');
+        content.innerHTML = `
+            <div class="flex justify-center items-center py-8">
+                <div class="loading-spinner"></div>
+                <span class="ml-3 text-sm text-gray-600 dark:text-gray-400">Loading property details...</span>
+            </div>
+        `;
+        
+        // FIXED: Use the correct URL pattern
+        const url = `/seller/ajax/property-details/${propertyId}/`;
+        console.log('Fetching property details from:', url);
+        
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    const property = data.property;
+                    
+                    content.innerHTML = `
+                        <div class="space-y-4">
+                            <div class="aspect-w-16 aspect-h-9 bg-gray-200 rounded-lg overflow-hidden" style="height: 200px;">
+                                ${property.primary_image_url ? 
+                                    `<img src="${property.primary_image_url}" alt="${property.title.replace(/"/g, '&quot;')}" class="w-full h-full object-cover">` : 
+                                    `<div class="w-full h-full flex items-center justify-center"><i class="fas fa-building text-4xl text-gray-400"></i></div>`
+                                }
+                            </div>
+                            <h4 class="text-base font-bold text-gray-900 dark:text-white">${escapeHtml(property.title)}</h4>
+                            <div class="grid grid-cols-2 gap-4 text-sm">
+                                <div><span class="text-gray-500">Price:</span> <span class="font-medium">₹${property.price?.toLocaleString() || '0'}</span></div>
+                                <div><span class="text-gray-500">Area:</span> <span class="font-medium">${property.carpet_area || '0'} sq.ft</span></div>
+                                <div><span class="text-gray-500">Bedrooms:</span> <span class="font-medium">${property.bedrooms || 'N/A'}</span></div>
+                                <div><span class="text-gray-500">Bathrooms:</span> <span class="font-medium">${property.bathrooms || 'N/A'}</span></div>
+                                <div><span class="text-gray-500">Location:</span> <span class="font-medium">${escapeHtml(property.locality || '')}, ${escapeHtml(property.city || '')}</span></div>
+                                <div><span class="text-gray-500">Status:</span> <span class="font-medium">${escapeHtml(property.status_display || '')}</span></div>
+                                <div><span class="text-gray-500">Views:</span> <span class="font-medium">${property.view_count || 0}</span></div>
+                                <div><span class="text-gray-500">Inquiries:</span> <span class="font-medium">${property.inquiry_count || 0}</span></div>
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">${escapeHtml(property.description || '')}</p>
+                            <div class="flex gap-3 mt-2">
+                                <a href="/seller/properties/${property.id}/" 
+                                   class="flex-1 px-4 py-2 bg-bhoosparsh-blue text-white text-sm rounded-lg hover:bg-blue-700 transition text-center">
+                                    View Full Details
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    content.innerHTML = `
+                        <div class="text-center py-8">
+                            <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-3"></i>
+                            <p class="text-sm text-gray-700 dark:text-gray-300">${escapeHtml(data.error || 'Error loading property details')}</p>
+                            <button onclick="closeModal('propertyDetailsModal')" 
+                                    class="mt-4 px-4 py-2 bg-gray-200 text-gray-800 text-sm rounded-lg hover:bg-gray-300 transition">
+                                Close
+                            </button>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                content.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-3"></i>
+                        <p class="text-sm text-gray-700 dark:text-gray-300">Error loading property details. Please try again.</p>
+                        <p class="text-xs text-gray-500 mt-2">${error.message}</p>
+                        <button onclick="closeModal('propertyDetailsModal')" 
+                                class="mt-4 px-4 py-2 bg-gray-200 text-gray-800 text-sm rounded-lg hover:bg-gray-300 transition">
+                            Close
+                        </button>
+                    </div>
+                `;
+            });
+    }
+
+    // Helper function to escape HTML
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function addToFavorites() {
+        showToast('Lead added to favorites', 'success');
+    }
+
+    function createTask() {
+        const taskName = prompt('Enter task name:', 'Follow up with {{ inquiry.name|escapejs }}');
+        if (taskName && taskName.trim()) {
+            // In a real app, you would make an AJAX call here
+            showToast(`Task "${taskName}" created successfully`, 'success');
+        }
+    }
+
+    function scheduleFollowUp() {
+        const date = prompt('Enter follow-up date (YYYY-MM-DD):', 
+            new Date(Date.now() + 86400000).toISOString().split('T')[0]);
+        
+        if (date) {
+            // Validate date format
+            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+            if (dateRegex.test(date)) {
+                showToast(`Follow-up scheduled for ${date}`, 'success');
+            } else {
+                showToast('Please enter a valid date in YYYY-MM-DD format', 'warning');
+            }
+        }
+    }
+
+    function markAsSpam() {
+        if (confirm('Are you sure you want to mark this lead as spam? This action cannot be undone.')) {
+            updateLeadStatus(inquiryData.id, 'spam');
+        }
+    }
+
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function showToast(message, type = 'info') {
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.className = 'toast-container';
+            document.body.appendChild(toastContainer);
+        }
+        
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        // Icon based on type
+        let icon = 'fa-info-circle';
+        if (type === 'success') icon = 'fa-check-circle';
+        if (type === 'error') icon = 'fa-exclamation-circle';
+        if (type === 'warning') icon = 'fa-exclamation-triangle';
+        
+        toast.innerHTML = `
+            <i class="fas ${icon}"></i>
+            <span>${escapeHtml(message)}</span>
+            <button onclick="this.parentElement.remove()" style="margin-left: auto; background: none; border: none; color: white; cursor: pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        toastContainer.appendChild(toast);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 5000);
+    }
+
+    // Close modal when clicking outside
+    document.addEventListener('click', function(event) {
+        if (event.target.classList.contains('modal-overlay')) {
+            event.target.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    });
+</script>
+{% endblock %}

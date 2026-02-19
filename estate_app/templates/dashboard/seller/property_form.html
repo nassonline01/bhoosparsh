@@ -212,53 +212,18 @@
         justify-content: center;
     }
 
-    /* Property type styles */
-    .property-type-option {
-        padding: 16px;
-        border: 2px solid #E5E7EB;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        background: white;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        min-height: 120px;
+    /* Property type styles - matching category dropdown */
+    select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
     }
 
-    .property-type-option:hover {
-        border-color: #0E68B9;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(14, 104, 185, 0.1);
-    }
-
-    .property-type-option.selected {
-        border-color: #0E68B9;
-        background: linear-gradient(135deg, rgba(14, 104, 185, 0.05), rgba(30, 144, 255, 0.05));
-        box-shadow: 0 4px 12px rgba(14, 104, 185, 0.15);
-    }
-
-    .property-type-option .type-icon {
-        font-size: 32px;
-        color: #6B7280;
-        margin-bottom: 8px;
-        transition: all 0.3s ease;
-    }
-
-    .property-type-option.selected .type-icon {
-        color: #0E68B9;
-    }
-
-    .property-type-option .type-name {
-        font-weight: 600;
-        color: #374151;
-        margin-bottom: 4px;
-    }
-
-    .property-type-option.selected .type-name {
-        color: #0E68B9;
+    .dark select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%239CA3AF' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
     }
 
     /* Property for styles */
@@ -309,24 +274,6 @@
     }
 
     /* Dark mode styles */
-    .dark .property-type-option {
-        background: #1F2937;
-        border-color: #374151;
-    }
-
-    .dark .property-type-option .type-name {
-        color: #E5E7EB;
-    }
-
-    .dark .property-type-option .type-icon {
-        color: #9CA3AF;
-    }
-
-    .dark .property-type-option.selected {
-        border-color: #0E68B9;
-        background: linear-gradient(135deg, rgba(14, 104, 185, 0.1), rgba(30, 144, 255, 0.1));
-    }
-
     .dark .property-for-option {
         background: #1F2937;
         border-color: #374151;
@@ -369,6 +316,13 @@
 
     .property-section.active {
         display: block;
+    }
+
+    /* Form field focus states */
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        ring: 2px;
+        ring-color: #0E68B9;
     }
 </style>
 {% endblock %}
@@ -450,7 +404,7 @@
         {% csrf_token %}
         <input type="hidden" name="current_step" id="currentStepField" value="1">
         
-       <!-- Display messages -->
+        <!-- Display messages -->
         {% if messages %}
         <div class="mb-6">
             {% for message in messages %}
@@ -471,7 +425,7 @@
             <div class="space-y-8">
                 <!-- Property Category -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4 required-field">
+                    <label for="id_category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 required-field">
                         Property Category
                     </label>
                     <select id="id_category" name="category"
@@ -490,47 +444,25 @@
                     {% endif %}
                 </div>
                 
-                <!-- Property Type Selection -->
+                <!-- Property Type Selection - Matches Category dropdown style -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4 required-field">
+                    <label for="id_property_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 required-field">
                         Property Type
                     </label>
                     <div id="propertyTypeContainer">
                         {% if property_types %}
-                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4" id="propertyTypeOptions">
+                        <select id="id_property_type" name="property_type" 
+                                class="w-full p-3 border {% if errors and errors.property_type %}border-red-500{% else %}border-gray-300 dark:border-gray-600{% endif %} rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent"
+                                onchange="showRelevantPropertySection(this.value)">
+                            <option value="">Select Property Type</option>
                             {% for type in property_types %}
-                            <div class="property-type-option {% if form_data.property_type == type.id|stringformat:'s' or property and property.property_type and property.property_type.id == type.id %}selected{% endif %}"
-                                 onclick="selectPropertyType({{ type.id }}, this)">
-                                <input type="radio" name="property_type" value="{{ type.id }}" 
-                                       class="hidden" 
-                                       {% if form_data.property_type == type.id|stringformat:'s' %}checked{% endif %}
-                                       {% if property and property.property_type and property.property_type.id == type.id %}checked{% endif %}
-                                       required>
-                                <div class="type-icon">
-                                    {% if "apartment" in type.name|lower %}
-                                    <i class="fas fa-building"></i>
-                                    {% elif "house" in type.name|lower or "villa" in type.name|lower %}
-                                    <i class="fas fa-home"></i>
-                                    {% elif "office" in type.name|lower %}
-                                    <i class="fas fa-briefcase"></i>
-                                    {% elif "shop" in type.name|lower or "retail" in type.name|lower %}
-                                    <i class="fas fa-store"></i>
-                                    {% elif "warehouse" in type.name|lower %}
-                                    <i class="fas fa-warehouse"></i>
-                                    {% elif "land" in type.name|lower or "plot" in type.name|lower %}
-                                    <i class="fas fa-map"></i>
-                                    {% elif "farm" in type.name|lower %}
-                                    <i class="fas fa-tractor"></i>
-                                    {% elif "hotel" in type.name|lower or "resort" in type.name|lower %}
-                                    <i class="fas fa-hotel"></i>
-                                    {% else %}
-                                    <i class="fas fa-building"></i>
-                                    {% endif %}
-                                </div>
-                                <div class="type-name">{{ type.name }}</div>
-                            </div>
+                            <option value="{{ type.id }}" 
+                                {% if form_data.property_type == type.id|stringformat:'s' %}selected{% endif %}
+                                {% if property and property.property_type and property.property_type.id == type.id %}selected{% endif %}>
+                                {{ type.name }}
+                            </option>
                             {% endfor %}
-                        </div>
+                        </select>
                         {% else %}
                         <div class="p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center">
                             <i class="fas fa-info-circle text-gray-400 text-3xl mb-3"></i>
@@ -538,10 +470,11 @@
                             <p class="text-sm text-gray-500">Property types will appear here after selecting a category</p>
                         </div>
                         {% endif %}
+                        
+                        {% if errors and errors.property_type %}
+                        <p class="mt-2 text-sm text-red-600">{{ errors.property_type }}</p>
+                        {% endif %}
                     </div>
-                    {% if errors and errors.property_type %}
-                    <p class="mt-2 text-sm text-red-600">{{ errors.property_type }}</p>
-                    {% endif %}
                 </div>
                 
                 <!-- Property For Selection -->
@@ -614,10 +547,10 @@
                 <!-- Listing Type -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label for="id_listing_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Listing Type
                         </label>
-                        <select name="listing_type" 
+                        <select name="listing_type" id="id_listing_type"
                                 class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
                             <option value="basic" {% if form_data.listing_type == 'basic' or property and property.listing_type == 'basic' %}selected{% endif %}>Basic Listing</option>
                             <option value="featured" {% if form_data.listing_type == 'featured' or property and property.listing_type == 'featured' %}selected{% endif %}>Featured Listing</option>
@@ -660,7 +593,7 @@
             
             <div class="flex justify-end mt-8">
                 <button type="button" onclick="nextStep()" 
-                        class="px-6 py-3 bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg hover:opacity-90 transition font-medium flex items-center gap-2">
+                        class="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition font-medium">
                     <span>Next: Location & Price</span>
                     <i class="fas fa-arrow-right"></i>
                 </button>
@@ -758,13 +691,13 @@
                         </label>
                         <input type="url" id="id_google_map_url" name="google_map_url" 
                                value="{% if form_data.google_map_url %}{{ form_data.google_map_url }}{% elif property and property.google_map_url %}{{ property.google_map_url }}{% endif %}"
-                               class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300"
+                               class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent"
                                placeholder="https://maps.google.com/?q=...">
                     </div>
                 </div>
                 
                 <!-- Google Maps Coordinates -->
-                <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                <!-- <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 ">
                     <div class="flex items-center justify-between mb-4">
                         <div>
                             <h4 class="font-medium text-gray-900 dark:text-white">Location Coordinates (Optional)</h4>
@@ -783,7 +716,7 @@
                             </label>
                             <input type="number" step="any" id="id_latitude" name="latitude" 
                                    value="{% if form_data.latitude %}{{ form_data.latitude }}{% elif property and property.latitude %}{{ property.latitude }}{% endif %}"
-                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300"
+                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent"
                                    placeholder="e.g., 19.076090">
                         </div>
                         
@@ -793,12 +726,12 @@
                             </label>
                             <input type="number" step="any" id="id_longitude" name="longitude" 
                                    value="{% if form_data.longitude %}{{ form_data.longitude }}{% elif property and property.longitude %}{{ property.longitude }}{% endif %}"
-                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300"
+                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent"
                                    placeholder="e.g., 72.877426">
                         </div>
                     </div>
                 </div>
-                
+                 -->
                 <!-- Pricing -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -836,7 +769,7 @@
                             </label>
                             <input type="number" id="id_maintenance_charges" name="maintenance_charges" 
                                    value="{% if form_data.maintenance_charges %}{{ form_data.maintenance_charges }}{% elif property and property.maintenance_charges %}{{ property.maintenance_charges }}{% endif %}"
-                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300"
+                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent"
                                    placeholder="Optional">
                         </div>
                         
@@ -847,7 +780,7 @@
                             <input type="number" id="id_booking_amount" name="booking_amount" 
                                    value="{% if form_data.booking_amount %}{{ form_data.booking_amount }}{% elif property and property.booking_amount %}{{ property.booking_amount }}{% endif %}" 
                                    step="0.01" min="0"
-                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300"
+                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent"
                                    placeholder="Optional">
                         </div>
                     </div>
@@ -862,7 +795,7 @@
                         <input type="number" id="id_carpet_area" name="carpet_area" 
                                value="{% if form_data.carpet_area %}{{ form_data.carpet_area }}{% elif property %}{{ property.carpet_area }}{% endif %}" 
                                step="0.01" min="0" required
-                               class="w-full p-3 border {% if errors and errors.carpet_area %}border-red-500{% else %}border-gray-300 dark:border-gray-600{% endif %} rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                               class="w-full p-3 border {% if errors and errors.carpet_area %}border-red-500{% else %}border-gray-300 dark:border-gray-600{% endif %} rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
                         {% if errors and errors.carpet_area %}
                         <p class="mt-1 text-sm text-red-600">{{ errors.carpet_area }}</p>
                         {% endif %}
@@ -875,7 +808,7 @@
                         <input type="number" id="id_builtup_area" name="builtup_area" 
                                value="{% if form_data.builtup_area %}{{ form_data.builtup_area }}{% elif property and property.builtup_area %}{{ property.builtup_area }}{% endif %}" 
                                step="0.01" min="0"
-                               class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                               class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
                     </div>
                     
                     <div>
@@ -885,7 +818,7 @@
                         <input type="number" id="id_super_builtup_area" name="super_builtup_area" 
                                value="{% if form_data.super_builtup_area %}{{ form_data.super_builtup_area }}{% elif property and property.super_builtup_area %}{{ property.super_builtup_area }}{% endif %}" 
                                step="0.01" min="0"
-                               class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                               class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
                     </div>
                     
                     <div>
@@ -895,7 +828,7 @@
                         <input type="number" id="id_plot_area" name="plot_area" 
                                value="{% if form_data.plot_area %}{{ form_data.plot_area }}{% elif property and property.plot_area %}{{ property.plot_area }}{% endif %}" 
                                step="0.01" min="0"
-                               class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                               class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
                     </div>
                 </div>
             </div>
@@ -908,7 +841,7 @@
                 </button>
                 
                 <button type="button" onclick="nextStep()" 
-                        class="px-6 py-3 bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg hover:opacity-90 transition font-medium flex items-center gap-2">
+                        class="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition font-medium">
                     <span>Next: Details & Features</span>
                     <i class="fas fa-arrow-right"></i>
                 </button>
@@ -929,7 +862,7 @@
                                 Bedrooms
                             </label>
                             <select id="id_bedrooms" name="bedrooms"
-                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
                                 <option value="">Select</option>
                                 {% for i in "123456789101112"|make_list %}
                                 <option value="{{ i }}" 
@@ -947,7 +880,7 @@
                                 Bathrooms
                             </label>
                             <select id="id_bathrooms" name="bathrooms"
-                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
                                 <option value="">Select</option>
                                 {% for i in "123456"|make_list %}
                                 <option value="{{ i }}" 
@@ -966,7 +899,7 @@
                             </label>
                             <input type="number" id="id_balconies" name="balconies" 
                                    value="{% if form_data.balconies %}{{ form_data.balconies }}{% elif property %}{{ property.balconies }}{% else %}0{% endif %}" min="0"
-                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
                         </div>
                         
                         <div>
@@ -974,7 +907,7 @@
                                 Furnishing
                             </label>
                             <select id="id_furnishing" name="furnishing"
-                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
                                 <option value="">Select</option>
                                 <option value="furnished" 
                                     {% if form_data.furnishing == 'furnished' %}selected{% elif property and property.furnishing == 'furnished' %}selected{% endif %}>Fully Furnished</option>
@@ -996,7 +929,7 @@
                                 Commercial Type
                             </label>
                             <select id="id_commercial_type" name="commercial_type"
-                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
                                 <option value="">Select Type</option>
                                 <option value="office" {% if form_data.commercial_type == 'office' %}selected{% endif %}>Office Space</option>
                                 <option value="shop" {% if form_data.commercial_type == 'shop' %}selected{% endif %}>Shop/Retail</option>
@@ -1013,7 +946,7 @@
                             <input type="number" id="id_floor_number" name="floor_number" 
                                    value="{% if form_data.floor_number %}{{ form_data.floor_number }}{% elif property %}{{ property.floor_number }}{% endif %}" 
                                    min="0"
-                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300"
+                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent"
                                    placeholder="Ground floor = 0">
                         </div>
                         
@@ -1024,7 +957,7 @@
                             <input type="number" id="id_total_floors" name="total_floors" 
                                    value="{% if form_data.total_floors %}{{ form_data.total_floors }}{% elif property %}{{ property.total_floors }}{% endif %}" 
                                    min="1"
-                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
                         </div>
                     </div>
                 </div>
@@ -1038,7 +971,7 @@
                                 Plot Type
                             </label>
                             <select id="id_plot_type" name="plot_type"
-                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
                                 <option value="">Select Type</option>
                                 <option value="residential" {% if form_data.plot_type == 'residential' %}selected{% endif %}>Residential Plot</option>
                                 <option value="commercial" {% if form_data.plot_type == 'commercial' %}selected{% endif %}>Commercial Plot</option>
@@ -1052,7 +985,7 @@
                                 Facing Direction
                             </label>
                             <select id="id_facing" name="facing"
-                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
                                 <option value="">Select Direction</option>
                                 <option value="east" {% if form_data.facing == 'east' %}selected{% endif %}>East</option>
                                 <option value="west" {% if form_data.facing == 'west' %}selected{% endif %}>West</option>
@@ -1072,7 +1005,7 @@
                             <input type="number" id="id_plot_length" name="plot_length" 
                                    value="{% if form_data.plot_length %}{{ form_data.plot_length }}{% endif %}" 
                                    step="0.01" min="0"
-                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                                   class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
                         </div>
                     </div>
                 </div>
@@ -1086,7 +1019,7 @@
                                 PG Type
                             </label>
                             <select id="id_pg_type" name="pg_type"
-                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
                                 <option value="">Select Type</option>
                                 <option value="boys" {% if form_data.pg_type == 'boys' %}selected{% endif %}>Boys PG</option>
                                 <option value="girls" {% if form_data.pg_type == 'girls' %}selected{% endif %}>Girls PG</option>
@@ -1100,7 +1033,7 @@
                                 Meals Included
                             </label>
                             <select id="id_meals_included" name="meals_included"
-                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
                                 <option value="">Select Option</option>
                                 <option value="yes" {% if form_data.meals_included == 'yes' %}selected{% endif %}>Yes (All meals)</option>
                                 <option value="breakfast_only" {% if form_data.meals_included == 'breakfast_only' %}selected{% endif %}>Breakfast Only</option>
@@ -1127,7 +1060,7 @@
                             Age of Property
                         </label>
                         <select id="id_age_of_property" name="age_of_property"
-                                class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                                class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
                             <option value="">Select</option>
                             <option value="new" {% if form_data.age_of_property == 'new' %}selected{% endif %}>New Construction</option>
                             <option value="0-1" {% if form_data.age_of_property == '0-1' %}selected{% endif %}>0-1 Year</option>
@@ -1142,7 +1075,7 @@
                             Possession Status
                         </label>
                         <select id="id_possession_status" name="possession_status"
-                                class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300">
+                                class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
                             <option value="">Select</option>
                             <option value="ready" {% if form_data.possession_status == 'ready' %}selected{% endif %}>Ready to Move</option>
                             <option value="under_construction" {% if form_data.possession_status == 'under_construction' %}selected{% endif %}>Under Construction</option>
@@ -1226,7 +1159,7 @@
                 </button>
                 
                 <button type="button" onclick="nextStep()" 
-                        class="px-6 py-3 bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg hover:opacity-90 transition font-medium flex items-center gap-2">
+                        class="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition font-medium">
                     <span>Next: Photos & Contact</span>
                     <i class="fas fa-arrow-right"></i>
                 </button>
@@ -1355,7 +1288,7 @@
                                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent">
                         </div>
                         
-                        <div class="flex items-center">
+                        <!-- <div class="flex items-center">
                             <input type="checkbox" id="id_show_contact" name="show_contact"
                                    {% if form_data.show_contact == 'on' %}checked{% endif %}
                                    {% if property and property.show_contact %}checked{% endif %}
@@ -1363,7 +1296,7 @@
                             <label for="id_show_contact" class="ml-3 text-sm text-gray-700 dark:text-gray-300">
                                 Show contact details publicly
                             </label>
-                        </div>
+                        </div> -->
                     </div>
                     
                     <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
@@ -1400,13 +1333,13 @@
                         </div>
                         
                         <div class="flex gap-3">
-                            <button type="button" onclick="saveAsDraft()" 
+                            <!-- <button type="button" onclick="saveAsDraft()" 
                                     class="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition font-medium">
                                 Save as Draft
-                            </button>
+                            </button> -->
                             
                             <button type="button" onclick="submitForReview()" id="submitBtn"
-                                    class="px-6 py-3 bg-gradient-to-r from-bhoosparsh-blue to-blue-600 text-white rounded-lg hover:opacity-90 transition font-medium flex items-center gap-2">
+                                    class="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition font-medium">
                                 <i class="fas fa-paper-plane"></i>
                                 <span>{% if property %}Update Property{% else %}Submit for Review{% endif %}</span>
                             </button>
@@ -1538,17 +1471,6 @@
             }
         }
         
-        // Handle property type selection
-        document.addEventListener('click', function(e) {
-            if (e.target.closest('.property-type-option')) {
-                const option = e.target.closest('.property-type-option');
-                const input = option.querySelector('input[type="radio"]');
-                if (input) {
-                    showRelevantPropertySection(input.value);
-                }
-            }
-        });
-        
         // Handle image preview for additional images
         const additionalImagesInput = document.getElementById('id_additional_images');
         if (additionalImagesInput) {
@@ -1623,7 +1545,9 @@
         })
         .then(data => {
             if (data.types && data.types.length > 0) {
-                let html = '<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4" id="propertyTypeOptions">';
+                // Create dropdown style property type selector
+                let html = '<select id="id_property_type" name="property_type" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-bhoosparsh-blue focus:border-transparent" onchange="showRelevantPropertySection(this.value)">';
+                html += '<option value="">Select Property Type</option>';
                 
                 data.types.forEach(type => {
                     // Store in map
@@ -1636,20 +1560,10 @@
                     const isSelected = '{{ form_data.property_type }}' == type.id || 
                                       ('{{ property.property_type.id }}' == type.id && '{{ property }}');
                     
-                    html += `
-                        <div class="property-type-option ${isSelected ? 'selected' : ''}"
-                             onclick="selectPropertyType(${type.id}, this)">
-                            <input type="radio" name="property_type" value="${type.id}" 
-                                   class="hidden" ${isSelected ? 'checked' : ''} required>
-                            <div class="type-icon">
-                                ${getPropertyTypeIcon(type.name)}
-                            </div>
-                            <div class="type-name">${type.name}</div>
-                        </div>
-                    `;
+                    html += `<option value="${type.id}" ${isSelected ? 'selected' : ''}>${type.name}</option>`;
                 });
                 
-                html += '</div>';
+                html += '</select>';
                 propertyTypeContainer.innerHTML = html;
                 
                 // If editing and property type exists, show relevant section
@@ -1659,6 +1573,8 @@
                     showRelevantPropertySection(propertyTypeId);
                 }
                 {% endif %}
+                
+                showToast('Property types loaded successfully', 'success');
             } else {
                 propertyTypeContainer.innerHTML = `
                     <div class="p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center">
@@ -1682,34 +1598,10 @@
         });
     }
     
-    // Get appropriate icon for property type
-    function getPropertyTypeIcon(typeName) {
-        const name = typeName.toLowerCase();
-        if (name.includes('apartment') || name.includes('flat')) {
-            return '<i class="fas fa-building"></i>';
-        } else if (name.includes('villa') || name.includes('house')) {
-            return '<i class="fas fa-home"></i>';
-        } else if (name.includes('office')) {
-            return '<i class="fas fa-briefcase"></i>';
-        } else if (name.includes('shop') || name.includes('retail') || name.includes('store')) {
-            return '<i class="fas fa-store"></i>';
-        } else if (name.includes('warehouse')) {
-            return '<i class="fas fa-warehouse"></i>';
-        } else if (name.includes('land') || name.includes('plot')) {
-            return '<i class="fas fa-map"></i>';
-        } else if (name.includes('farm') || name.includes('agricultural')) {
-            return '<i class="fas fa-tractor"></i>';
-        } else if (name.includes('pg') || name.includes('hostel') || name.includes('guest')) {
-            return '<i class="fas fa-bed"></i>';
-        } else {
-            return '<i class="fas fa-building"></i>';
-        }
-    }
-    
-    // Select property type
-    function selectPropertyType(typeId, element) {
+    // Property For Selection
+    function selectPropertyFor(value, element) {
         // Remove selected class from all options
-        document.querySelectorAll('#propertyTypeOptions .property-type-option').forEach(option => {
+        document.querySelectorAll('#propertyForOptions .property-for-option').forEach(option => {
             option.classList.remove('selected');
         });
         
@@ -1726,16 +1618,15 @@
             radioInput.dispatchEvent(event);
         }
         
-        // Show relevant property section
-        showRelevantPropertySection(typeId);
-        
         // Show success message
-        const typeName = propertyTypeMap[typeId]?.name || 'Property type';
-        showToast(`${typeName} selected`, 'success');
+        const forName = element.querySelector('.for-name').textContent;
+        showToast(`${forName} selected`, 'success');
     }
     
     // Show relevant property section based on property type
     function showRelevantPropertySection(typeId) {
+        if (!typeId) return;
+        
         const typeInfo = propertyTypeMap[typeId];
         if (!typeInfo) return;
         
@@ -1766,6 +1657,9 @@
         if (sectionElement) {
             sectionElement.classList.add('active');
         }
+        
+        // Show success message
+        showToast(`${typeInfo.name} selected`, 'success');
     }
     
     // Hide all property sections
@@ -1773,31 +1667,6 @@
         document.querySelectorAll('.property-section').forEach(section => {
             section.classList.remove('active');
         });
-    }
-    
-    // Property For Selection
-    function selectPropertyFor(value, element) {
-        // Remove selected class from all options
-        document.querySelectorAll('#propertyForOptions .property-for-option').forEach(option => {
-            option.classList.remove('selected');
-        });
-        
-        // Add selected class to clicked option
-        element.classList.add('selected');
-        
-        // Get the radio input inside the option
-        const radioInput = element.querySelector('input[type="radio"]');
-        if (radioInput) {
-            radioInput.checked = true;
-            
-            // Trigger change event for validation
-            const event = new Event('change', { bubbles: true });
-            radioInput.dispatchEvent(event);
-        }
-        
-        // Show success message
-        const forName = element.querySelector('.for-name').textContent;
-        showToast(`${forName} selected`, 'success');
     }
     
     // Navigation functions
@@ -1829,6 +1698,7 @@
             document.getElementById(`step${currentStep}Indicator`).classList.remove('active');
             
             currentStep--;
+            document.getElementById('currentStepField').value = currentStep;
             document.getElementById(`step${currentStep}`).classList.add('active');
             document.getElementById(`step${currentStep}Indicator`).classList.add('active');
             
@@ -1856,6 +1726,7 @@
             
             // Show selected step
             currentStep = step;
+            document.getElementById('currentStepField').value = currentStep;
             document.getElementById(`step${step}`).classList.add('active');
             document.getElementById(`step${step}Indicator`).classList.add('active');
             
@@ -1910,8 +1781,8 @@
         // Step-specific validation
         if (step === 1) {
             // Property type validation
-            const propertyTypeSelected = document.querySelector('input[name="property_type"]:checked');
-            if (!propertyTypeSelected) {
+            const propertyTypeSelected = document.querySelector('select[name="property_type"]');
+            if (!propertyTypeSelected || !propertyTypeSelected.value) {
                 isValid = false;
                 const propertyTypeContainer = document.getElementById('propertyTypeContainer');
                 if (propertyTypeContainer && !propertyTypeContainer.querySelector('.error-message')) {

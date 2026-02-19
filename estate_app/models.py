@@ -1040,6 +1040,9 @@ class PropertyInquiry(models.Model):
     responded_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, 
                                      related_name='responded_inquiries')
     
+    follow_ups = models.JSONField(_('follow ups'), default=list, blank=True)
+    last_followup_at = models.DateTimeField(_('last followup at'), null=True, blank=True)
+    
     # Source
     source = models.CharField(_('source'), max_length=50, default='website',
                              choices=(('website', 'Website Form'), ('phone', 'Phone Call'),

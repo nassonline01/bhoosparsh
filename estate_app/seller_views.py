@@ -627,22 +627,36 @@ def ajax_apply_boost(request):
 @login_required
 @require_GET
 def ajax_property_details(request, pk):
-    """Get property details for AJAX requests"""
+    """Get property details for AJAX requests - FIXED"""
     try:
-        property_obj = Property.objects.get(id=pk, owner=request.user)
+        property_obj = Property.objects.get(
+            id=pk,
+            owner=request.user  # Ensure user owns this property
+        )
+        
+        # Get primary image URL
+        primary_image_url = None
+        if property_obj.primary_image:
+            primary_image_url = property_obj.primary_image.url
+        elif property_obj.images.filter(is_primary=True).exists():
+            primary_image_url = property_obj.images.filter(is_primary=True).first().image.url
+        elif property_obj.images.exists():
+            primary_image_url = property_obj.images.first().image.url
         
         data = {
             'id': property_obj.id,
             'title': property_obj.title,
-            'description': property_obj.description,
-            'price': float(property_obj.price),
+            'description': property_obj.description[:200] + '...' if len(property_obj.description) > 200 else property_obj.description,
+            'price': float(property_obj.price) if property_obj.price else 0,
             'price_per_sqft': float(property_obj.price_per_sqft) if property_obj.price_per_sqft else None,
-            'carpet_area': float(property_obj.carpet_area),
+            'carpet_area': float(property_obj.carpet_area) if property_obj.carpet_area else 0,
             'bedrooms': property_obj.bedrooms,
             'bathrooms': property_obj.bathrooms,
+            'balconies': property_obj.balconies,
             'city': property_obj.city,
             'state': property_obj.state,
             'locality': property_obj.locality,
+            'address': property_obj.address,
             'status': property_obj.status,
             'status_display': property_obj.get_status_display(),
             'property_for': property_obj.property_for,
@@ -650,9 +664,10 @@ def ajax_property_details(request, pk):
             'view_count': property_obj.view_count,
             'inquiry_count': property_obj.inquiry_count,
             'created_at': property_obj.created_at.strftime('%Y-%m-%d %H:%M'),
-            'primary_image_url': property_obj.primary_image.url if property_obj.primary_image else None,
+            'primary_image_url': primary_image_url,
             'is_featured': property_obj.is_featured,
             'is_urgent': property_obj.is_urgent,
+            'is_premium': property_obj.is_premium,
         }
         
         return JsonResponse({
@@ -663,7 +678,12 @@ def ajax_property_details(request, pk):
     except Property.DoesNotExist:
         return JsonResponse({
             'success': False,
-            'error': 'Property not found'
+            'error': 'Property not found or you do not have permission to view it'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
         })
 
 # ======================================================
@@ -1686,7 +1706,7 @@ def seller_property_delete(request, pk):
 
 @login_required
 def seller_leads(request):
-    """Seller leads management page"""
+    """Seller leads management page - Updated to match buyer style"""
     user = request.user
     
     # Get user's properties
@@ -1701,9 +1721,9 @@ def seller_leads(request):
     search_query = request.GET.get('q', '')
     
     # Base queryset
-    inquiries = PropertyInquiry.objects.filter(property__in=user_properties)
+    inquiries = PropertyInquiry.objects.filter(property__in=user_properties).select_related('property', 'user')
     
-    # Store original queryset for statistics
+    # Store for statistics
     all_inquiries = inquiries
     
     # Apply filters
@@ -1714,50 +1734,78 @@ def seller_leads(request):
         inquiries = inquiries.filter(property_id=property_filter)
     
     if date_from:
-        inquiries = inquiries.filter(created_at__date__gte=date_from)
+        try:
+            from_date = datetime.strptime(date_from, '%Y-%m-%d').date()
+            inquiries = inquiries.filter(created_at__date__gte=from_date)
+        except ValueError:
+            pass
     
     if date_to:
-        inquiries = inquiries.filter(created_at__date__lte=date_to)
+        try:
+            to_date = datetime.strptime(date_to, '%Y-%m-%d').date()
+            inquiries = inquiries.filter(created_at__date__lte=to_date)
+        except ValueError:
+            pass
     
     if search_query:
         inquiries = inquiries.filter(
             Q(name__icontains=search_query) |
             Q(email__icontains=search_query) |
             Q(phone__icontains=search_query) |
-            Q(message__icontains=search_query)
+            Q(message__icontains=search_query) |
+            Q(property__title__icontains=search_query)
         )
     
     # Apply sorting
-    if sort_by in ['created_at', '-created_at', 'priority', '-priority']:
+    if sort_by in ['created_at', '-created_at', 'priority', '-priority', 'updated_at', '-updated_at']:
         inquiries = inquiries.order_by(sort_by)
     
-    # Statistics - Use the filtered queryset BEFORE pagination
-    total_leads = inquiries.count()
-    new_leads = inquiries.filter(status='new').count()
-    contacted_leads = inquiries.filter(status='contacted').count()
-    converted_leads = inquiries.filter(status='converted').count()
+    # Statistics
+    total_leads = all_inquiries.count()
+    new_leads = all_inquiries.filter(status='new').count()
+    contacted_leads = all_inquiries.filter(status='contacted').count()
+    interested_leads = all_inquiries.filter(status='interested').count()
+    converted_leads = all_inquiries.filter(status='converted').count()
+    spam_leads = all_inquiries.filter(status='spam').count()
     
-    # Count interested leads from the filtered queryset
-    interested_leads = inquiries.filter(status='interested').count()
+    # Response rate
+    responded_leads = all_inquiries.exclude(response__exact='').count()
+    response_rate = (responded_leads / total_leads * 100) if total_leads > 0 else 0
+    
+    # Average response time (calculate from actual data if possible)
+    responded_inquiries = all_inquiries.exclude(responded_at__isnull=True)
+    if responded_inquiries.exists():
+        total_time = sum([(inq.responded_at - inq.created_at).total_seconds() for inq in responded_inquiries])
+        avg_seconds = total_time / responded_inquiries.count()
+        hours = avg_seconds / 3600
+        if hours < 1:
+            avg_response_time = f"{int(avg_seconds / 60)} minutes"
+        elif hours < 24:
+            avg_response_time = f"{hours:.1f} hours"
+        else:
+            avg_response_time = f"{hours/24:.1f} days"
+    else:
+        avg_response_time = "N/A"
     
     # Lead sources
-    lead_sources = inquiries.values('source').annotate(
+    lead_sources = all_inquiries.values('source').annotate(
         count=Count('id')
     ).order_by('-count')
-
-    # Calculate percentage in Python
+    
     for source in lead_sources:
         source['percentage'] = (source['count'] * 100.0 / total_leads) if total_leads > 0 else 0
     
-    # Response rate
-    responded_leads = inquiries.exclude(response__exact='').count()
-    response_rate = (responded_leads / total_leads * 100) if total_leads > 0 else 0
+    # Priority breakdown
+    priority_counts = {
+        1: all_inquiries.filter(priority=1).count(),
+        2: all_inquiries.filter(priority=2).count(),
+        3: all_inquiries.filter(priority=3).count(),
+        4: all_inquiries.filter(priority=4).count(),
+        5: all_inquiries.filter(priority=5).count(),
+    }
     
-    # Average response time (demo data)
-    avg_response_time = "2.5 hours"
-    
-    # Pagination - Apply AFTER statistics
-    paginator = Paginator(inquiries, 20)
+    # Pagination
+    paginator = Paginator(inquiries, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
@@ -1768,29 +1816,40 @@ def seller_leads(request):
         'total_leads': total_leads,
         'new_leads': new_leads,
         'contacted_leads': contacted_leads,
+        'interested_leads': interested_leads,
         'converted_leads': converted_leads,
-        'interested_leads': interested_leads,  # Add this
-        'lead_sources': lead_sources,
+        'spam_leads': spam_leads,
         'response_rate': round(response_rate, 1),
         'avg_response_time': avg_response_time,
+        'lead_sources': lead_sources,
+        'priority_counts': priority_counts,
         'status_filter': status_filter,
         'property_filter': property_filter,
         'date_from': date_from,
         'date_to': date_to,
         'sort_by': sort_by,
         'search_query': search_query,
-        'user_plan': user.membership.plan.name if hasattr(user, 'membership') and user.membership.plan else 'No Plan',
-        'plan_days_left': user.membership.days_until_expiry if hasattr(user, 'membership') else 0,
     }
     
     return render(request, 'dashboard/seller/leads.html', context)
 
-
 @login_required
 def seller_lead_detail(request, pk):
-    """Lead detail view"""
+    """Lead detail view - Updated to match buyer style"""
     user = request.user
     inquiry = get_object_or_404(PropertyInquiry, pk=pk, property__owner=user)
+    
+    # Get buyer info
+    buyer = inquiry.user if inquiry.user else None
+    buyer_profile = getattr(buyer, 'profile', None) if buyer else None
+    
+    # Get similar leads from same property
+    similar_inquiries = PropertyInquiry.objects.filter(
+        property=inquiry.property
+    ).exclude(id=inquiry.id).order_by('-created_at')[:5]
+    
+    # Get follow-up history (if stored in JSON field)
+    follow_ups = inquiry.follow_ups if hasattr(inquiry, 'follow_ups') else []
     
     if request.method == 'POST':
         form = LeadResponseForm(request.POST, instance=inquiry)
@@ -1798,27 +1857,34 @@ def seller_lead_detail(request, pk):
             inquiry_obj = form.save(commit=False)
             inquiry_obj.responded_by = user
             inquiry_obj.responded_at = timezone.now()
+            
+            # Update status to contacted if not already set
+            if inquiry_obj.status == 'new':
+                inquiry_obj.status = 'contacted'
+                
             inquiry_obj.save()
             
+            # Here you would typically send an email notification to the buyer
+            # send_response_notification(inquiry_obj)
+            
             messages.success(request, 'Response sent successfully!')
-            return redirect('seller_leads')
+            return redirect('seller_lead_detail', pk=inquiry.pk)
+        else:
+            messages.error(request, 'Please correct the errors below.')
     else:
         form = LeadResponseForm(instance=inquiry)
-    
-    # Get similar inquiries for same property
-    similar_inquiries = PropertyInquiry.objects.filter(
-        property=inquiry.property
-    ).exclude(id=inquiry.id).order_by('-created_at')[:5]
     
     context = {
         'inquiry': inquiry,
         'form': form,
         'similar_inquiries': similar_inquiries,
+        'follow_ups': follow_ups,
+        'buyer': buyer,
+        'buyer_profile': buyer_profile,
         'user': user,
     }
     
     return render(request, 'dashboard/seller/lead_detail.html', context)
-
 
 @login_required
 def seller_lead_export(request):
@@ -1956,13 +2022,351 @@ def ajax_update_lead_status(request):
             id=lead_id,
             property__owner=request.user
         )
+        
+        old_status = inquiry.status
         inquiry.status = new_status
         inquiry.save()
         
-        return JsonResponse({'success': True, 'new_status': inquiry.get_status_display()})
+        # Log status change (optional)
+        # create_status_change_log(inquiry, old_status, new_status, request.user)
+        
+        return JsonResponse({
+            'success': True,
+            'new_status': inquiry.get_status_display(),
+            'message': f'Status updated to {inquiry.get_status_display()}'
+        })
+        
+    except PropertyInquiry.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Lead not found'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+
+
+@login_required
+@require_POST
+def ajax_send_response(request, lead_id):
+    """Send response to lead - AJAX version"""
+    try:
+        data = json.loads(request.body)
+        message = data.get('message', '').strip()
+        status = data.get('status', '')
+        
+        inquiry = get_object_or_404(PropertyInquiry, id=lead_id, property__owner=request.user)
+        
+        if not message:
+            return JsonResponse({'success': False, 'error': 'Message is required'})
+        
+        inquiry.response = message
+        inquiry.responded_at = timezone.now()
+        inquiry.responded_by = request.user
+        
+        # Update status if provided
+        if status and status in dict(PropertyInquiry.STATUS_CHOICES):
+            inquiry.status = status
+        elif inquiry.status == 'new':
+            inquiry.status = 'contacted'
+        
+        inquiry.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Response sent successfully!',
+            'new_status': inquiry.get_status_display()
+        })
+        
+    except PropertyInquiry.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Lead not found'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+    
+@login_required
+@require_POST
+def ajax_send_followup(request, lead_id):
+    """Send follow-up message on lead"""
+    try:
+        data = json.loads(request.body)
+        message = data.get('message', '').strip()
+        status = data.get('status', '')
+        
+        inquiry = get_object_or_404(PropertyInquiry, id=lead_id, property__owner=request.user)
+        
+        if not message:
+            return JsonResponse({'success': False, 'error': 'Message is required'})
+        
+        # Append follow-up to existing response or create new
+        followup_entry = {
+            'message': message,
+            'sent_at': timezone.now().isoformat(),
+            'sent_by': request.user.email
+        }
+        
+        # Store in follow_ups JSON field if available
+        if hasattr(inquiry, 'follow_ups'):
+            if not inquiry.follow_ups:
+                inquiry.follow_ups = []
+            inquiry.follow_ups.append(followup_entry)
+            inquiry.last_followup_at = timezone.now()
+        
+        # Also append to response field for backward compatibility
+        timestamp = timezone.now().strftime('%Y-%m-%d %H:%M')
+        if inquiry.response:
+            inquiry.response += f"\n\n--- Follow-up ({timestamp}): ---\n{message}"
+        else:
+            inquiry.response = message
+        
+        inquiry.responded_at = timezone.now()
+        inquiry.responded_by = request.user
+        
+        # Update status if provided
+        if status and status in dict(PropertyInquiry.STATUS_CHOICES):
+            inquiry.status = status
+        
+        inquiry.save()
+        
+        # Send notification to buyer
+        # send_followup_notification(inquiry, message)
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Follow-up sent successfully!',
+            'new_status': inquiry.get_status_display() if status else None
+        })
+        
+    except PropertyInquiry.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Lead not found'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}) 
+
+@login_required
+@require_POST
+def ajax_delete_lead(request, lead_id):
+    """Delete a lead"""
+    try:
+        inquiry = get_object_or_404(PropertyInquiry, id=lead_id, property__owner=request.user)
+        property_title = inquiry.property.title
+        inquiry.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Lead for {property_title} deleted successfully!'
+        })
+        
+    except PropertyInquiry.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Lead not found'})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
 
+@login_required
+@require_GET
+def ajax_export_leads(request):
+    """Export leads as CSV"""
+    user = request.user
+    user_properties = Property.objects.filter(owner=user)
+    inquiries = PropertyInquiry.objects.filter(property__in=user_properties).select_related('property')
+    
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="leads_export_{timezone.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+    
+    import csv
+    writer = csv.writer(response)
+    writer.writerow([
+        'Date', 'Name', 'Email', 'Phone', 'Property', 'Location', 
+        'Message', 'Status', 'Priority', 'Source', 'Response', 
+        'Response Date', 'Budget', 'Preferred Date'
+    ])
+    
+    for inquiry in inquiries:
+        writer.writerow([
+            inquiry.created_at.strftime('%Y-%m-%d %H:%M'),
+            inquiry.name,
+            inquiry.email,
+            inquiry.phone,
+            inquiry.property.title,
+            f"{inquiry.property.city}, {inquiry.property.state}",
+            inquiry.message.replace('\n', ' '),
+            inquiry.get_status_display(),
+            inquiry.priority,
+            inquiry.get_source_display(),
+            inquiry.response.replace('\n', ' ') if inquiry.response else '',
+            inquiry.responded_at.strftime('%Y-%m-%d %H:%M') if inquiry.responded_at else '',
+            inquiry.budget if inquiry.budget else '',
+            inquiry.preferred_date.strftime('%Y-%m-%d') if inquiry.preferred_date else ''
+        ])
+    
+    return response
+
+@login_required
+@require_GET
+def ajax_lead_stats(request):
+    """Get lead statistics for charts"""
+    user = request.user
+    user_properties = Property.objects.filter(owner=user)
+    inquiries = PropertyInquiry.objects.filter(property__in=user_properties)
+    
+    # Last 30 days data
+    end_date = timezone.now().date()
+    start_date = end_date - timedelta(days=30)
+    
+    daily_stats = []
+    current_date = start_date
+    while current_date <= end_date:
+        day_inquiries = inquiries.filter(created_at__date=current_date)
+        daily_stats.append({
+            'date': current_date.strftime('%Y-%m-%d'),
+            'count': day_inquiries.count(),
+            'new': day_inquiries.filter(status='new').count(),
+            'contacted': day_inquiries.filter(status='contacted').count(),
+        })
+        current_date += timedelta(days=1)
+    
+    # Status distribution
+    status_distribution = []
+    for status_code, status_name in PropertyInquiry.STATUS_CHOICES:
+        count = inquiries.filter(status=status_code).count()
+        if count > 0:
+            status_distribution.append({
+                'status': status_name,
+                'count': count
+            })
+    
+    return JsonResponse({
+        'success': True,
+        'daily_stats': daily_stats,
+        'status_distribution': status_distribution,
+        'total': inquiries.count()
+    })
+
+@login_required
+@require_GET
+def ajax_get_lead_details(request, lead_id):
+    """Get lead details for AJAX"""
+    try:
+        inquiry = get_object_or_404(PropertyInquiry, id=lead_id, property__owner=request.user)
+        
+        data = {
+            'id': inquiry.id,
+            'name': inquiry.name,
+            'email': inquiry.email,
+            'phone': inquiry.phone,
+            'message': inquiry.message,
+            'status': inquiry.status,
+            'status_display': inquiry.get_status_display(),
+            'priority': inquiry.priority,
+            'source': inquiry.source,
+            'source_display': inquiry.get_source_display(),
+            'created_at': inquiry.created_at.strftime('%Y-%m-%d %H:%M'),
+            'property': {
+                'id': inquiry.property.id,
+                'title': inquiry.property.title,
+                'price': float(inquiry.property.price),
+                'city': inquiry.property.city,
+                'primary_image': inquiry.property.primary_image.url if inquiry.property.primary_image else None
+            }
+        }
+        
+        if inquiry.response:
+            data['response'] = inquiry.response
+            data['responded_at'] = inquiry.responded_at.strftime('%Y-%m-%d %H:%M') if inquiry.responded_at else None
+        
+        if inquiry.preferred_date:
+            data['preferred_date'] = inquiry.preferred_date.strftime('%Y-%m-%d')
+            data['preferred_time'] = inquiry.preferred_time.strftime('%H:%M') if inquiry.preferred_time else None
+        
+        if inquiry.budget:
+            data['budget'] = float(inquiry.budget)
+        
+        return JsonResponse({'success': True, 'lead': data})
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+@require_GET
+def ajax_get_lead_details(request, lead_id):
+    """Get lead details for AJAX"""
+    try:
+        inquiry = get_object_or_404(PropertyInquiry, id=lead_id, property__owner=request.user)
+        
+        data = {
+            'id': inquiry.id,
+            'name': inquiry.name,
+            'email': inquiry.email,
+            'phone': inquiry.phone,
+            'message': inquiry.message,
+            'status': inquiry.status,
+            'status_display': inquiry.get_status_display(),
+            'priority': inquiry.priority,
+            'source': inquiry.source,
+            'source_display': inquiry.get_source_display(),
+            'created_at': inquiry.created_at.strftime('%Y-%m-%d %H:%M'),
+            'property': {
+                'id': inquiry.property.id,
+                'title': inquiry.property.title,
+                'price': float(inquiry.property.price),
+                'city': inquiry.property.city,
+                'primary_image': inquiry.property.primary_image.url if inquiry.property.primary_image else None
+            }
+        }
+        
+        if inquiry.response:
+            data['response'] = inquiry.response
+            data['responded_at'] = inquiry.responded_at.strftime('%Y-%m-%d %H:%M') if inquiry.responded_at else None
+        
+        if inquiry.preferred_date:
+            data['preferred_date'] = inquiry.preferred_date.strftime('%Y-%m-%d')
+            data['preferred_time'] = inquiry.preferred_time.strftime('%H:%M') if inquiry.preferred_time else None
+        
+        if inquiry.budget:
+            data['budget'] = float(inquiry.budget)
+        
+        return JsonResponse({'success': True, 'lead': data})
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+@require_POST
+def ajax_bulk_update_leads(request):
+    """Bulk update leads status"""
+    try:
+        data = json.loads(request.body)
+        lead_ids = data.get('lead_ids', [])
+        action = data.get('action')  # 'status_update' or 'delete'
+        new_status = data.get('status')
+        
+        if not lead_ids:
+            return JsonResponse({'success': False, 'error': 'No leads selected'})
+        
+        inquiries = PropertyInquiry.objects.filter(
+            id__in=lead_ids,
+            property__owner=request.user
+        )
+        
+        if action == 'delete':
+            count = inquiries.count()
+            inquiries.delete()
+            return JsonResponse({
+                'success': True,
+                'message': f'{count} lead(s) deleted successfully'
+            })
+        
+        elif action == 'status_update' and new_status:
+            count = inquiries.update(status=new_status)
+            return JsonResponse({
+                'success': True,
+                'message': f'{count} lead(s) updated to {dict(PropertyInquiry.STATUS_CHOICES).get(new_status, new_status)}'
+            })
+        
+        return JsonResponse({'success': False, 'error': 'Invalid action'})
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
 
 @login_required
 @require_POST

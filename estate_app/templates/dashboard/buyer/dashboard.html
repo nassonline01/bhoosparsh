@@ -1085,73 +1085,7 @@
                 </div>
             </div>
 
-            <!-- Market Insights -->
-            <div class="enhanced-card compact-view">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
-                        <i class="fas fa-chart-line text-blue-600"></i>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-gray-900">Market Insights</h3>
-                        <p class="text-sm text-gray-600">Real-time market trends</p>
-                    </div>
-                </div>
-                
-                <div class="space-y-4 mb-4">
-                    <div class="market-trend up">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <p class="text-sm font-medium text-gray-600">Average Price</p>
-                                <p class="text-2xl font-bold text-gray-900 mt-1">{{ market_insights.avg_price }}</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-lg font-bold text-green-600">
-                                    <i class="fas fa-arrow-up mr-1"></i>
-                                    {{ market_insights.trend.percentage }}%
-                                </p>
-                                <p class="text-sm text-gray-600 mt-1">{{ market_insights.trend.trend }}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h4 class="text-sm font-semibold text-gray-900 mb-3">Hot Locations</h4>
-                        <div class="space-y-2">
-                            {% for location in market_insights.hot_locations|slice:":3" %}
-                            <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded-lg transition-colors">
-                                <span class="text-sm text-gray-600">{{ location.name }}</span>
-                                <span class="text-sm font-bold text-green-600">+{{ location.growth }}</span>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <div>
-                        <h4 class="text-sm font-semibold text-gray-900 mb-3">Your Preferences</h4>
-                        <div class="space-y-2">
-                            <div class="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
-                                <span class="text-sm text-gray-600">Budget:</span>
-                                <span class="text-sm font-bold text-gray-900">{{ buyer_profile.budget_range }}</span>
-                            </div>
-                            <div class="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
-                                <span class="text-sm text-gray-600">Bedrooms:</span>
-                                <span class="text-sm font-bold text-gray-900">{{ buyer_profile.min_bedrooms }}+</span>
-                            </div>
-                            <div class="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
-                                <span class="text-sm text-gray-600">Area:</span>
-                                <span class="text-sm font-bold text-gray-900">{{ buyer_profile.area_range }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div>
-                    <a href="{% url 'buyer_profile' %}" 
-                       class="block w-full text-center px-4 py-2 border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-all font-medium touch-spacing">
-                        <i class="fas fa-edit mr-2"></i>Update Preferences
-                    </a>
-                </div>
-            </div>
+            
 
             <!-- Recent Inquiries -->
             <div class="enhanced-card compact-view">

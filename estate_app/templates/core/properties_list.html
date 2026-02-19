@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EverGreen - Real Estate</title>
+  <title>EverGreen - Featured Properties</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -18,7 +18,6 @@
     nav a:hover{
       transform: translateY(-2px);
     }
-    
     
     .hero-bg-container {
       position: relative;
@@ -280,18 +279,99 @@
     .toast.success { border-left: 4px solid #10b981; }
     .toast.error { border-left: 4px solid #ef4444; }
     .toast.info { border-left: 4px solid #3b82f6; }
+    
+    /* Active filter styles */
+    .active-filter {
+      background-color: #15803d !important;
+      color: white !important;
+      border-color: #15803d !important;
+    }
+    
+    .filter-btn-active {
+      background-color: #15803d !important;
+      color: white !important;
+    }
+    
+    /* Price slider styling */
+    .price-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 8px;
+      border-radius: 4px;
+      background: #d1d5db;
+      outline: none;
+    }
+    
+    .price-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #15803d;
+      cursor: pointer;
+      border: 2px solid white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .price-slider::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #15803d;
+      cursor: pointer;
+      border: 2px solid white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    /* Show More button */
+    .show-more-btn {
+      transition: all 0.3s ease;
+    }
+    
+    .show-more-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(21, 128, 61, 0.3);
+    }
+    
+    .show-more-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    /* Skeleton loading animation */
+    @keyframes skeleton-loading {
+      0% { background-color: #f0f0f0; }
+      50% { background-color: #e0e0e0; }
+      100% { background-color: #f0f0f0; }
+    }
+    
+    .skeleton {
+      animation: skeleton-loading 1.5s infinite ease-in-out;
+    }
+    
+    /* Property count badge */
+    .count-badge {
+      background-color: #15803d;
+      color: white;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      margin-left: 0.5rem;
+    }
   </style>
 </head>
 <body class="bg-white">
   <!-- Toast Notification Container -->
   <div id="toast-container"></div>
 
-  <!-- Loading Overlay -->
+  <!-- Loading Overlay for initial load -->
   <div id="loading-overlay" class="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
     <div class="loader"></div>
   </div>
 
-  <!-- Property Search Section (NEW - Added at the top) -->
+  <!-- Property Search Section -->
   <section class="relative w-full h-[70vh] max-h-[70vh] overflow-visible">
     <!-- Full Background Image -->
     <div class="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -301,8 +381,6 @@
     <!-- Gradient Overlay from top (transparent) to bottom (opaque) -->
     <div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black/80"></div>
     
-    
-
     <header id="main-header" class="sticky-header sticky top-2 z-50 px-2 md:px-4 lg:px-8 py-2">
       <!-- Container for nav with responsive width -->
       <div class="relative mx-auto w-[95%] md:w-[92%] lg:w-[90%]">
@@ -325,14 +403,14 @@
           
           <!-- Desktop Navigation inside blur effect -->
           <nav class="hidden lg:flex items-center gap-3 xl:gap-4">
-            <a href="{% url 'home' %}" class=" px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm text-white hover:text-gray-200 transition-colors">Home</a>
-            <a href="{% url 'about' %}" class=" px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm text-white hover:text-gray-200 transition-colors">About Us</a>
+            <a href="{% url 'home' %}" class="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm text-white hover:text-gray-200 transition-colors">Home</a>
+            <a href="{% url 'about' %}" class="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm text-white hover:text-gray-200 transition-colors">About Us</a>
             <a href="{% url 'properties_list' %}" class="px-3 md:px-4 py-1.5 md:py-2 bg-white/80 backdrop-blur-sm rounded-full text-xs md:text-sm font-medium shadow-sm hover:bg-white transition-all text-gray-800">Property List</a>
             <a href="{% url 'contact' %}" class="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm text-white hover:text-gray-200 transition-colors">Contact Us</a>
           </nav>
           
           <!-- Sign Up button inside blur effect -->
-          <a href="{% url 'login' %}" return false;" class="hidden lg:block bg-green-900 text-white px-4 md:px-6 py-1.5 md:py-2.5 rounded-full text-xs md:text-sm font-medium hover:bg-green-800 transition-colors shadow-lg hover:shadow-xl">
+          <a href="{% url 'login' %}" class="hidden lg:block bg-green-900 text-white px-4 md:px-6 py-1.5 md:py-2.5 rounded-full text-xs md:text-sm font-medium hover:bg-green-800 transition-colors shadow-lg hover:shadow-xl">
             Sign In 
           </a>
           
@@ -346,7 +424,7 @@
       </div>
     </header>
 
-    <!-- Mobile Navigation for Property Search Section -->
+    <!-- Mobile Navigation -->
     <div id="property-search-mobile-menu" class="lg:hidden px-3 md:px-4 relative z-10 mt-3 md:mt-4 hidden">
         <div class="bg-white/20 backdrop-blur-sm rounded-xl p-3 md:p-4 animate-fade-in">
             <div class="flex flex-col md:flex-row flex-wrap gap-2 md:gap-3">
@@ -354,9 +432,9 @@
                 <a href="{% url 'about' %}" class="text-xs md:text-sm text-white/90">About Us</a>
                 <a href="{% url 'properties_list' %}" class="text-xs md:text-sm text-white/90">Property List</a>
                 <a href="{% url 'contact' %}" class="text-xs md:text-sm text-white/90">Contact Us</a>
-                <button onclick="showAuthModal('signup')" class="bg-green-900 text-white px-3 md:px-4 py-1 md:py-1.5 rounded-full text-xs md:text-sm font-medium mt-1 md:mt-0">
-                    Sign Up
-                </button>
+                <a href="{% url 'login' %}" class="bg-green-900 text-white px-3 md:px-4 py-1 md:py-1.5 rounded-full text-xs md:text-sm font-medium mt-1 md:mt-0">
+                    Sign In
+                </a>
             </div>
         </div>
     </div>
@@ -367,71 +445,78 @@
         <div class="flex-1 flex flex-col justify-center max-w-4xl mx-auto w-full pt-8 sm:pt-12">
             <!-- Breadcrumb -->
             <div class="flex items-center justify-center gap-2 mb-4 text-sm text-white/80">
-                <a href="#" class="hover:text-green-600 transition">Home</a>
+                <a href="{% url 'home' %}" class="hover:text-green-600 transition">Home</a>
                 <span>/</span>
-                <a href="#" class="text-green-600 font-medium">Properties</a>
+                <a href="#" class="text-green-600 font-medium">Featured Properties</a>
             </div>
 
             <!-- Heading -->
             <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center text-white mb-3 sm:mb-4 text-balance leading-tight">
-                Find your perfect investment properties
+                Find your perfect featured properties
             </h2>
 
             <!-- Subheading -->
             <p class="text-center text-sm sm:text-base text-white mb-6 max-w-2xl mx-auto">
-                Explore a selection of high-value real estate opportunities designed for financial growth and stability
+                Explore our hand-picked selection of premium properties, specially featured for you
             </p>
-
-            
         </div>
         
         <!-- Empty space for the form to overlap -->
         <div class="h-1/2"></div>
     </div>
     
-    <!-- Overlapping Search Form - Positioned absolutely to overlap halfway -->
+    <!-- Overlapping Search Form -->
     <div class="absolute inset-x-0 bottom-0 transform translate-y-1/2 z-30 px-4 sm:px-6 lg:px-8">
         <div class="max-w-5xl mx-auto">
             <!-- Search Form Container -->
             <div class="bg-white/95 backdrop-blur-md rounded-xl shadow-2xl p-6 sm:p-8 border border-gray-200/50">
-                <div class="space-y-4 sm:space-y-0 sm:flex items-end gap-4">
-                    <!-- Address Input -->
-                    <div class="flex-1">
-                        <label class="block text-sm text-gray-600 mb-2">Enter address</label>
-                        <input 
-                            type="text" 
-                            placeholder="Enter address" 
-                            class="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                        >
-                    </div>
+                <form id="search-form" onsubmit="event.preventDefault(); applyFilters();">
+                    <div class="space-y-4 sm:space-y-0 sm:flex items-end gap-4">
+                        <!-- Address Input -->
+                        <div class="flex-1">
+                            <label class="block text-sm text-gray-600 mb-2">Enter address or locality</label>
+                            <input 
+                                type="text" 
+                                id="search-q"
+                                placeholder="Enter address or locality" 
+                                class="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                            >
+                        </div>
 
-                    <!-- Location Dropdown -->
-                    <div class="flex-1">
-                        <label class="block text-sm text-gray-600 mb-2">Location</label>
-                        <select class="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
-                            <option>Select location</option>
-                            <option>New York</option>
-                            <option>Los Angeles</option>
-                            <option>Chicago</option>
-                        </select>
-                    </div>
+                        <!-- Location Dropdown -->
+                        <div class="flex-1">
+                            <label class="block text-sm text-gray-600 mb-2">City</label>
+                            <select id="search-city" class="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <option value="">All Cities</option>
+                                <option value="Mumbai">Mumbai</option>
+                                <option value="Delhi">Delhi</option>
+                                <option value="Bangalore">Bangalore</option>
+                                <option value="Chennai">Chennai</option>
+                                <option value="Kolkata">Kolkata</option>
+                                <option value="Pune">Pune</option>
+                                <option value="Hyderabad">Hyderabad</option>
+                                <option value="Ahmedabad">Ahmedabad</option>
+                            </select>
+                        </div>
 
-                    <!-- Property Type Dropdown -->
-                    <div class="flex-1">
-                        <label class="block text-sm text-gray-600 mb-2">Property type</label>
-                        <select class="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
-                            <option>Select type</option>
-                            <option>Apartment</option>
-                            <option>House</option>
-                            <option>Commercial</option>
-                        </select>
-                    </div>
+                        <!-- Property Type Dropdown -->
+                        <div class="flex-1">
+                            <label class="block text-sm text-gray-600 mb-2">Property for</label>
+                            <select id="search-property-for" class="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <option value="">All Types</option>
+                                <option value="sale">For Sale</option>
+                                <option value="rent">For Rent</option>
+                                <option value="pg">PG/Hostel</option>
+                                <option value="plot">Plot/Land</option>
+                            </select>
+                        </div>
 
-                    <!-- Search Button -->
-                    <button class="w-full sm:w-auto px-6 sm:px-8 py-3 text-sm bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-colors">
-                        Search Property
-                    </button>
-                </div>
+                        <!-- Search Button -->
+                        <button type="submit" class="w-full sm:w-auto px-6 sm:px-8 py-3 text-sm bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-colors">
+                            Search Property
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -449,7 +534,7 @@
           <div class="bg-white rounded-xl shadow-sm p-5 lg:sticky lg:top-6">
             <div class="flex items-center justify-between mb-6">
               <h2 class="font-semibold text-gray-900 text-lg">Filters</h2>
-              <button class="text-blue-600 text-sm font-medium hover:text-blue-700">Clear All</button>
+              <button onclick="clearAllFilters()" class="text-blue-600 text-sm font-medium hover:text-blue-700">Clear All</button>
             </div>
             
             <!-- Price Range Filter -->
@@ -460,30 +545,39 @@
                 </svg>
                 Price Range
               </h3>
+              
               <div class="space-y-2">
                 <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                  <input type="radio" name="price_range" value="under_50l" onchange="applyFilters()" class="price-range-radio w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
                   <span class="text-sm text-gray-600">Under 50 Lakh</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                  <input type="radio" name="price_range" value="50l_1cr" onchange="applyFilters()" class="price-range-radio w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
                   <span class="text-sm text-gray-600">50 Lakh - 1 Cr</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                  <input type="radio" name="price_range" value="1cr_2cr" onchange="applyFilters()" class="price-range-radio w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
                   <span class="text-sm text-gray-600">1 Cr - 2 Cr</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                  <input type="radio" name="price_range" value="above_2cr" onchange="applyFilters()" class="price-range-radio w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
                   <span class="text-sm text-gray-600">2 Cr+</span>
                 </label>
               </div>
               <div class="mt-4">
                 <div class="flex justify-between text-xs text-gray-500 mb-1">
-                  <span>10L</span>
-                  <span>5Cr</span>
+                  <span>₹10L</span>
+                  <span>₹5Cr+</span>
                 </div>
-                <input type="range" min="1000000" max="50000000" value="20000000" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                <input type="range" min="1000000" max="50000000" step="1000000" 
+                       value="25000000" class="price-slider w-full" id="price-slider">
+                <div class="flex gap-2 mt-2">
+                  <input type="number" id="min-price" value="1000000" placeholder="Min" 
+                         class="w-1/2 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-green-500">
+                  <input type="number" id="max-price" value="50000000" placeholder="Max" 
+                         class="w-1/2 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-green-500">
+                </div>
+                <button onclick="applyCustomPrice()" class="w-full mt-2 px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">Apply Price</button>
               </div>
             </div>
             
@@ -495,35 +589,25 @@
                 </svg>
                 Property Type
               </h3>
-              <div class="space-y-2">
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
-                  <span class="text-sm text-gray-600">Apartments</span>
-                </label>
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
-                  <span class="text-sm text-gray-600">Independent House</span>
-                </label>
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
-                  <span class="text-sm text-gray-600">Villa</span>
-                </label>
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
-                  <span class="text-sm text-gray-600">Plot/Land</span>
-                </label>
+              
+              <div class="space-y-2" id="property-type-filters">
+                <!-- Will be populated via AJAX -->
+                <div class="skeleton h-5 w-full mb-2"></div>
+                <div class="skeleton h-5 w-full mb-2"></div>
+                <div class="skeleton h-5 w-full mb-2"></div>
               </div>
+              <button id="show-more-types" class="text-sm text-green-600 hover:text-green-700 mt-2 hidden">Show More</button>
             </div>
             
             <!-- BHK Configuration -->
             <div class="mb-6">
               <h3 class="font-medium text-gray-900 mb-3">BHK Configuration</h3>
               <div class="flex flex-wrap gap-2">
-                <button class="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg">1 BHK</button>
-                <button class="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200">2 BHK</button>
-                <button class="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200">3 BHK</button>
-                <button class="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200">4 BHK</button>
-                <button class="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200">4+ BHK</button>
+                <button onclick="filterByBHK('1')" class="bhk-filter-btn px-3 py-1.5 text-sm rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200">1 BHK</button>
+                <button onclick="filterByBHK('2')" class="bhk-filter-btn px-3 py-1.5 text-sm rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200">2 BHK</button>
+                <button onclick="filterByBHK('3')" class="bhk-filter-btn px-3 py-1.5 text-sm rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200">3 BHK</button>
+                <button onclick="filterByBHK('4')" class="bhk-filter-btn px-3 py-1.5 text-sm rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200">4 BHK</button>
+                <button onclick="filterByBHK('4plus')" class="bhk-filter-btn px-3 py-1.5 text-sm rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200">4+ BHK</button>
               </div>
             </div>
             
@@ -535,23 +619,41 @@
                 </svg>
                 Amenities
               </h3>
-              <div class="space-y-2">
+              
+              <div class="space-y-2" id="amenities-filters">
                 <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                  <input type="checkbox" name="amenity" value="swimming_pool" onchange="applyFilters()" class="amenity-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
                   <span class="text-sm text-gray-600">Swimming Pool</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                  <input type="checkbox" name="amenity" value="club_house" onchange="applyFilters()" class="amenity-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
                   <span class="text-sm text-gray-600">Club House</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                  <input type="checkbox" name="amenity" value="gym" onchange="applyFilters()" class="amenity-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
                   <span class="text-sm text-gray-600">Gym</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                  <input type="checkbox" name="amenity" value="park" onchange="applyFilters()" class="amenity-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
                   <span class="text-sm text-gray-600">Park</span>
                 </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" name="amenity" value="security" onchange="applyFilters()" class="amenity-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                  <span class="text-sm text-gray-600">24/7 Security</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" name="amenity" value="lift" onchange="applyFilters()" class="amenity-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                  <span class="text-sm text-gray-600">Lift</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer hidden more-amenity">
+                  <input type="checkbox" name="amenity" value="power_backup" onchange="applyFilters()" class="amenity-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                  <span class="text-sm text-gray-600">Power Backup</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer hidden more-amenity">
+                  <input type="checkbox" name="amenity" value="water_supply" onchange="applyFilters()" class="amenity-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                  <span class="text-sm text-gray-600">24/7 Water Supply</span>
+                </label>
+                <button id="show-more-amenities" onclick="toggleAmenities()" class="text-sm text-green-600 hover:text-green-700 mt-2">Show More</button>
               </div>
             </div>
             
@@ -560,11 +662,11 @@
               <h3 class="font-medium text-gray-900 mb-3">Possession Status</h3>
               <div class="space-y-2">
                 <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="possession" checked class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                  <input type="radio" name="possession" value="ready" onchange="applyFilters()" class="possession-radio w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
                   <span class="text-sm text-gray-600">Ready to Move</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="possession" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                  <input type="radio" name="possession" value="under_construction" onchange="applyFilters()" class="possession-radio w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
                   <span class="text-sm text-gray-600">Under Construction</span>
                 </label>
               </div>
@@ -578,15 +680,15 @@
           <div class="bg-white rounded-xl shadow-sm p-4 mb-6">
             <div class="flex flex-col md:flex-row items-center justify-between gap-4">
               <div>
-                <h1 class="text-xl font-semibold text-gray-900">Properties for Sale</h1>
-                <p class="text-gray-600 text-sm mt-1">Showing <span class="font-medium">8</span> properties in Mumbai</p>
+                <h1 class="text-xl font-semibold text-gray-900">Featured Properties</h1>
+                <p class="text-gray-600 text-sm mt-1" id="results-count">Loading properties...</p>
               </div>
               <div class="flex items-center gap-4">
-                <select class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                  <option>Sort by: Relevance</option>
-                  <option>Price: Low to High</option>
-                  <option>Price: High to Low</option>
-                  <option>Newest First</option>
+                <select id="sort-by" onchange="applyFilters()" class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <option value="-created_at">Sort by: Newest First</option>
+                  <option value="price">Price: Low to High</option>
+                  <option value="-price">Price: High to Low</option>
+                  <option value="-view_count">Most Viewed</option>
                 </select>
                 <button class="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -599,657 +701,24 @@
           </div>
           
           <!-- Property Grid -->
-          <div class="grid grid-cols-1 gap-6">
-            
-            <!-- Property Card 1 -->
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300 property-card">
-              <div class="flex flex-col lg:flex-row">
-                <!-- Property Image -->
-                <div class="w-full lg:w-72 relative">
-                  <img src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Luxury Apartment" class="w-full h-64 lg:h-full object-cover">
-                  <div class="absolute top-3 left-3">
-                    <span class="bg-blue-600 text-white text-xs font-medium px-2 py-1 rounded">Premium</span>
-                  </div>
-                  <div class="absolute top-3 right-3">
-                    <button onclick="toggleFavorite(1)" class="bg-white p-2 rounded-full shadow-sm hover:bg-gray-100">
-                      <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
-                      </svg>
-                    </button>
-                  </div>
-                  <div class="absolute bottom-3 left-3 flex gap-1">
-                    <span class="bg-black/70 text-white text-xs px-2 py-1 rounded">3 Photos</span>
-                    <span class="bg-black/70 text-white text-xs px-2 py-1 rounded">Video</span>
-                  </div>
-                </div>
-                
-                <!-- Property Details -->
-                <div class="flex-1 p-5">
-                  <div class="flex flex-col lg:flex-row justify-between items-start mb-3">
-                    <div class="mb-3 lg:mb-0">
-                      <h3 class="font-semibold text-gray-900 text-lg mb-1">3 BHK Luxury Apartment in Bandra West</h3>
-                      <div class="flex items-center gap-2 text-gray-600 text-sm mb-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                        <span>Bandra West, Mumbai</span>
-                      </div>
-                    </div>
-                    <div class="text-left lg:text-right">
-                      <div class="text-xl font-bold text-gray-900">₹ 3.2 Cr</div>
-                      <div class="text-gray-500 text-sm">₹ 28,500/sq.ft.</div>
-                    </div>
-                  </div>
-                  
-                  <!-- Property Features -->
-                  <div class="flex flex-wrap items-center gap-4 lg:gap-6 mb-4">
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
-                      </svg>
-                      <span class="text-sm text-gray-600">Carpet: 1,120 sq.ft.</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                      </svg>
-                      <span class="text-sm text-gray-600">3 Beds</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
-                      </svg>
-                      <span class="text-sm text-gray-600">3 Baths</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                      </svg>
-                      <span class="text-sm text-gray-600">Furnished</span>
-                    </div>
-                  </div>
-                  
-                  <!-- Amenities -->
-                  <div class="flex flex-wrap items-center gap-2 mb-4">
-                    <span class="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded">Club House</span>
-                    <span class="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded">Swimming Pool</span>
-                    <span class="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded">Gym</span>
-                    <span class="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded">Security</span>
-                  </div>
-                  
-                  <!-- Property Description -->
-                  <p class="text-gray-600 text-sm mb-4 line-clamp-2">
-                    Luxury 3 BHK apartment with sea view, premium finishes, and top-notch amenities. Ready to move, spacious rooms with modular kitchen and branded fittings.
-                  </p>
-                  
-                  <!-- Contact and Actions -->
-                  <div class="flex flex-col lg:flex-row items-center justify-between gap-4">
-                    <div class="flex items-center gap-3">
-                      <div class="flex items-center gap-2">
-                        <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&w=32&h=32&fit=crop&crop=face&auto=format" alt="Agent" class="w-8 h-8 rounded-full">
-                        <div>
-                          <p class="text-sm font-medium text-gray-900">Rajat Sharma</p>
-                          <p class="text-xs text-gray-500">Premium Agent</p>
-                        </div>
-                      </div>
-                      <div class="flex items-center gap-1">
-                        <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                        </svg>
-                        <span class="text-sm text-gray-600">4.8/5</span>
-                      </div>
-                    </div>
-                    <div class="flex items-center gap-3">
-                      <button onclick="contactAgent(1)" class="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 text-sm font-medium">
-                        Contact Owner
-                      </button>
-                      <button onclick="showPropertyDetails(1)" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">
-                        View Details
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          <div id="properties-container" class="grid grid-cols-1 gap-6">
+            <!-- Properties will be loaded here via AJAX -->
+            <div class="bg-white rounded-xl shadow-sm p-8 text-center">
+              <div class="loader mx-auto"></div>
+              <p class="text-gray-600 mt-4">Loading featured properties...</p>
             </div>
-            
-            <!-- Property Card 2 -->
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300 property-card">
-              <div class="flex flex-col lg:flex-row">
-                <div class="w-full lg:w-72 relative">
-                  <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Independent Villa" class="w-full h-64 lg:h-full object-cover">
-                  <div class="absolute top-3 left-3">
-                    <span class="bg-green-600 text-white text-xs font-medium px-2 py-1 rounded">Verified</span>
-                  </div>
-                  <div class="absolute top-3 right-3">
-                    <button onclick="toggleFavorite(2)" class="bg-white p-2 rounded-full shadow-sm hover:bg-gray-100">
-                      <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                
-                <div class="flex-1 p-5">
-                  <div class="flex flex-col lg:flex-row justify-between items-start mb-3">
-                    <div class="mb-3 lg:mb-0">
-                      <h3 class="font-semibold text-gray-900 text-lg mb-1">4 BHK Independent Villa in Powai</h3>
-                      <div class="flex items-center gap-2 text-gray-600 text-sm mb-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                        <span>Powai, Mumbai</span>
-                      </div>
-                    </div>
-                    <div class="text-left lg:text-right">
-                      <div class="text-xl font-bold text-gray-900">₹ 8.5 Cr</div>
-                      <div class="text-gray-500 text-sm">₹ 35,000/sq.ft.</div>
-                    </div>
-                  </div>
-                  
-                  <div class="flex flex-wrap items-center gap-4 lg:gap-6 mb-4">
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
-                      </svg>
-                      <span class="text-sm text-gray-600">Built-up: 2,428 sq.ft.</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                      </svg>
-                      <span class="text-sm text-gray-600">4 Beds</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
-                      </svg>
-                      <span class="text-sm text-gray-600">4 Baths</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                      </svg>
-                      <span class="text-sm text-gray-600">2023 Built</span>
-                    </div>
-                  </div>
-                  
-                  <div class="flex flex-wrap items-center gap-2 mb-4">
-                    <span class="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded">Private Garden</span>
-                    <span class="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded">Car Parking</span>
-                    <span class="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded">Modular Kitchen</span>
-                    <span class="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded">Power Backup</span>
-                  </div>
-                  
-                  <p class="text-gray-600 text-sm mb-4 line-clamp-2">
-                    Spacious independent villa with private garden, modern amenities, and premium finishes. Located in prime Powai area with excellent connectivity.
-                  </p>
-                  
-                  <div class="flex flex-col lg:flex-row items-center justify-between gap-4">
-                    <div class="flex items-center gap-3">
-                      <div class="flex items-center gap-2">
-                        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&w=32&h=32&fit=crop&crop=face&auto=format" alt="Builder" class="w-8 h-8 rounded-full">
-                        <div>
-                          <p class="text-sm font-medium text-gray-900">Lodha Group</p>
-                          <p class="text-xs text-gray-500">Verified Builder</p>
-                        </div>
-                      </div>
-                      <div class="flex items-center gap-1">
-                        <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                        </svg>
-                        <span class="text-sm text-gray-600">4.9/5</span>
-                      </div>
-                    </div>
-                    <div class="flex items-center gap-3">
-                      <button onclick="scheduleTour(2)" class="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 text-sm font-medium">
-                        Schedule Visit
-                      </button>
-                      <button onclick="showPropertyDetails(2)" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">
-                        View Details
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Property Card 3 -->
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300 property-card">
-              <div class="flex flex-col lg:flex-row">
-                <div class="w-full lg:w-72 relative">
-                  <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Under Construction" class="w-full h-64 lg:h-full object-cover">
-                  <div class="absolute top-3 left-3">
-                    <span class="bg-orange-500 text-white text-xs font-medium px-2 py-1 rounded">Under Construction</span>
-                  </div>
-                  <div class="absolute top-3 right-3">
-                    <button onclick="toggleFavorite(3)" class="bg-white p-2 rounded-full shadow-sm hover:bg-gray-100">
-                      <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
-                      </svg>
-                    </button>
-                  </div>
-                  <div class="absolute bottom-3 left-3">
-                    <span class="bg-black/70 text-white text-xs px-2 py-1 rounded">Possession: Dec 2024</span>
-                  </div>
-                </div>
-                
-                <div class="flex-1 p-5">
-                  <div class="flex flex-col lg:flex-row justify-between items-start mb-3">
-                    <div class="mb-3 lg:mb-0">
-                      <h3 class="font-semibold text-gray-900 text-lg mb-1">2 & 3 BHK in Upcoming Project, Thane</h3>
-                      <div class="flex items-center gap-2 text-gray-600 text-sm mb-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                        <span>Thane West, Mumbai</span>
-                      </div>
-                    </div>
-                    <div class="text-left lg:text-right">
-                      <div class="text-xl font-bold text-gray-900">₹ 1.2 Cr - 1.8 Cr</div>
-                      <div class="text-gray-500 text-sm">Starting ₹ 7,500/sq.ft.</div>
-                    </div>
-                  </div>
-                  
-                  <div class="flex flex-wrap items-center gap-4 lg:gap-6 mb-4">
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
-                      </svg>
-                      <span class="text-sm text-gray-600">Configuration: 2 & 3 BHK</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                      </svg>
-                      <span class="text-sm text-gray-600">Possession: Dec 2024</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                      </svg>
-                      <span class="text-sm text-gray-600">RERA Approved</span>
-                    </div>
-                  </div>
-                  
-                  <div class="flex flex-wrap items-center gap-2 mb-4">
-                    <span class="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded">Swimming Pool</span>
-                    <span class="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded">Club House</span>
-                    <span class="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded">Landscaped Garden</span>
-                    <span class="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded">Children's Play Area</span>
-                  </div>
-                  
-                  <p class="text-gray-600 text-sm mb-4 line-clamp-2">
-                    Premium residential project offering 2 & 3 BHK apartments with modern amenities, excellent connectivity, and green surroundings. Bookings open with attractive payment plans.
-                  </p>
-                  
-                  <div class="flex flex-col lg:flex-row items-center justify-between gap-4">
-                    <div class="flex items-center gap-3">
-                      <div class="flex items-center gap-2">
-                        <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&w=32&h=32&fit=crop&crop=face&auto=format" alt="Builder" class="w-8 h-8 rounded-full">
-                        <div>
-                          <p class="text-sm font-medium text-gray-900">Godrej Properties</p>
-                          <p class="text-xs text-gray-500">Premium Builder</p>
-                        </div>
-                      </div>
-                      <div class="flex items-center gap-1">
-                        <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                        </svg>
-                        <span class="text-sm text-gray-600">RERA: P123456789</span>
-                      </div>
-                    </div>
-                    <div class="flex items-center gap-3">
-                      <button class="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 text-sm font-medium">
-                        Download Brochure
-                      </button>
-                      <button onclick="showPropertyDetails(3)" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">
-                        Request Callback
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Property Card 4 (Newly Added) -->
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300 property-card">
-              <div class="flex flex-col lg:flex-row">
-                <div class="w-full lg:w-72 relative">
-                  <img src="https://images.unsplash.com/photo-1518780664697-55e3ad937233?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Penthouse" class="w-full h-64 lg:h-full object-cover">
-                  <div class="absolute top-3 left-3">
-                    <span class="bg-purple-600 text-white text-xs font-medium px-2 py-1 rounded">Penthouse</span>
-                  </div>
-                  <div class="absolute top-3 right-3">
-                    <button onclick="toggleFavorite(4)" class="bg-white p-2 rounded-full shadow-sm hover:bg-gray-100">
-                      <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                
-                <div class="flex-1 p-5">
-                  <div class="flex flex-col lg:flex-row justify-between items-start mb-3">
-                    <div class="mb-3 lg:mb-0">
-                      <h3 class="font-semibold text-gray-900 text-lg mb-1">5 BHK Penthouse with Private Pool, Worli</h3>
-                      <div class="flex items-center gap-2 text-gray-600 text-sm mb-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                        <span>Worli, Mumbai</span>
-                      </div>
-                    </div>
-                    <div class="text-left lg:text-right">
-                      <div class="text-xl font-bold text-gray-900">₹ 12.5 Cr</div>
-                      <div class="text-gray-500 text-sm">₹ 42,000/sq.ft.</div>
-                    </div>
-                  </div>
-                  
-                  <div class="flex flex-wrap items-center gap-4 lg:gap-6 mb-4">
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
-                      </svg>
-                      <span class="text-sm text-gray-600">Super Area: 2,976 sq.ft.</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                      </svg>
-                      <span class="text-sm text-gray-600">5 Beds</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
-                      </svg>
-                      <span class="text-sm text-gray-600">5 Baths</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                      </svg>
-                      <span class="text-sm text-gray-600">2024 Built</span>
-                    </div>
-                  </div>
-                  
-                  <div class="flex flex-wrap items-center gap-2 mb-4">
-                    <span class="text-xs px-2 py-1 bg-purple-50 text-purple-600 rounded">Private Pool</span>
-                    <span class="text-xs px-2 py-1 bg-purple-50 text-purple-600 rounded">Panoramic View</span>
-                    <span class="text-xs px-2 py-1 bg-purple-50 text-purple-600 rounded">Home Theater</span>
-                    <span class="text-xs px-2 py-1 bg-purple-50 text-purple-600 rounded">Smart Home</span>
-                  </div>
-                  
-                  <p class="text-gray-600 text-sm mb-4 line-clamp-2">
-                    Exquisite penthouse with private infinity pool, panoramic sea views, and premium luxury finishes. Located in one of Mumbai's most prestigious addresses.
-                  </p>
-                  
-                  <div class="flex flex-col lg:flex-row items-center justify-between gap-4">
-                    <div class="flex items-center gap-3">
-                      <div class="flex items-center gap-2">
-                        <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&w=32&h=32&fit=crop&crop=face&auto=format" alt="Agent" class="w-8 h-8 rounded-full">
-                        <div>
-                          <p class="text-sm font-medium text-gray-900">Ananya Mehta</p>
-                          <p class="text-xs text-gray-500">Luxury Specialist</p>
-                        </div>
-                      </div>
-                      <div class="flex items-center gap-1">
-                        <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                        </svg>
-                        <span class="text-sm text-gray-600">4.9/5</span>
-                      </div>
-                    </div>
-                    <div class="flex items-center gap-3">
-                      <button onclick="scheduleTour(4)" class="px-4 py-2 border border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50 text-sm font-medium">
-                        Private Viewing
-                      </button>
-                      <button onclick="showPropertyDetails(4)" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-medium">
-                        View Details
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Property Card 5 (Newly Added) -->
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300 property-card">
-              <div class="flex flex-col lg:flex-row">
-                <div class="w-full lg:w-72 relative">
-                  <img src="https://images.unsplash.com/photo-1523217582562-09d0def993a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Studio Apartment" class="w-full h-64 lg:h-full object-cover">
-                  <div class="absolute top-3 left-3">
-                    <span class="bg-green-600 text-white text-xs font-medium px-2 py-1 rounded">Budget Friendly</span>
-                  </div>
-                  <div class="absolute top-3 right-3">
-                    <button onclick="toggleFavorite(5)" class="bg-white p-2 rounded-full shadow-sm hover:bg-gray-100">
-                      <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                
-                <div class="flex-1 p-5">
-                  <div class="flex flex-col lg:flex-row justify-between items-start mb-3">
-                    <div class="mb-3 lg:mb-0">
-                      <h3 class="font-semibold text-gray-900 text-lg mb-1">1 BHK Studio Apartment, Andheri East</h3>
-                      <div class="flex items-center gap-2 text-gray-600 text-sm mb-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                        <span>Andheri East, Mumbai</span>
-                      </div>
-                    </div>
-                    <div class="text-left lg:text-right">
-                      <div class="text-xl font-bold text-gray-900">₹ 85 Lakh</div>
-                      <div class="text-gray-500 text-sm">₹ 18,500/sq.ft.</div>
-                    </div>
-                  </div>
-                  
-                  <div class="flex flex-wrap items-center gap-4 lg:gap-6 mb-4">
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
-                      </svg>
-                      <span class="text-sm text-gray-600">Carpet: 460 sq.ft.</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                      </svg>
-                      <span class="text-sm text-gray-600">1 Bed</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
-                      </svg>
-                      <span class="text-sm text-gray-600">1 Bath</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                      </svg>
-                      <span class="text-sm text-gray-600">Semi-Furnished</span>
-                    </div>
-                  </div>
-                  
-                  <div class="flex flex-wrap items-center gap-2 mb-4">
-                    <span class="text-xs px-2 py-1 bg-green-50 text-green-600 rounded">24/7 Security</span>
-                    <span class="text-xs px-2 py-1 bg-green-50 text-green-600 rounded">Lift</span>
-                    <span class="text-xs px-2 py-1 bg-green-50 text-green-600 rounded">Parking</span>
-                    <span class="text-xs px-2 py-1 bg-green-50 text-green-600 rounded">Water Supply</span>
-                  </div>
-                  
-                  <p class="text-gray-600 text-sm mb-4 line-clamp-2">
-                    Perfect starter home for young professionals. Well-maintained building with basic amenities, close to metro station and shopping complexes.
-                  </p>
-                  
-                  <div class="flex flex-col lg:flex-row items-center justify-between gap-4">
-                    <div class="flex items-center gap-3">
-                      <div class="flex items-center gap-2">
-                        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&w=32&h=32&fit=crop&crop=face&auto=format" alt="Owner" class="w-8 h-8 rounded-full">
-                        <div>
-                          <p class="text-sm font-medium text-gray-900">Direct Owner</p>
-                          <p class="text-xs text-gray-500">No Brokerage</p>
-                        </div>
-                      </div>
-                      <div class="flex items-center gap-1">
-                        <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                        </svg>
-                        <span class="text-sm text-gray-600">Verified</span>
-                      </div>
-                    </div>
-                    <div class="flex items-center gap-3">
-                      <button onclick="contactAgent(5)" class="px-4 py-2 border border-green-600 text-green-600 rounded-lg hover:bg-green-50 text-sm font-medium">
-                        Call Owner
-                      </button>
-                      <button onclick="showPropertyDetails(5)" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium">
-                        View Details
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Property Card 6 (Newly Added) -->
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300 property-card">
-              <div class="flex flex-col lg:flex-row">
-                <div class="w-full lg:w-72 relative">
-                  <img src="https://images.unsplash.com/photo-1560185007-cde436f5a7b1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Commercial Space" class="w-full h-64 lg:h-full object-cover">
-                  <div class="absolute top-3 left-3">
-                    <span class="bg-red-600 text-white text-xs font-medium px-2 py-1 rounded">Commercial</span>
-                  </div>
-                  <div class="absolute top-3 right-3">
-                    <button onclick="toggleFavorite(6)" class="bg-white p-2 rounded-full shadow-sm hover:bg-gray-100">
-                      <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                
-                <div class="flex-1 p-5">
-                  <div class="flex flex-col lg:flex-row justify-between items-start mb-3">
-                    <div class="mb-3 lg:mb-0">
-                      <h3 class="font-semibold text-gray-900 text-lg mb-1">Commercial Office Space, BKC</h3>
-                      <div class="flex items-center gap-2 text-gray-600 text-sm mb-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                        <span>Bandra Kurla Complex, Mumbai</span>
-                      </div>
-                    </div>
-                    <div class="text-left lg:text-right">
-                      <div class="text-xl font-bold text-gray-900">₹ 6.8 Cr</div>
-                      <div class="text-gray-500 text-sm">₹ 32,000/sq.ft.</div>
-                    </div>
-                  </div>
-                  
-                  <div class="flex flex-wrap items-center gap-4 lg:gap-6 mb-4">
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
-                      </svg>
-                      <span class="text-sm text-gray-600">Built-up: 2,125 sq.ft.</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                      </svg>
-                      <span class="text-sm text-gray-600">Seats: 25-30</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                      </svg>
-                      <span class="text-sm text-gray-600">Lease: 5 Years</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                      </svg>
-                      <span class="text-sm text-gray-600">Fire Safety</span>
-                    </div>
-                  </div>
-                  
-                  <div class="flex flex-wrap items-center gap-2 mb-4">
-                    <span class="text-xs px-2 py-1 bg-red-50 text-red-600 rounded">24/7 Power</span>
-                    <span class="text-xs px-2 py-1 bg-red-50 text-red-600 rounded">Fiber Internet</span>
-                    <span class="text-xs px-2 py-1 bg-red-50 text-red-600 rounded">Conference Room</span>
-                    <span class="text-xs px-2 py-1 bg-red-50 text-red-600 rounded">Cafeteria</span>
-                  </div>
-                  
-                  <p class="text-gray-600 text-sm mb-4 line-clamp-2">
-                    Premium commercial office space in Mumbai's premier business district. Fully furnished with modern amenities, ideal for corporate offices or startups.
-                  </p>
-                  
-                  <div class="flex flex-col lg:flex-row items-center justify-between gap-4">
-                    <div class="flex items-center gap-3">
-                      <div class="flex items-center gap-2">
-                        <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&w=32&h=32&fit=crop&crop=face&auto=format" alt="Commercial Agent" class="w-8 h-8 rounded-full">
-                        <div>
-                          <p class="text-sm font-medium text-gray-900">Commercial Desk</p>
-                          <p class="text-xs text-gray-500">CBRE Partnership</p>
-                        </div>
-                      </div>
-                      <div class="flex items-center gap-1">
-                        <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                        </svg>
-                        <span class="text-sm text-gray-600">4.7/5</span>
-                      </div>
-                    </div>
-                    <div class="flex items-center gap-3">
-                      <button onclick="contactAgent(6)" class="px-4 py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-50 text-sm font-medium">
-                        Business Inquiry
-                      </button>
-                      <button onclick="showPropertyDetails(6)" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium">
-                        View Details
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
           </div>
           
-          <!-- Pagination -->
-          <div class="mt-8 bg-white rounded-xl shadow-sm p-4">
-            <div class="flex items-center justify-center gap-2">
-              <button class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                </svg>
-              </button>
-              <button class="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium">1</button>
-              <button class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium">2</button>
-              <button class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium">3</button>
-              <button class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium">4</button>
-              <button class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium">5</button>
-              <span class="text-gray-500">...</span>
-              <button class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium">12</button>
-              <button class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                </svg>
-              </button>
-            </div>
+          <!-- Show More Button -->
+          <div id="show-more-container" class="mt-8 text-center hidden">
+            <button id="show-more-btn" onclick="loadMoreProperties()" class="show-more-btn px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors">
+              Show More Properties
+            </button>
           </div>
         </main>
       </div>
     </div>
   </section>
-
-  
 
   <!-- Enhanced Footer Section -->
 <footer class="bg-neutral-900 text-gray-300 py-12 sm:py-16 px-4 md:px-8" id="footer">
@@ -1303,7 +772,7 @@
           <li><a href="{% url 'properties_list' %}" class="text-gray-400 hover:text-emerald-500 transition-colors flex items-center gap-2">
             <i class="fas fa-chevron-right text-xs text-emerald-500"></i> Properties
           </a></li>
-          <li><a href="#contact" class="text-gray-400 hover:text-emerald-500 transition-colors flex items-center gap-2">
+          <li><a href="{% url 'contact' %}" class="text-gray-400 hover:text-emerald-500 transition-colors flex items-center gap-2">
             <i class="fas fa-chevron-right text-xs text-emerald-500"></i> Contact Us
           </a></li>
           <li><a href="{% url 'login' %}" class="text-gray-400 hover:text-emerald-500 transition-colors flex items-center gap-2">
@@ -1351,21 +820,6 @@
   </div>
 </footer>
 
-  <!-- Search Results Modal -->
-  <div id="search-results-modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
-    <div class="bg-white rounded-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden">
-      <div class="p-6 border-b border-gray-200 flex justify-between items-center">
-        <h3 class="text-xl font-bold text-gray-900">Search Results</h3>
-        <button onclick="closeSearchResults()" class="text-gray-500 hover:text-gray-700">
-          <i class="fas fa-times text-xl"></i>
-        </button>
-      </div>
-      <div class="p-6 overflow-y-auto max-h-[60vh]" id="search-results-content">
-        <!-- Results will be loaded here -->
-      </div>
-    </div>
-  </div>
-
   <!-- Property Details Modal -->
   <div id="property-details-modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
     <div class="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
@@ -1381,58 +835,558 @@
     </div>
   </div>
 
-  <!-- Authentication Modal -->
-  <div id="auth-modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
-    <div class="bg-white rounded-2xl w-full max-w-md">
-      <div class="p-6 border-b border-gray-200 flex justify-between items-center">
-        <h3 class="text-xl font-bold text-gray-900" id="auth-modal-title">Sign Up</h3>
-        <button onclick="closeAuthModal()" class="text-gray-500 hover:text-gray-700">
-          <i class="fas fa-times text-xl"></i>
-        </button>
-      </div>
-      <div class="p-6" id="auth-modal-content">
-        <!-- Auth forms will be loaded here -->
-      </div>
-    </div>
-  </div>
-
   <!-- JavaScript -->
   <script>
     // State Management
-    let currentUser = null;
-    let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-    let searchHistory = JSON.parse(localStorage.getItem('searchHistory')) || [];
+    let currentPage = 1;
+    let totalPages = 1;
+    let totalCount = 0;
+    let isLoading = false;
+    let hasMore = true;
+    let currentFilters = {};
+    let propertyTypes = [];
 
     // DOM Elements
-    const mobileMenuBtn = document.getElementById('property-search-mobile-menu-btn');
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
     const mobileMenu = document.getElementById('property-search-mobile-menu');
+    const propertiesContainer = document.getElementById('properties-container');
+    const showMoreContainer = document.getElementById('show-more-container');
+    const resultsCount = document.getElementById('results-count');
 
     // Initialize
     document.addEventListener('DOMContentLoaded', () => {
       initEventListeners();
-      updateFavoritesUI();
+      loadPropertyTypes();
+      loadProperties(true); // Load first page
+      initPriceSlider();
     });
 
     // Event Listeners
     function initEventListeners() {
-      // Mobile Menu Toggle for property search section
+      // Mobile Menu Toggle
       if (mobileMenuBtn) {
-        mobileMenuBtn.addEventListener('click', togglePropertySearchMobileMenu);
+        mobileMenuBtn.addEventListener('click', toggleMobileMenu);
       }
 
       // Close modals on outside click
       document.addEventListener('click', (e) => {
-        if (e.target.id === 'search-results-modal') closeSearchResults();
         if (e.target.id === 'property-details-modal') closePropertyDetails();
-        if (e.target.id === 'auth-modal') closeAuthModal();
       });
+
+      // Price slider sync
+      const slider = document.getElementById('price-slider');
+      const minPrice = document.getElementById('min-price');
+      const maxPrice = document.getElementById('max-price');
+      
+      if (slider) {
+        slider.addEventListener('input', function() {
+          // You can implement dual slider logic here
+        });
+      }
     }
 
-    // Mobile Menu Toggle for property search section
-    function togglePropertySearchMobileMenu() {
+    // Mobile Menu Toggle
+    function toggleMobileMenu() {
       if (mobileMenu) {
         mobileMenu.classList.toggle('hidden');
         mobileMenu.classList.toggle('animate-fade-in');
+      }
+    }
+
+    // Load Property Types for Filter
+    function loadPropertyTypes() {
+      fetch('/api/property-types/')
+        .then(response => response.json())
+        .then(data => {
+          propertyTypes = data;
+          renderPropertyTypeFilters(data);
+        })
+        .catch(error => {
+          console.error('Error loading property types:', error);
+          // Fallback to static types
+          renderPropertyTypeFilters([
+            {id: 1, name: 'Apartment'},
+            {id: 2, name: 'Villa'},
+            {id: 3, name: 'Independent House'},
+            {id: 4, name: 'Plot/Land'},
+            {id: 5, name: 'Commercial'},
+            {id: 6, name: 'Farm House'},
+            {id: 7, name: 'Penthouse'},
+            {id: 8, name: 'Studio Apartment'},
+            {id: 9, name: 'Builder Floor'},
+            {id: 10, name: 'Office Space'}
+          ]);
+        });
+    }
+
+    // Render Property Type Filters (show only first 8, then More button)
+    function renderPropertyTypeFilters(types) {
+      const container = document.getElementById('property-type-filters');
+      const showMoreBtn = document.getElementById('show-more-types');
+      
+      let html = '';
+      types.slice(0, 8).forEach(type => {
+        html += `
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" name="property_type" value="${type.id}" onchange="applyFilters()" class="property-type-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+            <span class="text-sm text-gray-600">${type.name}</span>
+          </label>
+        `;
+      });
+      
+      container.innerHTML = html;
+      
+      if (types.length > 8) {
+        showMoreBtn.classList.remove('hidden');
+        showMoreBtn.onclick = () => showAllPropertyTypes(types);
+      } else {
+        showMoreBtn.classList.add('hidden');
+      }
+    }
+
+    // Show All Property Types
+    function showAllPropertyTypes(types) {
+      const container = document.getElementById('property-type-filters');
+      const showMoreBtn = document.getElementById('show-more-types');
+      
+      let html = '';
+      types.forEach(type => {
+        html += `
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" name="property_type" value="${type.id}" onchange="applyFilters()" class="property-type-checkbox w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+            <span class="text-sm text-gray-600">${type.name}</span>
+          </label>
+        `;
+      });
+      
+      container.innerHTML = html;
+      showMoreBtn.classList.add('hidden');
+    }
+
+    // Toggle Amenities (Show More/Less)
+    function toggleAmenities() {
+      const hiddenAmenities = document.querySelectorAll('.more-amenity');
+      const btn = document.getElementById('show-more-amenities');
+      
+      hiddenAmenities.forEach(amenity => {
+        amenity.classList.toggle('hidden');
+      });
+      
+      if (btn.textContent === 'Show More') {
+        btn.textContent = 'Show Less';
+      } else {
+        btn.textContent = 'Show More';
+      }
+    }
+
+    // Price Slider
+    function initPriceSlider() {
+      const slider = document.getElementById('price-slider');
+      const minPrice = document.getElementById('min-price');
+      const maxPrice = document.getElementById('max-price');
+      
+      // You can implement dual slider here if needed
+    }
+
+    // Apply Custom Price Range
+    function applyCustomPrice() {
+      applyFilters();
+    }
+
+    // Filter by BHK
+    function filterByBHK(value) {
+      // Remove active class from all BHK buttons
+      document.querySelectorAll('.bhk-filter-btn').forEach(btn => {
+        btn.classList.remove('filter-btn-active', 'bg-blue-600', 'text-white');
+        btn.classList.add('bg-gray-100', 'text-gray-700');
+      });
+      
+      // Add active class to clicked button
+      event.target.classList.remove('bg-gray-100', 'text-gray-700');
+      event.target.classList.add('filter-btn-active', 'bg-blue-600', 'text-white');
+      
+      currentFilters.bhk = value;
+      currentPage = 1;
+      loadProperties(true);
+    }
+
+    // Collect all filter values
+    function collectFilters() {
+      const filters = {};
+      
+      // Search query
+      filters.q = document.getElementById('search-q')?.value || '';
+      
+      // City
+      filters.city = document.getElementById('search-city')?.value || '';
+      
+      // Property for
+      filters.property_for = document.getElementById('search-property-for')?.value || '';
+      
+      // Price range radio
+      const selectedPriceRange = document.querySelector('input[name="price_range"]:checked');
+      if (selectedPriceRange) {
+        filters.price_range = selectedPriceRange.value;
+      }
+      
+      // Custom min/max price
+      filters.min_price = document.getElementById('min-price')?.value || '';
+      filters.max_price = document.getElementById('max-price')?.value || '';
+      
+      // Property types
+      const selectedTypes = [];
+      document.querySelectorAll('.property-type-checkbox:checked').forEach(cb => {
+        selectedTypes.push(cb.value);
+      });
+      if (selectedTypes.length > 0) {
+        filters.property_type = selectedTypes;
+      }
+      
+      // BHK
+      if (currentFilters.bhk) {
+        filters.bhk = currentFilters.bhk;
+      }
+      
+      // Amenities
+      const selectedAmenities = [];
+      document.querySelectorAll('.amenity-checkbox:checked').forEach(cb => {
+        selectedAmenities.push(cb.value);
+      });
+      if (selectedAmenities.length > 0) {
+        filters.amenities = selectedAmenities;
+      }
+      
+      // Possession
+      const selectedPossession = document.querySelector('input[name="possession"]:checked');
+      if (selectedPossession) {
+        filters.possession = selectedPossession.value;
+      }
+      
+      // Sort
+      filters.sort = document.getElementById('sort-by')?.value || '-created_at';
+      
+      return filters;
+    }
+
+    // Apply Filters (reset to page 1)
+    function applyFilters() {
+      currentFilters = collectFilters();
+      currentPage = 1;
+      loadProperties(true);
+    }
+
+    // Clear All Filters
+    function clearAllFilters() {
+      // Reset search inputs
+      document.getElementById('search-q').value = '';
+      document.getElementById('search-city').value = '';
+      document.getElementById('search-property-for').value = '';
+      
+      // Reset price radios
+      document.querySelectorAll('input[name="price_range"]').forEach(radio => {
+        radio.checked = false;
+      });
+      
+      // Reset price inputs
+      document.getElementById('min-price').value = '1000000';
+      document.getElementById('max-price').value = '50000000';
+      
+      // Reset property type checkboxes
+      document.querySelectorAll('.property-type-checkbox').forEach(cb => {
+        cb.checked = false;
+      });
+      
+      // Reset BHK
+      currentFilters.bhk = null;
+      document.querySelectorAll('.bhk-filter-btn').forEach(btn => {
+        btn.classList.remove('filter-btn-active', 'bg-blue-600', 'text-white');
+        btn.classList.add('bg-gray-100', 'text-gray-700');
+      });
+      
+      // Reset amenity checkboxes
+      document.querySelectorAll('.amenity-checkbox').forEach(cb => {
+        cb.checked = false;
+      });
+      
+      // Reset possession radios
+      document.querySelectorAll('input[name="possession"]').forEach(radio => {
+        radio.checked = false;
+      });
+      
+      // Reset sort
+      document.getElementById('sort-by').value = '-created_at';
+      
+      // Apply empty filters
+      currentFilters = {};
+      currentPage = 1;
+      loadProperties(true);
+    }
+
+    // Load Properties via AJAX
+    function loadProperties(reset = false) {
+      if (isLoading) return;
+      
+      isLoading = true;
+      
+      // Build query string from filters
+      const params = new URLSearchParams();
+      params.append('page', currentPage);
+      params.append('page_size', 8); // Load 8 at a time
+      
+      // Add all filters
+      Object.keys(currentFilters).forEach(key => {
+        if (Array.isArray(currentFilters[key])) {
+          currentFilters[key].forEach(value => {
+            params.append(key, value);
+          });
+        } else if (currentFilters[key]) {
+          params.append(key, currentFilters[key]);
+        }
+      });
+      
+      // Show loading in container if reset
+      if (reset) {
+        propertiesContainer.innerHTML = `
+          <div class="bg-white rounded-xl shadow-sm p-8 text-center">
+            <div class="loader mx-auto"></div>
+            <p class="text-gray-600 mt-4">Loading featured properties...</p>
+          </div>
+        `;
+        showMoreContainer.classList.add('hidden');
+      }
+      
+      fetch(`/api/featured-properties/?${params.toString()}`)
+        .then(response => response.json())
+        .then(data => {
+          isLoading = false;
+          
+          if (reset) {
+            propertiesContainer.innerHTML = '';
+          }
+          
+          if (data.properties && data.properties.length > 0) {
+            renderProperties(data.properties, reset);
+            totalPages = data.total_pages;
+            totalCount = data.total_count;
+            hasMore = currentPage < totalPages;
+            
+            // Update results count
+            const start = ((currentPage - 1) * 8) + 1;
+            const end = Math.min(currentPage * 8, totalCount);
+            resultsCount.textContent = `Showing ${start} - ${end} of ${totalCount} featured properties`;
+            
+            // Show/hide show more button
+            if (hasMore) {
+              showMoreContainer.classList.remove('hidden');
+            } else {
+              showMoreContainer.classList.add('hidden');
+            }
+          } else {
+            if (reset) {
+              propertiesContainer.innerHTML = `
+                <div class="bg-white rounded-xl shadow-sm p-12 text-center">
+                  <svg class="w-24 h-24 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                  </svg>
+                  <h3 class="text-xl font-semibold text-gray-900 mb-2">No Featured Properties Found</h3>
+                  <p class="text-gray-600 mb-6">We couldn't find any featured properties matching your criteria. Try adjusting your filters.</p>
+                  <button onclick="clearAllFilters()" class="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Clear Filters
+                  </button>
+                </div>
+              `;
+            }
+            showMoreContainer.classList.add('hidden');
+            resultsCount.textContent = 'No properties found';
+          }
+        })
+        .catch(error => {
+          isLoading = false;
+          console.error('Error loading properties:', error);
+          propertiesContainer.innerHTML = `
+            <div class="bg-white rounded-xl shadow-sm p-12 text-center">
+              <svg class="w-24 h-24 mx-auto text-red-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+              </svg>
+              <h3 class="text-xl font-semibold text-gray-900 mb-2">Error Loading Properties</h3>
+              <p class="text-gray-600 mb-6">There was an error loading the properties. Please try again.</p>
+              <button onclick="loadProperties(true)" class="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                Retry
+              </button>
+            </div>
+          `;
+        });
+    }
+
+    // Load More Properties (next page)
+    function loadMoreProperties() {
+      if (!hasMore || isLoading) return;
+      
+      currentPage++;
+      loadProperties(false);
+    }
+
+    // Render Properties
+    function renderProperties(properties, reset) {
+      let html = '';
+      
+      properties.forEach(property => {
+        const primaryImage = property.primary_image || 
+                            (property.images && property.images.length > 0 ? property.images[0].image : '/static/images/property-placeholder.jpg');
+        
+        const badges = [];
+        if (property.is_premium) badges.push('<span class="bg-purple-600 text-white text-xs font-medium px-2 py-1 rounded">Premium</span>');
+        else if (property.is_featured) badges.push('<span class="bg-blue-600 text-white text-xs font-medium px-2 py-1 rounded">Featured</span>');
+        if (property.is_verified) badges.push('<span class="bg-green-600 text-white text-xs font-medium px-2 py-1 rounded">Verified</span>');
+        if (property.is_urgent) badges.push('<span class="bg-orange-500 text-white text-xs font-medium px-2 py-1 rounded">Urgent</span>');
+        
+        const priceFormatted = new Intl.NumberFormat('en-IN', {
+          style: 'currency',
+          currency: 'INR',
+          maximumFractionDigits: 0
+        }).format(property.price);
+        
+        const pricePerSqft = property.price_per_sqft ? 
+          `₹ ${new Intl.NumberFormat('en-IN').format(property.price_per_sqft)}/sq.ft.` : '';
+        
+        const amenities = property.amenities && property.amenities.selected ? 
+          property.amenities.selected.slice(0, 4).map(a => 
+            `<span class="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded">${a.replace(/_/g, ' ')}</span>`
+          ).join('') : '';
+        
+        const moreAmenities = property.amenities && property.amenities.selected && property.amenities.selected.length > 4 ?
+          `<span class="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">+${property.amenities.selected.length - 4} more</span>` : '';
+        
+        html += `
+          <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300 property-card">
+            <div class="flex flex-col lg:flex-row">
+              <!-- Property Image -->
+              <div class="w-full lg:w-72 relative">
+                <img src="${primaryImage}" alt="${property.title}" class="w-full h-64 lg:h-full object-cover">
+                
+                <!-- Badges -->
+                <div class="absolute top-3 left-3 flex flex-col gap-1">
+                  ${badges.join('')}
+                </div>
+                
+                <div class="absolute top-3 right-3">
+                  <button onclick="toggleFavorite(${property.id})" class="bg-white p-2 rounded-full shadow-sm hover:bg-gray-100 favorite-btn" data-property-id="${property.id}">
+                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                    </svg>
+                  </button>
+                </div>
+                <div class="absolute bottom-3 left-3 flex gap-1">
+                  <span class="bg-black/70 text-white text-xs px-2 py-1 rounded">${property.images_count || 0} Photos</span>
+                </div>
+              </div>
+              
+              <!-- Property Details -->
+              <div class="flex-1 p-5">
+                <div class="flex flex-col lg:flex-row justify-between items-start mb-3">
+                  <div class="mb-3 lg:mb-0">
+                    <h3 class="font-semibold text-gray-900 text-lg mb-1">${property.title}</h3>
+                    <div class="flex items-center gap-2 text-gray-600 text-sm mb-2">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      </svg>
+                      <span>${property.locality || property.address.substring(0, 30)}, ${property.city}</span>
+                    </div>
+                  </div>
+                  <div class="text-left lg:text-right">
+                    <div class="text-xl font-bold text-gray-900">
+                      ${priceFormatted}
+                      ${property.property_for === 'rent' ? '<span class="text-sm font-normal text-gray-500">/month</span>' : ''}
+                    </div>
+                    ${pricePerSqft ? `<div class="text-gray-500 text-sm">${pricePerSqft}</div>` : ''}
+                  </div>
+                </div>
+                
+                <!-- Property Features -->
+                <div class="flex flex-wrap items-center gap-4 lg:gap-6 mb-4">
+                  ${property.carpet_area ? `
+                    <div class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+                      </svg>
+                      <span class="text-sm text-gray-600">Carpet: ${new Intl.NumberFormat('en-IN').format(property.carpet_area)} sq.ft.</span>
+                    </div>
+                  ` : ''}
+                  
+                  ${property.bedrooms ? `
+                    <div class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                      </svg>
+                      <span class="text-sm text-gray-600">${property.bedrooms} Beds</span>
+                    </div>
+                  ` : ''}
+                  
+                  ${property.bathrooms ? `
+                    <div class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
+                      </svg>
+                      <span class="text-sm text-gray-600">${property.bathrooms} Baths</span>
+                    </div>
+                  ` : ''}
+                  
+                  ${property.furnishing ? `
+                    <div class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                      </svg>
+                      <span class="text-sm text-gray-600">${property.furnishing_display || property.furnishing}</span>
+                    </div>
+                  ` : ''}
+                </div>
+                
+                <!-- Amenities -->
+                <div class="flex flex-wrap items-center gap-2 mb-4">
+                  ${amenities}
+                  ${moreAmenities}
+                </div>
+                
+                <!-- Property Description -->
+                <p class="text-gray-600 text-sm mb-4 line-clamp-2">
+                  ${property.description.substring(0, 150)}${property.description.length > 150 ? '...' : ''}
+                </p>
+                
+                <!-- Contact and Actions -->
+                <div class="flex flex-col lg:flex-row items-center justify-between gap-4">
+                  <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2">
+                      <div class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold">
+                        ${property.owner_initials || 'U'}
+                      </div>
+                      <div>
+                        <p class="text-sm font-medium text-gray-900">${property.contact_person || 'Property Owner'}</p>
+                        <p class="text-xs text-gray-500">
+                          ${property.owner_type || 'Individual Owner'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <button onclick="contactAgent(${property.id})" class="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 text-sm font-medium">
+                      Contact Owner
+                    </button>
+                    <button onclick="showPropertyDetails(${property.id})" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">
+                      View Details
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      if (reset) {
+        propertiesContainer.innerHTML = html;
+      } else {
+        propertiesContainer.innerHTML += html;
       }
     }
 
@@ -1441,269 +1395,143 @@
       const modal = document.getElementById('property-details-modal');
       const content = document.getElementById('property-details-content');
       
-      // Sample property details (in real app, this would come from backend)
-      const propertyDetails = {
-        1: {
-          title: "3 BHK Luxury Apartment in Bandra West",
-          price: "₹ 3.2 Cr",
-          location: "Bandra West, Mumbai",
-          area: "1,120 sq.ft.",
-          bedrooms: 3,
-          bathrooms: 3,
-          description: "Luxury 3 BHK apartment with sea view, premium finishes, and top-notch amenities. Ready to move, spacious rooms with modular kitchen and branded fittings. Located in prime Bandra West location with excellent connectivity and premium neighborhood.",
-          amenities: ["Club House", "Swimming Pool", "Gym", "Security", "Power Backup", "Lift", "24/7 Water Supply"],
-          agent: "Rajat Sharma",
-          agentRole: "Premium Agent",
-          rating: "4.8/5"
-        },
-        2: {
-          title: "4 BHK Independent Villa in Powai",
-          price: "₹ 8.5 Cr",
-          location: "Powai, Mumbai",
-          area: "2,428 sq.ft.",
-          bedrooms: 4,
-          bathrooms: 4,
-          description: "Spacious independent villa with private garden, modern amenities, and premium finishes. Located in prime Powai area with excellent connectivity. Features include modular kitchen, imported marble flooring, and premium sanitary fittings.",
-          amenities: ["Private Garden", "Car Parking", "Modular Kitchen", "Power Backup", "Security", "Intercom"],
-          agent: "Lodha Group",
-          agentRole: "Verified Builder",
-          rating: "4.9/5"
-        }
-      };
-      
-      const property = propertyDetails[id] || {
-        title: "Property Details",
-        price: "Price on Request",
-        location: "Location not specified",
-        area: "Area not specified",
-        bedrooms: "N/A",
-        bathrooms: "N/A",
-        description: "Detailed information about this property will be available soon.",
-        amenities: [],
-        agent: "Agent information",
-        agentRole: "Role not specified",
-        rating: "N/A"
-      };
-      
       content.innerHTML = `
-        <div class="space-y-6">
-          <div class="flex justify-between items-start">
-            <div>
-              <h4 class="text-2xl font-bold text-gray-900">${property.title}</h4>
-              <p class="text-gray-600 mt-2">${property.location}</p>
-            </div>
-            <div class="text-right">
-              <div class="text-3xl font-bold text-emerald-600">${property.price}</div>
-              <p class="text-gray-500 text-sm mt-1">Ready to Move</p>
-            </div>
-          </div>
-          
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-sm text-gray-500">Carpet Area</p>
-              <p class="text-lg font-semibold text-gray-900">${property.area}</p>
-            </div>
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-sm text-gray-500">Bedrooms</p>
-              <p class="text-lg font-semibold text-gray-900">${property.bedrooms}</p>
-            </div>
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-sm text-gray-500">Bathrooms</p>
-              <p class="text-lg font-semibold text-gray-900">${property.bathrooms}</p>
-            </div>
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-sm text-gray-500">Status</p>
-              <p class="text-lg font-semibold text-emerald-600">Ready to Move</p>
-            </div>
-          </div>
-          
-          <div>
-            <h5 class="text-lg font-semibold text-gray-900 mb-3">Description</h5>
-            <p class="text-gray-600">${property.description}</p>
-          </div>
-          
-          <div>
-            <h5 class="text-lg font-semibold text-gray-900 mb-3">Amenities</h5>
-            <div class="flex flex-wrap gap-2">
-              ${property.amenities.map(amenity => `
-                <span class="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-sm">${amenity}</span>
-              `).join('')}
-            </div>
-          </div>
-          
-          <div class="border-t border-gray-200 pt-6">
-            <div class="flex items-center gap-4">
-              <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&w=64&h=64&fit=crop&crop=face&auto=format" 
-                   alt="${property.agent}" 
-                   class="w-16 h-16 rounded-full">
-              <div>
-                <p class="font-semibold text-gray-900">${property.agent}</p>
-                <p class="text-gray-600 text-sm">${property.agentRole}</p>
-                <div class="flex items-center gap-1 mt-1">
-                  <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                  </svg>
-                  <span class="text-sm text-gray-600">${property.rating}</span>
-                </div>
-              </div>
-              <button onclick="contactAgent(${id})" class="ml-auto px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium">
-                Contact Agent
-              </button>
-            </div>
-          </div>
+        <div class="text-center py-8">
+          <div class="loader mx-auto"></div>
+          <p class="text-gray-600 mt-4">Loading property details...</p>
         </div>
       `;
       
       modal.classList.remove('hidden');
       modal.classList.add('flex');
-    }
-
-    // Favorites System
-    function toggleFavorite(propertyId) {
-      const index = favorites.indexOf(propertyId);
-      if (index > -1) {
-        favorites.splice(index, 1);
-        showToast('Removed from favorites', 'info');
-      } else {
-        favorites.push(propertyId);
-        showToast('Added to favorites', 'success');
-      }
-      localStorage.setItem('favorites', JSON.stringify(favorites));
-      updateFavoritesUI();
-    }
-
-    function updateFavoritesUI() {
-      // Update favorite buttons state
-      document.querySelectorAll('[onclick*="toggleFavorite"]').forEach(button => {
-        const match = button.getAttribute('onclick').match(/toggleFavorite\((\d+)\)/);
-        if (match) {
-          const propertyId = parseInt(match[1]);
-          const svg = button.querySelector('svg');
-          if (favorites.includes(propertyId)) {
-            svg.classList.add('text-red-500');
-            svg.classList.remove('text-gray-600');
+      
+      // Fetch property details
+      fetch(`/api/property-details/${id}/`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const p = data.property;
+            content.innerHTML = `
+              <div class="space-y-6">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <h4 class="text-2xl font-bold text-gray-900">${p.title}</h4>
+                    <p class="text-gray-600 mt-2">${p.locality || ''}, ${p.city}</p>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-3xl font-bold text-emerald-600">
+                      ₹${new Intl.NumberFormat('en-IN').format(p.price)}
+                      ${p.property_for === 'rent' ? '<span class="text-sm font-normal text-gray-500">/month</span>' : ''}
+                    </div>
+                    ${p.price_per_sqft ? `<p class="text-gray-500 text-sm mt-1">₹${new Intl.NumberFormat('en-IN').format(p.price_per_sqft)}/sq.ft.</p>` : ''}
+                  </div>
+                </div>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  ${p.carpet_area ? `
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                      <p class="text-sm text-gray-500">Carpet Area</p>
+                      <p class="text-lg font-semibold text-gray-900">${new Intl.NumberFormat('en-IN').format(p.carpet_area)} sq.ft.</p>
+                    </div>
+                  ` : ''}
+                  ${p.bedrooms ? `
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                      <p class="text-sm text-gray-500">Bedrooms</p>
+                      <p class="text-lg font-semibold text-gray-900">${p.bedrooms}</p>
+                    </div>
+                  ` : ''}
+                  ${p.bathrooms ? `
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                      <p class="text-sm text-gray-500">Bathrooms</p>
+                      <p class="text-lg font-semibold text-gray-900">${p.bathrooms}</p>
+                    </div>
+                  ` : ''}
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-500">Status</p>
+                    <p class="text-lg font-semibold text-emerald-600">${p.status_display || 'Active'}</p>
+                  </div>
+                </div>
+                
+                <div>
+                  <h5 class="text-lg font-semibold text-gray-900 mb-3">Description</h5>
+                  <p class="text-gray-600">${p.description}</p>
+                </div>
+                
+                <div class="border-t border-gray-200 pt-6">
+                  <h5 class="text-lg font-semibold text-gray-900 mb-3">Contact Information</h5>
+                  <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-bold text-lg">
+                      ${(p.contact_person || 'O').charAt(0)}
+                    </div>
+                    <div>
+                      <p class="font-semibold text-gray-900">${p.contact_person || 'Property Owner'}</p>
+                      <p class="text-gray-600 text-sm">${p.contact_phone || ''}</p>
+                      ${p.contact_email ? `<p class="text-gray-600 text-sm">${p.contact_email}</p>` : ''}
+                    </div>
+                    <button onclick="contactAgent(${p.id})" class="ml-auto px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium">
+                      Contact Now
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `;
           } else {
-            svg.classList.remove('text-red-500');
-            svg.classList.add('text-gray-600');
+            content.innerHTML = `
+              <div class="text-center py-8">
+                <p class="text-red-600">Error loading property details</p>
+              </div>
+            `;
           }
-        }
-      });
-    }
-
-    // Authentication
-    function showAuthModal(type) {
-      const modal = document.getElementById('auth-modal');
-      const title = document.getElementById('auth-modal-title');
-      const content = document.getElementById('auth-modal-content');
-      
-      if (type === 'signup') {
-        title.textContent = 'Sign Up';
-        content.innerHTML = `
-          <form onsubmit="handleSignup(event)" class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-              <input type="text" required class="w-full border border-gray-300 rounded-lg px-4 py-2">
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          content.innerHTML = `
+            <div class="text-center py-8">
+              <p class="text-red-600">Error loading property details</p>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input type="email" required class="w-full border border-gray-300 rounded-lg px-4 py-2">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-              <input type="password" required class="w-full border border-gray-300 rounded-lg px-4 py-2">
-            </div>
-            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-lg font-medium transition-colors">
-              Create Account
-            </button>
-            <p class="text-center text-sm text-gray-600">
-              Already have an account? 
-              <button type="button" onclick="showAuthModal('login')" class="text-emerald-600 font-medium">
-                Log In
-              </button>
-            </p>
-          </form>
-        `;
-      } else {
-        title.textContent = 'Log In';
-        content.innerHTML = `
-          <form onsubmit="handleLogin(event)" class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input type="email" required class="w-full border border-gray-300 rounded-lg px-4 py-2">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-              <input type="password" required class="w-full border border-gray-300 rounded-lg px-4 py-2">
-            </div>
-            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-lg font-medium transition-colors">
-              Log In
-            </button>
-            <p class="text-center text-sm text-gray-600">
-              Don't have an account? 
-              <button type="button" onclick="showAuthModal('signup')" class="text-emerald-600 font-medium">
-                Sign Up
-              </button>
-            </p>
-          </form>
-        `;
-      }
-      
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    }
-
-    function closeAuthModal() {
-      document.getElementById('auth-modal').classList.add('hidden');
-    }
-
-    function handleSignup(e) {
-      e.preventDefault();
-      // Simulate signup
-      showLoading();
-      setTimeout(() => {
-        hideLoading();
-        showToast('Account created successfully!', 'success');
-        closeAuthModal();
-      }, 2000);
-    }
-
-    function handleLogin(e) {
-      e.preventDefault();
-      // Simulate login
-      showLoading();
-      setTimeout(() => {
-        hideLoading();
-        showToast('Logged in successfully!', 'success');
-        closeAuthModal();
-      }, 2000);
-    }
-
-    // Additional Functions
-    function closeSearchResults() {
-      document.getElementById('search-results-modal').classList.add('hidden');
+          `;
+        });
     }
 
     function closePropertyDetails() {
       document.getElementById('property-details-modal').classList.add('hidden');
     }
 
-    function scheduleTour(propertyId) {
-      showToast(`Tour scheduled for property #${propertyId}. Our agent will contact you shortly.`, 'success');
+    // Toggle Favorite (no login required)
+    function toggleFavorite(propertyId) {
+      const btn = event.currentTarget;
+      const svg = btn.querySelector('svg');
+      
+      // Toggle UI immediately
+      if (svg.classList.contains('text-red-500')) {
+        svg.classList.remove('text-red-500');
+        svg.classList.add('text-gray-600');
+        svg.setAttribute('fill', 'none');
+        showToast('Removed from favorites', 'info');
+      } else {
+        svg.classList.add('text-red-500');
+        svg.classList.remove('text-gray-600');
+        svg.setAttribute('fill', 'currentColor');
+        showToast('Added to favorites', 'success');
+      }
+      
+      // You can optionally store in localStorage
+      let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+      if (favorites.includes(propertyId)) {
+        favorites = favorites.filter(id => id !== propertyId);
+      } else {
+        favorites.push(propertyId);
+      }
+      localStorage.setItem('favorites', JSON.stringify(favorites));
     }
 
+    // Contact Agent (no login required)
     function contactAgent(propertyId) {
-      showToast(`Agent contacted for property #${propertyId}. You will receive a call within 24 hours.`, 'success');
+      // You can open a contact form modal or redirect to contact page
+      window.location.href = `/contact/?property=${propertyId}`;
     }
 
     // Utility Functions
-    function showLoading() {
-      document.getElementById('loading-overlay').classList.remove('hidden');
-    }
-
-    function hideLoading() {
-      document.getElementById('loading-overlay').classList.add('hidden');
-    }
-
     function showToast(message, type = 'info', duration = 3000) {
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
@@ -1740,11 +1568,23 @@
           
           // Close mobile menu if open
           if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
-            togglePropertySearchMobileMenu();
+            toggleMobileMenu();
           }
         }
       });
     });
+
+    // Sticky Header on Scroll
+    window.addEventListener('scroll', function() {
+      const header = document.getElementById('main-header');
+      if (window.scrollY > 50) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    });
   </script>
+
+
 </body>
 </html>

@@ -25,7 +25,6 @@ urlpatterns = [
     path('buyer/comparison/<int:pk>/', buyer_views.buyer_comparison_detail, name='buyer_comparison_detail'),
     path('buyer/site-visits/', buyer_views.buyer_site_visits, name='buyer_site_visits'),
     path('buyer/schedule-visit/<int:property_id>/', buyer_views.buyer_schedule_visit, name='buyer_schedule_visit'),
-    path('buyer/inquiries/', buyer_views.buyer_inquiries, name='buyer_inquiries'),
     path('buyer/profile/', buyer_views.buyer_profile, name='buyer_profile'),
     
     path('visits/<int:visit_id>/confirm/', buyer_views.confirm_visit, name='confirm_visit'),
@@ -47,16 +46,26 @@ urlpatterns = [
     path('comparison/<int:pk>/add/', buyer_views.add_to_comparison, name='add_to_comparison'),
     path('comparisons/create/', buyer_views.create_comparison, name='create_comparison'),
     
-    
+    # Buyer Inquiries URLs
+    path('buyer/inquiries/', buyer_views.buyer_inquiries, name='buyer_inquiries'),
+    path('buyer/inquiry/<int:pk>/', buyer_views.buyer_inquiry_detail, name='buyer_inquiry_detail'),
+    path('buyer/inquiry/<int:inquiry_id>/followup/', buyer_views.ajax_send_followup, name='ajax_send_followup'),
+    path('buyer/inquiry/<int:inquiry_id>/delete/', buyer_views.ajax_delete_inquiry, name='ajax_delete_inquiry'),
+    path('buyer/inquiry/<int:inquiry_id>/details/', buyer_views.ajax_get_inquiry_details, name='ajax_get_inquiry_details'),
+    path('buyer/inquiry/export/', buyer_views.ajax_export_inquiries, name='buyer_inquiry_export'),
+
+    # AJAX endpoints
+    path('buyer/ajax/update-inquiry-status/', buyer_views.ajax_update_inquiry_status, name='ajax_update_inquiry_status'),
+        
     # ======================================================
     # SELLER DASHBOARD VIEWS
     # ======================================================
     path('seller/dashboard/', seller_views.seller_dashboard, name='seller_dashboard'),
     path('seller/profile/', seller_views.seller_profile, name='seller_profile'),
     path('seller/packages/', seller_views.seller_packages, name='seller_packages'),
-    path('seller/leads/', seller_views.seller_leads, name='seller_leads'),
-    path('seller/leads/<int:pk>/', seller_views.seller_lead_detail, name='seller_lead_detail'),
-    path('seller/leads/export/', seller_views.seller_lead_export, name='seller_lead_export'),
+    # path('seller/leads/', seller_views.seller_leads, name='seller_leads'),
+    # path('seller/leads/<int:pk>/', seller_views.seller_lead_detail, name='seller_lead_detail'),
+    # path('seller/leads/export/', seller_views.seller_lead_export, name='seller_lead_export'),
     path('seller/analytics/', seller_views.seller_analytics, name='seller_analytics'),
     path('seller/settingss/', seller_views.seller_settings, name='seller_settings'),
     
@@ -68,24 +77,47 @@ urlpatterns = [
     path('property/<int:pk>/', seller_views.seller_property_detail, name='seller_property_detail'),
     path('property/<int:pk>/duplicate/', seller_views.seller_property_duplicate, name='seller_property_duplicate'),
     path('property/<int:pk>/report/', seller_views.seller_property_report, name='seller_property_report'),
-    
+
     # AJAX URLs
+    path('seller/ajax/update-lead-status/', seller_views.ajax_update_lead_status, name='ajax_update_lead_status'),
     path('ajax/update-property-status/', seller_views.ajax_update_property_status, name='ajax_update_property_status'),
     path('ajax/apply-boost/', seller_views.ajax_apply_boost, name='ajax_apply_boost'),
     path('ajax/property-details/<int:pk>/', seller_views.ajax_property_details, name='ajax_property_details'),
 
     
+     # Seller Leads URLs
+    path('seller/leads/', seller_views.seller_leads, name='seller_leads'),
+    path('seller/lead/<int:pk>/', seller_views.seller_lead_detail, name='seller_lead_detail'),
+    path('seller/lead/<int:lead_id>/followup/', seller_views.ajax_send_followup, name='ajax_send_followup'),
+    path('seller/lead/<int:lead_id>/delete/', seller_views.ajax_delete_lead, name='ajax_delete_lead'),
+    path('seller/lead/export/', seller_views.ajax_export_leads, name='seller_lead_export'),
+    path('seller/lead/stats/', seller_views.ajax_lead_stats, name='ajax_lead_stats'),
     
+    # AJAX endpoints
+    path('seller/ajax/update-lead-status/', seller_views.ajax_update_lead_status, name='ajax_update_lead_status'),
 
     # ======================================================
     # HOME & CORE PAGES
     # ======================================================
-    path("", views.home_view, name="home"),
+    # Home page
+    path('', views.home_view, name='home'),
+    
+    # API endpoints
+    path('api/filter-properties/', views.api_filter_properties, name='api_filter_properties'),
+    path('api/property-details/<int:property_id>/', views.api_property_details, name='api_property_details'),
+    path('api/send-contact/', views.api_send_contact, name='api_send_contact'),
+    
+    # Premier properties (login required)
+    path('premier-properties/', views.premier_properties_view, name='premier_properties'),
+    
     path("about/", TemplateView.as_view(template_name="core/about.html"), name="about"),
     path("contact/", TemplateView.as_view(template_name="core/contact.html"), name="contact"),
     path("privacy/", TemplateView.as_view(template_name="core/privacy.html"), name="privacy"),
     path("terms/", TemplateView.as_view(template_name="core/terms.html"), name="terms"),
-    path("properties_list/", TemplateView.as_view(template_name="core/properties_list.html"), name="properties_list"),
+    path("properties_list/", views.properties_list_view, name="properties_list"),
+    path('api/featured-properties/', views.api_featured_properties, name='api_featured_properties'),
+    path('api/property-types/', views.api_property_types, name='api_property_types'),
+    path('api/property-details/<int:id>/', views.api_property_details, name='api_property_details'),
 
 
     # ======================================================
